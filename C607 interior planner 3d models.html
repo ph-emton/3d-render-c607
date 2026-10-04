@@ -1,0 +1,3555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>C607 interior planner (Photorealistic 3D glTF Models)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f4ef;--panel:#ffffff;--ink:#1f1e1b;--muted:#6d6a63;--line:#e0dcd3;--accent:#0E7FAE;--accent-soft:#e2f0f6;--danger:#c0392b;--floor:#efe9de;--floor-wet:#dfe3e3;--floor-out:#e3d8c6;--wall:#3b3833;--win:#8fc3e0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#1a1917;--panel:#23221f;--ink:#ece9e2;--muted:#a29f96;--line:#38362f;--accent:#4fb3dc;--accent-soft:#1c3340;--danger:#e0675a;--floor:#2d2b26;--floor-wet:#2a3031;--floor-out:#332e26;--wall:#d6d1c6;--win:#4f8fb3}}
+:root[data-theme="dark"]{--bg:#1a1917;--panel:#23221f;--ink:#ece9e2;--muted:#a29f96;--line:#38362f;--accent:#4fb3dc;--accent-soft:#1c3340;--danger:#e0675a;--floor:#2d2b26;--floor-wet:#2a3031;--floor-out:#332e26;--wall:#d6d1c6;--win:#4f8fb3}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:14px;line-height:1.45}
+header{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between;padding:14px 18px 10px}
+h1{font-size:19px;font-weight:600;margin:0;display:flex;align-items:center;gap:8px}
+.badge-real{background:linear-gradient(135deg,#0E7FAE,#2b90b8);color:#fff;font-size:11px;font-weight:600;padding:2px 7px;border-radius:12px;letter-spacing:.02em;text-transform:uppercase}
+.sub{color:var(--muted);font-size:13px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button,select,input{font:inherit;color:inherit}
+button{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 11px;cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:500}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.warn{border-color:var(--danger);color:var(--danger)}
+select,input[type=number],input[type=text],textarea{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:5px 7px}
+main{display:grid;gap:12px;padding:0 12px 12px;grid-template-columns:1fr}
+@media (min-width:760px){main{grid-template-columns:minmax(340px,1fr) minmax(360px,1.1fr)}#lib{grid-column:1/-1}}
+@media (min-width:1180px){main{grid-template-columns:200px minmax(360px,1fr) minmax(400px,1.15fr)}#lib{grid-column:auto}}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px}
+#lib h3{font-size:12px;font-weight:600;color:var(--muted);margin:10px 0 6px;letter-spacing:.02em}
+#lib h3:first-child{margin-top:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chips button{font-size:12.5px;padding:5px 8px}
+@media (min-width:1180px){#lib{max-height:calc(100vh - 90px);overflow:auto}}
+.bar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-bottom:8px}
+.bar .sp{flex:1}
+.legend{font-size:12px;color:var(--muted)}
+#planWrap{height:min(78vh,820px);min-height:520px;border-radius:8px;overflow:hidden;background:var(--bg)}
+#plan{width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+#viewWrap{position:relative;height:min(52vh,540px);min-height:360px;border-radius:8px;overflow:hidden;background:#18181a}
+#view{width:100%;height:100%;display:block;touch-action:none}
+#viewMsg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);padding:20px;text-align:center}
+#insp{margin-top:12px}
+.ig{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.ig label,.row label{display:flex;flex-direction:column;font-size:12px;color:var(--muted);gap:3px}
+.ig input{width:100%}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end;margin:6px 0}
+.row label.inline{flex-direction:row;align-items:center;gap:6px;color:var(--ink);font-size:13px}
+#f-label{width:100%;font-weight:500}
+.hint{font-size:12px;color:var(--muted);margin:8px 0 0}
+.empty{color:var(--muted);font-size:13px}
+section.wide{grid-column:1/-1}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-weight:600;color:var(--muted);font-size:12px}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+tr.room td{background:var(--accent-soft);font-weight:600}
+.tablewrap{overflow-x:auto}
+textarea{width:100%;min-height:140px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.flex2{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:900px){.flex2{grid-template-columns:1.4fr 1fr}}
+h2{font-size:15px;font-weight:600;margin:0 0 8px}
+.note{font-size:12.5px;color:var(--muted)}
+.btn-group{display:inline-flex;border-radius:8px;overflow:hidden;border:1px solid var(--line)}
+.btn-group button{border:none;border-radius:0;border-right:1px solid var(--line);margin:0}
+.btn-group button:last-child{border-right:none}
+#viewWrap.walk-mode{cursor:crosshair}
+#reticle{display:none;position:absolute;top:50%;left:50%;width:18px;height:18px;transform:translate(-50%,-50%);pointer-events:none;z-index:5}
+#reticle::before,#reticle::after{content:'';position:absolute;background:#fff;box-shadow:0 0 3px rgba(0,0,0,0.9)}
+#reticle::before{top:8px;left:0;width:18px;height:2px}
+#reticle::after{top:0;left:8px;width:2px;height:18px}
+#viewWrap.walk-mode #reticle{display:block}
+#walkOverlay{display:none;position:absolute;inset:0;pointer-events:none;z-index:4;padding:10px;flex-direction:column;justify-content:space-between}
+#viewWrap.walk-mode #walkOverlay{display:flex}
+.walk-top{display:flex;justify-content:space-between;align-items:center;gap:8px;width:100%}
+.walk-bottom{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.walk-badge{background:rgba(20,20,22,0.85);color:#fff;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:600;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 8px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.12)}
+.walk-instructions{background:rgba(20,20,22,0.85);color:#ece9e2;padding:6px 14px;border-radius:8px;font-size:12px;text-align:center;display:flex;gap:12px;flex-wrap:wrap;justify-content:center;align-items:center;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,0,0,0.3);max-width:96%;border:1px solid rgba(255,255,255,0.1)}
+.walk-instructions b{color:#64d2ff}
+.walk-instructions .sub-key{color:#b0ada5;font-size:11px}
+.walk-btn{pointer-events:auto;background:rgba(20,20,22,0.85);color:#fff;border:1px solid rgba(255,255,255,0.22);border-radius:6px;padding:5px 10px;font-size:11.5px;cursor:pointer}
+.walk-btn:hover{background:rgba(35,35,42,0.98);border-color:#64d2ff}
+.walk-ctrl-group{display:flex;align-items:center;gap:8px;background:rgba(20,20,22,0.88);color:#fff;padding:6px 12px;border-radius:8px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);box-shadow:0 2px 10px rgba(0,0,0,0.3);flex-wrap:wrap;justify-content:center;max-width:96%;border:1px solid rgba(255,255,255,0.12)}
+.walk-label{font-size:12px;font-weight:600;color:#64d2ff}
+.walk-slider{width:85px;accent-color:#4fb3dc;cursor:pointer;pointer-events:auto}
+.walk-val{font-size:12px;font-weight:600;min-width:32px;color:#fff}
+.walk-chips{display:flex;gap:4px;flex-wrap:wrap;pointer-events:auto}
+.walk-chip{background:rgba(255,255,255,0.12);color:#ece9e2;border:1px solid rgba(255,255,255,0.2);border-radius:14px;padding:3px 8px;font-size:11px;cursor:pointer}
+.walk-chip:hover{background:rgba(255,255,255,0.25);border-color:#64d2ff}
+.walk-chip.on{background:#0E7FAE;border-color:#64d2ff;color:#fff;font-weight:600}
+label.inline-select{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+label.inline-select select{padding:4px 6px;font-size:12px}
+#viewWrap:fullscreen,
+#viewWrap:-webkit-full-screen,
+#viewWrap.is-fullscreen{
+ width:100vw !important;
+ height:100vh !important;
+ max-height:none !important;
+ border-radius:0 !important;
+ background:#0a0a0c !important;
+ position:fixed !important;
+ inset:0 !important;
+ z-index:99999 !important;
+}
+#viewWrap:fullscreen #view,
+#viewWrap:-webkit-full-screen #view,
+#viewWrap.is-fullscreen #view{
+ width:100% !important;
+ height:100% !important;
+}
+#viewWrap:fullscreen #walkOverlay,
+#viewWrap:-webkit-full-screen #walkOverlay,
+#viewWrap.is-fullscreen #walkOverlay{
+ padding:20px;
+}
+#viewWrap.is-fullscreen #btnFsFloating{
+ display:block !important;
+}
+#viewWrap.is-fullscreen.walk-mode #btnFsFloating{
+ display:none !important;
+}
+#walkFovBadge:hover{
+ border-color:#64d2ff;
+ background:rgba(30,30,35,0.95);
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>C607 interior planner <span class="badge-real" style="background:linear-gradient(135deg,#0E7FAE,#8e44ad);box-shadow:0 2px 8px rgba(142,68,173,0.3)">Option B · 3D glTF Models</span></h1>
+    <div class="sub">Primark Econest 2BHK · Architectural interior lighting, rich wood & textile textures, ceiling downlights, and sharp contrast</div>
+  </div>
+  <div class="tools">
+    <label class="sub">Ceiling
+      <select id="ceil"><option value="9.5">9'6"</option><option value="10" selected>10'</option><option value="10.5">10'6"</option></select>
+    </label>
+    <button id="btnReset">Reset layout</button>
+    <button id="btnExport" class="primary">Share layout with Claude</button>
+  </div>
+</header>
+<main>
+  <aside id="lib" class="card"></aside>
+  <section class="card">
+    <div class="bar">
+      <button id="zOut" aria-label="Zoom out">−</button>
+      <button id="zIn" aria-label="Zoom in">+</button>
+      <button id="zFit">Fit</button>
+      <span class="sp"></span>
+      <span class="legend">Thick edge = back · dashed = overhead</span>
+    </div>
+    <div id="planWrap"><svg id="plan" xmlns="http://www.w3.org/2000/svg"></svg></div>
+    <p class="hint">Drag to move (snaps to walls). Arrow keys nudge 1", Shift for 6". R rotates, Delete removes. Drag empty space to pan when zoomed. Dimension lines show clear gaps around the selected item.</p>
+  </section>
+  <section>
+    <div class="card">
+      <div class="bar" id="viewBar">
+        <div class="btn-group" id="viewModeGroup">
+          <button id="btnOrbit" class="on" title="Aerial orbit view">🔄 Orbit</button>
+          <button id="btnWalk" title="Walk through rooms at human eye level (Minecraft POV)">🚶 Walk (POV)</button>
+        </div>
+        <button id="btnModelMode" class="walk-btn on" style="pointer-events:auto;font-size:12px;padding:4px 9px;border-color:var(--accent);color:var(--accent);font-weight:600" title="Toggle between 3D glTF models and procedural geometry">📦 3D Models: ON</button>
+        <button id="btnFullscreen" class="walk-btn" style="pointer-events:auto;font-size:12px;padding:4px 9px" title="Toggle Fullscreen (or press F key)">⛶ Fullscreen</button>
+        <span class="sp"></span>
+        <label class="sub inline-select" style="gap:4px">Room:
+          <select id="wallRoomSelect" title="Select room to paint or choose All Rooms" style="font-weight:500;padding:4px 6px">
+            <option value="all">🎨 All Rooms (Global)</option>
+            <option value="Hall">Hall (Living &amp; Dining)</option>
+            <option value="Your room">Your room</option>
+            <option value="Brother's room">Brother's room</option>
+            <option value="Kitchen">Kitchen</option>
+            <option value="Utility">Utility</option>
+            <option value="Balcony">Balcony</option>
+            <option value="Common toilet">Common toilet</option>
+            <option value="Master toilet">Master toilet</option>
+          </select>
+        </label>
+        <label class="sub inline-select" style="gap:4px">Wall Paint:
+          <select id="wallColor" title="Asian Paints Royale Smooth Touch luxury wall paint">
+            <optgroup label="Royale Creams &amp; Whisper Whites">
+              <option value="cream" selected>Royale Warm Cream</option>
+              <option value="ivory">Royale Classic Ivory</option>
+              <option value="champagne">Royale Champagne Silk</option>
+              <option value="chiffon">Royale French Chiffon</option>
+              <option value="white">Royale Whisper White</option>
+            </optgroup>
+            <optgroup label="Royale Greiges &amp; Cashmeres">
+              <option value="cashmere">Royale Cashmere Veil</option>
+              <option value="warmgrey">Royale Warm Greige</option>
+              <option value="taupe">Royale Velvet Taupe</option>
+              <option value="pearlash">Royale Pearl Ash</option>
+            </optgroup>
+            <optgroup label="Royale Earthy &amp; Botanicals">
+              <option value="sage">Royale Sage Whisper</option>
+              <option value="eucalyptus">Royale Eucalyptus Soft</option>
+              <option value="olive">Royale Dusty Olive</option>
+              <option value="terracotta">Royale Terracotta Silk</option>
+              <option value="ochre">Royale Amber Ochre</option>
+            </optgroup>
+            <optgroup label="Royale Rich Luxury Accents">
+              <option value="teal">Royale Dusty Teal</option>
+              <option value="aegean">Royale Royal Aegean</option>
+              <option value="navy">Royale Midnight Velvet</option>
+              <option value="charcoal">Royale Charcoal Satin</option>
+            </optgroup>
+            <option value="custom">🎨 Custom Royale Color...</option>
+          </select>
+          <input type="color" id="customWallColor" value="#ede5d6" title="Pick custom Royale wall color" style="width:24px;height:24px;padding:0;border:1px solid rgba(0,0,0,0.2);border-radius:4px;cursor:pointer;vertical-align:middle;margin-left:2px">
+          <button type="button" id="btnResetRoomColor" class="walk-btn" style="display:none;font-size:11px;padding:3px 7px;margin-left:2px" title="Reset this room to follow the global wall color">Reset Room</button>
+        </label>
+        <button id="btnCeil" title="Toggle 3D ceiling (Auto / On / Off)">Ceiling: auto</button>
+        <div id="presets" style="display:flex;gap:6px;flex-wrap:wrap">
+          <button data-p="overview" class="on">Overview</button>
+          <button data-p="kitchen">Kitchen</button>
+          <button data-p="mine">Your room</button>
+          <button data-p="bro">Brother's room</button>
+          <button data-p="hall">Hall</button>
+        </div>
+        <button id="wallBtn">Walls: full</button>
+      </div>
+      <div id="viewWrap">
+        <canvas id="view"></canvas>
+        <div id="reticle"></div>
+        <button id="btnFsFloating" class="walk-btn" title="Exit Fullscreen (Esc or F)" style="display:none;position:absolute;top:12px;right:12px;z-index:25">🗗 Exit Fullscreen</button>
+        <div id="walkOverlay">
+          <div class="walk-top">
+            <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+              <div class="walk-badge" id="walkRoomBadge">📍 Hall</div>
+              <div class="walk-badge" id="walkFovBadge" style="cursor:pointer;pointer-events:auto" title="Click to cycle FOV (52° / 68° / 85° / 105° / 115°). Scroll wheel to fine-tune.">FOV: 52° · Natural</div>
+              <select id="walkWallRoomSelect" class="walk-btn" style="pointer-events:auto;background:rgba(20,20,24,0.85);color:#64d2ff;border:1px solid rgba(255,255,255,0.22);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600" title="Select room to paint (Current Room or specific room)">
+                <option value="current">📍 Current Room</option>
+                <option value="all">🎨 All Rooms (Global)</option>
+                <option value="Hall">Hall</option>
+                <option value="Your room">Your room</option>
+                <option value="Brother's room">Brother's room</option>
+                <option value="Kitchen">Kitchen</option>
+                <option value="Utility">Utility</option>
+                <option value="Balcony">Balcony</option>
+                <option value="Common toilet">Common toilet</option>
+                <option value="Master toilet">Master toilet</option>
+              </select>
+              <select id="walkWallColor" class="walk-btn" style="pointer-events:auto;background:rgba(20,20,24,0.85);color:#fff;border:1px solid rgba(255,255,255,0.22);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px" title="Change wall paint color (Asian Paints Royale Smooth Touch)">
+                <optgroup label="Royale Creams &amp; Whites" style="background:#202026;color:#fff">
+                  <option value="cream">Wall: Royale Warm Cream</option>
+                  <option value="ivory">Wall: Royale Classic Ivory</option>
+                  <option value="champagne">Wall: Royale Champagne Silk</option>
+                  <option value="chiffon">Wall: Royale French Chiffon</option>
+                  <option value="white">Wall: Royale Whisper White</option>
+                </optgroup>
+                <optgroup label="Royale Greiges &amp; Cashmeres" style="background:#202026;color:#fff">
+                  <option value="cashmere">Wall: Royale Cashmere Veil</option>
+                  <option value="warmgrey">Wall: Royale Warm Greige</option>
+                  <option value="taupe">Wall: Royale Velvet Taupe</option>
+                  <option value="pearlash">Wall: Royale Pearl Ash</option>
+                </optgroup>
+                <optgroup label="Royale Earthy &amp; Botanicals" style="background:#202026;color:#fff">
+                  <option value="sage">Wall: Royale Sage Whisper</option>
+                  <option value="eucalyptus">Wall: Royale Eucalyptus Soft</option>
+                  <option value="olive">Wall: Royale Dusty Olive</option>
+                  <option value="terracotta">Wall: Royale Terracotta Silk</option>
+                  <option value="ochre">Wall: Royale Amber Ochre</option>
+                </optgroup>
+                <optgroup label="Royale Luxury Accents" style="background:#202026;color:#fff">
+                  <option value="teal">Wall: Royale Dusty Teal</option>
+                  <option value="aegean">Wall: Royale Royal Aegean</option>
+                  <option value="navy">Wall: Royale Midnight Velvet</option>
+                  <option value="charcoal">Wall: Royale Charcoal Satin</option>
+                </optgroup>
+                <option value="custom" style="background:#202026;color:#fff">🎨 Custom Royale Color...</option>
+              </select>
+              <input type="color" id="walkCustomWallColor" value="#ede5d6" title="Pick custom Royale wall color" style="pointer-events:auto;width:24px;height:24px;padding:0;border:1px solid rgba(255,255,255,0.4);border-radius:4px;cursor:pointer;vertical-align:middle">
+              <button type="button" id="walkResetRoomColor" class="walk-btn" style="display:none;font-size:11px;padding:3px 7px" title="Reset this room to follow the global wall color">Reset</button>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <button id="walkModelToggle" class="walk-btn on" title="Toggle between 3D glTF Models and Procedural Primitives">📦 3D Models: ON</button>
+              <button id="btnCollision" class="walk-btn" title="Toggle wall collision (or press C key)">Collisions: ON</button>
+              <button id="btnWalkFullscreen" class="walk-btn" title="Toggle Fullscreen (or press F key)">⛶ Fullscreen</button>
+            </div>
+          </div>
+          <div class="walk-bottom">
+            <div class="walk-instructions" id="walkInstr">
+              <span><b>Arrow keys / WASD</b>: Walk</span>
+              <span><b>Mouse</b>: Look / Turn head</span>
+              <span><b>Scroll</b>: Zoom / FOV</span>
+              <span><b>F</b>: Fullscreen</span>
+              <span class="sub-key"><b>Click view</b> for mouse lock (Esc to unlock) · <b>Q/E</b>: Eye height · <b>Shift</b>: Sprint</span>
+            </div>
+            <div class="walk-ctrl-group">
+              <span class="walk-label">Eye height:</span>
+              <input type="range" id="walkHeightSlider" min="2.5" max="7.5" step="0.1" value="5.3" class="walk-slider" title="Adjust human eye height in POV">
+              <span id="walkHeightVal" class="walk-val">5'4"</span>
+              <div class="walk-chips" id="heightChips">
+                <button type="button" class="walk-chip" data-h="3.3" title="Seated on chair or sofa">🪑 Sit (3'4")</button>
+                <button type="button" class="walk-chip on" data-h="5.3" title="Average human eye height">🧍 Stand (5'4")</button>
+                <button type="button" class="walk-chip" data-h="6.0" title="Tall human eye height">🧍‍♂️ Tall (6'0")</button>
+                <button type="button" class="walk-chip" data-h="7.2" title="Standing on step / inspecting lofts">🪜 Loft (7'3")</button>
+              </div>
+              <span style="border-left:1px solid rgba(255,255,255,0.22);height:18px;margin:0 4px"></span>
+              <span class="walk-label">FOV:</span>
+              <input type="range" id="walkFovSlider" min="30" max="120" step="1" value="52" class="walk-slider" style="width:70px" title="Fine-tune FOV angle (30° - 120°)">
+              <div class="walk-chips" id="fovChips">
+                <button type="button" class="walk-chip" data-fov="42" title="Telephoto / zoom for checking details">Zoom 42°</button>
+                <button type="button" class="walk-chip on" data-fov="52" title="Natural human eye FOV (zero edge stretching)">Natural 52°</button>
+                <button type="button" class="walk-chip" data-fov="68" title="Wide angle view for capturing more room space">Wide 68°</button>
+                <button type="button" class="walk-chip" data-fov="85" title="Very wide angle (85°)">85°</button>
+                <button type="button" class="walk-chip" data-fov="105" title="Ultra-Wide 105° angle view to capture full room at once">Ultra-Wide 105°</button>
+                <button type="button" class="walk-chip" data-fov="115" title="Panoramic wide angle 115°">115°</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div id="viewMsg">Loading 3D…</div>
+      </div>
+      <p class="hint" id="viewHint">Drag to orbit, scroll or pinch to zoom, right-drag or two-finger drag to pan. Tap an item in 3D to select it.</p>
+    </div>
+    <div id="insp" class="card"></div>
+  </section>
+  <section class="wide flex2">
+    <div class="card">
+      <h2>Carpentry scope from this layout</h2>
+      <p class="note">Front area (width × height) is how most Hyderabad vendors price woodwork. Multiply by a vendor's per-sft rate to sanity-check their quote.</p>
+      <div class="tablewrap" id="scope"></div>
+    </div>
+    <div class="card" id="ioCard">
+      <h2>Share or restore</h2>
+      <p class="note">Copy this and paste it into the chat so Claude can review the exact layout. Paste a layout here and press Load to restore one.</p>
+      <textarea id="io" spellcheck="false"></textarea>
+      <div class="row"><button id="btnCopy">Copy</button><button id="btnLoad">Load pasted layout</button><span id="ioMsg" class="note"></span></div>
+    </div>
+  </section>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script src="assets/models/models_bundle.js"></script>
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const STORE='c607-planner-3d-models-v4';
+let H=10;
+
+const WALLS=[
+ {x:-0.5,y:-0.5,w:12.33,d:0.5,h:3.5},
+ {x:-0.5,y:0,w:0.5,d:6.33,h:3.5},
+ {x:11.33,y:0,w:0.5,d:6.33,h:3.5},
+ {x:-0.5,y:6.33,w:25.5,d:0.5,op:[{a:0.8,b:3.6,zb:0,zt:7,t:'door'},{a:5.5,b:9.1,zb:3,zt:7,t:'win'}]},
+ {x:-0.5,y:6.83,w:0.5,d:32.67,op:[{a:10.2,b:13.7,zb:3,zt:7,t:'win'},{a:19.3,b:24.1,zb:3,zt:7,t:'win'},{a:34.6,b:37.2,zb:3,zt:7,t:'win'}]},
+ {x:-0.5,y:39,w:24.67,d:0.5,op:[{a:0.9,b:4.1,zb:0,zt:7,t:'door'}]},
+ {x:23.67,y:27.4,w:0.5,d:11.6,op:[{a:28.6,b:32.6,zb:3,zt:7,t:'win'}]},
+ {x:23.17,y:17.5,w:0.5,d:9.9,op:[{a:19,b:20.5,zb:6,zt:7.5,t:'win'},{a:24.5,b:26,zb:6,zt:7.5,t:'win'}]},
+ {x:24.5,y:6.83,w:0.5,d:10.67,h:3.5},
+ {x:20.5,y:17,w:4.5,d:0.5},
+ {x:11.83,y:17,w:8.67,d:0.5,op:[{a:11.9,b:14.4,zb:0,zt:7,t:'door'}]},
+ {x:0,y:17,w:11.83,d:0.5,op:[{a:0.7,b:3.5,zb:0,zt:7,t:'door'}]},
+ {x:11.33,y:6.83,w:0.5,d:10.17},
+ {x:20,y:6.83,w:0.5,d:10.17,op:[{a:8.5,b:11.3,zb:3,zt:7,t:'win'},{a:12.6,b:15.6,zb:0,zt:7,t:'door'}]},
+ {x:15,y:17.5,w:0.5,d:9.9,op:[{a:19.6,b:22.2,zb:0,zt:7,t:'door'}]},
+ {x:15.5,y:22.4,w:7.67,d:0.5},
+ {x:10.33,y:27.4,w:13.34,d:0.5,op:[{a:11.8,b:14.8,zb:0,zt:7,t:'door'},{a:17.9,b:20.4,zb:0,zt:7,t:'door'}]},
+ {x:10.33,y:27.9,w:0.5,d:11.1}
+];
+const ROOMS=[
+ {n:'Balcony',x:0,y:0,w:11.33,d:6.33,t:'out'},
+ {n:'Your room',x:0,y:6.83,w:11.33,d:10.17},
+ {n:'Kitchen',x:11.83,y:6.83,w:8.17,d:10.17},
+ {n:'Utility',x:20.5,y:6.83,w:4,d:10.17,t:'wet'},
+ {n:'Hall',x:0,y:17.5,w:10.33,d:21.5},
+ {n:'Hall',x:10.33,y:17.5,w:4.67,d:9.9,hide:true},
+ {n:'Common toilet',x:15.5,y:17.5,w:7.67,d:4.9,t:'wet'},
+ {n:'Master toilet',x:15.5,y:22.9,w:7.67,d:4.5,t:'wet'},
+ {n:"Brother's room",x:10.83,y:27.9,w:12.84,d:11.1}
+];
+const FIXTURES=[
+ {label:'Basin',kind:'basin',x:13.9,y:22.9,w:1.1,d:1.6,h:2.8},
+ {label:'WC',kind:'wc',x:21.4,y:18.6,w:1.77,d:1.3,h:1.4},
+ {label:'WC',kind:'wc',x:21.4,y:24.8,w:1.77,d:1.3,h:1.4}
+];
+
+/* Curated, tactile finishes with realistic undertones */
+const FIN={
+ // Woods & Veneers
+ oak:{n:'Honey Oak',hex:'#c49969',grain:'#926c42',type:'wood'},
+ walnut:{n:'American Walnut',hex:'#583921',grain:'#392212',type:'wood'},
+ teak:{n:'Burmese Teak',hex:'#8c5932',grain:'#5a3518',type:'wood'},
+ darkteak:{n:'Smoked Dark Teak',hex:'#422919',grain:'#28170c',type:'wood'},
+ rosewood:{n:'Indian Rosewood / Sheesham',hex:'#4a2318',grain:'#2e130c',type:'wood'},
+ ash:{n:'Bleached Natural Ash',hex:'#d9cbba',grain:'#b29f8a',type:'wood'},
+ white_oak:{n:'Nordic White Oak',hex:'#e4d5c1',grain:'#c5b49e',type:'wood'},
+ birch:{n:'Pale Scandinavian Birch',hex:'#eee4d3',grain:'#cbbea9',type:'wood'},
+ smoked_oak:{n:'Smoked Grey Oak',hex:'#6b625b',grain:'#49423c',type:'wood'},
+ wenge:{n:'Dark African Wenge',hex:'#2c1f18',grain:'#170f0a',type:'wood'},
+ ebony:{n:'Royal Black Ebony',hex:'#221f1c',grain:'#12100e',type:'wood'},
+ mahogany:{n:'Deep Mahogany',hex:'#5c281e',grain:'#3a150e',type:'wood'},
+
+ // Fabrics & Upholstery
+ linen_white:{n:'Off-White Linen',hex:'#f5f3ec',type:'fabric'},
+ cream_boucle:{n:'Warm Cream Bouclé',hex:'#ece3d1',type:'fabric'},
+ beige:{n:'Flax Canvas / Linen',hex:'#d4c1a3',type:'fabric'},
+ taupe:{n:'Warm Taupe Velvet',hex:'#a39382',type:'fabric'},
+ greige:{n:'Greige Tweed',hex:'#bcb4a8',type:'fabric'},
+ sage:{n:'Muted Sage Linen',hex:'#7f967a',type:'fabric'},
+ olive:{n:'Mediterranean Olive',hex:'#55634b',type:'fabric'},
+ forest:{n:'Deep Forest Pine',hex:'#2d4234',type:'fabric'},
+ emerald:{n:'Jewel Emerald Velvet',hex:'#1d4332',type:'fabric'},
+ navy:{n:'Midnight Navy Velvet',hex:'#283852',type:'fabric'},
+ aegean:{n:'Royal Aegean Blue',hex:'#33536f',type:'fabric'},
+ terracotta:{n:'Warm Terracotta Weave',hex:'#b25f40',type:'fabric'},
+ rust:{n:'Baked Rust / Cinnamon',hex:'#944428',type:'fabric'},
+ ochre:{n:'Mustard Ochre',hex:'#c9913b',type:'fabric'},
+ mustard:{n:'Mustard Gold Velvet',hex:'#d4972b',type:'fabric'},
+ blush:{n:'Dusty Rose Blush',hex:'#bf8e88',type:'fabric'},
+ mauve:{n:'Dusky Mauve Cashmere',hex:'#8d6d7c',type:'fabric'},
+ charcoal:{n:'Charcoal Slate',hex:'#2c2f34',type:'fabric'},
+ midnight:{n:'Midnight Black Bouclé',hex:'#1c1d21',type:'fabric'},
+ obsidian:{n:'Matte Obsidian',hex:'#17181a',type:'fabric'},
+
+ // Cabinetry & Laminates
+ white:{n:'Warm Off-White Matte',hex:'#f4f2ec',type:'solid'},
+ warm_alabaster:{n:'Warm Alabaster Silk',hex:'#f2ede4',type:'solid'},
+ cashmere:{n:'Cashmere Neutral',hex:'#ded6c8',type:'solid'},
+ gisage:{n:'Lacquered Sage',hex:'#8ea288',type:'solid'},
+ gicream:{n:'Enamel Cream',hex:'#e8dcbf',type:'solid'},
+ forest_green:{n:'British Racing Green',hex:'#20382b',type:'solid'},
+ dusk_blue:{n:'Nordic Dusk Blue',hex:'#4a5b6b',type:'solid'},
+ slate_grey:{n:'Contemporary Slate Grey',hex:'#515963',type:'solid'},
+ charcoal_matte:{n:'Charcoal Matte Polyurethane',hex:'#272b30',type:'solid'},
+ dusty_rose:{n:'Dusty Rose Silk',hex:'#c99a94',type:'solid'},
+
+ // Metals & Hardware
+ brass:{n:'Brushed Architectural Brass',hex:'#d4af37',metal:true,brass:true,type:'metal'},
+ champagne_gold:{n:'Champagne Warm Gold',hex:'#cfb583',metal:true,brass:true,type:'metal'},
+ rosegold:{n:'Architectural Rose Gold',hex:'#b76e79',metal:true,brass:true,type:'metal'},
+ copper:{n:'Antique Bronze / Copper',hex:'#a66e4e',metal:true,type:'metal'},
+ steel:{n:'Brushed Stainless Steel',hex:'#bec3c8',metal:true,type:'metal'},
+ chrome:{n:'Mirror Polished Chrome',hex:'#e2e6eb',metal:true,type:'metal'},
+ gunmetal:{n:'Gunmetal Titanium',hex:'#3a3e45',metal:true,type:'metal'},
+ gigrey:{n:'Powder-coat Grey',hex:'#767e86',metal:true,type:'metal'},
+ giwhite:{n:'Enamel White',hex:'#e4e4df',metal:true,type:'metal'},
+ black:{n:'Matte Black Iron',hex:'#17181a',metal:true,type:'metal'},
+
+ // Wallpapers
+ wpA:{n:'Wallpaper: warm taupe',hex:'#b9a48c',wp:true},
+ wpB:{n:'Wallpaper: dusty teal',hex:'#7f9e9b',wp:true},
+ wpC:{n:'Wallpaper: terracotta',hex:'#c08a6d',wp:true},
+ wpD:{n:'Wallpaper: botanical olive',hex:'#849785',wp:true}
+};
+
+const GROUPS=[
+ ['Beds & seating',['bed_s','bed_q','bed_k','murphyQ','murphy','sofa3','sofa2','jhula']],
+ ['Storage',['wardrobe','loft','crockery','shoerack','puja','dressing','sidetable','shelf','tvbox','broom']],
+ ['Kitchen & utility',['kbase','kwall','kloft','chimney','hob','sink','fridge','wm','usink','uunit','cylinder','purifier','openshelf','micro','mixer','cooker']],
+ ['Dining & study',['dine4','dine6','dineR','study','chair']],
+ ['Living & decor',['tv','fan','wallpaper','rug','plant','box']]
+];
+const LIB={
+ bed_s:{label:'Single bed',kind:'bed',w:3,d:6.5,h:1.5,elev:0,fin:'walnut'},
+ bed_q:{label:'Queen bed',kind:'bed',w:5,d:6.67,h:1.5,elev:0,fin:'walnut'},
+ bed_k:{label:'King bed',kind:'bed',w:6,d:6.67,h:1.5,elev:0,fin:'walnut'},
+ murphyQ:{label:'Murphy queen + sofa',kind:'murphy',w:7,d:3.5,h:6,elev:0,fin:'oak',extra:{open:false,openD:5.4}},
+ murphy:{label:'Murphy single + sofa',kind:'murphy',w:7,d:3.4,h:4.2,elev:0,fin:'oak',extra:{open:false,openD:3.6}},
+ sofa3:{label:'Sofa, 3 seat',kind:'sofa',w:6.5,d:2.8,h:2.8,elev:0,fin:'sage'},
+ sofa2:{label:'Sofa, 2 seat',kind:'sofa',w:5,d:2.8,h:2.8,elev:0,fin:'sage'},
+ jhula:{label:'Jhula',kind:'jhula',w:3.5,d:2,h:10,elev:0,fin:'walnut',extra:{swing:1.5}},
+ wardrobe:{label:'Wardrobe',kind:'wardrobe',w:6,d:1.92,h:7,elev:0,fin:'oak',extra:{doors:'hinged'}},
+ loft:{label:'Loft',kind:'loft',w:6,d:2,h:2.5,elev:7.5,fin:'oak'},
+ crockery:{label:'Crockery unit',kind:'crockery',w:4,d:1.5,h:7,elev:0,fin:'walnut'},
+ shoerack:{label:'Shoe rack',kind:'wardrobe',w:3,d:1.2,h:3,elev:0,fin:'oak'},
+ puja:{label:'Puja unit',kind:'puja',w:2.5,d:1.5,h:6.5,elev:0,fin:'white'},
+ dressing:{label:'Dressing unit',kind:'dressing',w:2,d:1.3,h:6.5,elev:0,fin:'oak'},
+ sidetable:{label:'Side table',kind:'wardrobe',w:1.5,d:1.5,h:1.8,elev:0,fin:'walnut'},
+ shelf:{label:'Floating shelf',kind:'shelf',w:5,d:1,h:0.15,elev:1.4,fin:'walnut'},
+ kbase:{label:'Kitchen base unit',kind:'kbase',w:4,d:2,h:2.83,elev:0,fin:'gigrey',extra:{granite:true}},
+ kwall:{label:'Kitchen wall unit',kind:'kwall',w:3,d:1.17,h:2,elev:4.67,fin:'giwhite'},
+ kloft:{label:'Kitchen loft',kind:'loft',w:4,d:1.67,h:2.5,elev:7.5,fin:'giwhite'},
+ chimney:{label:'Chimney',kind:'chimney',w:3,d:1.6,h:1.6,elev:5,fin:'steel'},
+ hob:{label:'Hob',kind:'hob',w:2.5,d:1.6,h:0.08,elev:2.83,fin:'black'},
+ sink:{label:'Sink',kind:'sink',w:2,d:1.4,h:0.1,elev:2.83,fin:'steel'},
+ fridge:{label:'Fridge',kind:'fridge',w:2.3,d:2.3,h:5.8,elev:0,fin:'steel'},
+ wm:{label:'Washing machine',kind:'wm',w:2,d:2,h:2.8,elev:0,fin:'white'},
+ usink:{label:'Utility sink unit',kind:'kbase',w:2.5,d:2,h:2.83,elev:0,fin:'gigrey',extra:{granite:true,sinkTop:true}},
+ uunit:{label:'Utility tall unit',kind:'wardrobe',w:2.5,d:1.5,h:7,elev:0,fin:'gigrey'},
+ dine4:{label:'Dining, 4 seat',kind:'dining',w:4,d:2.5,h:2.5,elev:0,fin:'oak',extra:{seats:4}},
+ dine6:{label:'Dining, 6 seat',kind:'dining',w:5,d:3,h:2.5,elev:0,fin:'oak',extra:{seats:6}},
+ dineR:{label:'Round dining',kind:'dining_round',w:3.5,d:3.5,h:2.5,elev:0,fin:'oak',extra:{seats:4}},
+ study:{label:'Study table',kind:'study',w:4,d:2,h:2.5,elev:0,fin:'oak'},
+ chair:{label:'Chair',kind:'chair',w:1.6,d:1.6,h:3,elev:0,fin:'charcoal'},
+ tv:{label:'TV 32in',kind:'tv',w:2.4,d:0.2,h:1.4,elev:3.1,fin:'black'},
+ wallpaper:{label:'Wallpaper',kind:'wallpaper',w:6,d:0.05,h:10,elev:0,fin:'wpA'},
+ rug:{label:'Rug',kind:'rug',w:4,d:6,h:0.03,elev:0,fin:'terracotta'},
+ plant:{label:'Plant',kind:'plant',w:1.2,d:1.2,h:3.5,elev:0,fin:'terracotta'},
+ tvbox:{label:'Floating TV box (UPS, router)',kind:'kwall',w:5,d:1.25,h:1,elev:1.2,fin:'walnut'},
+ broom:{label:'Broom & mop unit',kind:'wardrobe',w:1.5,d:1.25,h:6,elev:0,fin:'gigrey'},
+ cylinder:{label:'Gas cylinder',kind:'cylinder',w:1.05,d:1.05,h:2.7,elev:0,fin:'terracotta'},
+ purifier:{label:'Water purifier',kind:'purifier',w:1.25,d:0.5,h:1.6,elev:4.4,fin:'white'},
+ openshelf:{label:'Open shelves',kind:'openshelf',w:4,d:1,h:2,elev:4.83,fin:'giwhite'},
+ micro:{label:'Microwave',kind:'micro',w:1.67,d:1.25,h:1,elev:2.83,fin:'black'},
+ mixer:{label:'Mixer',kind:'mixer',w:0.75,d:0.75,h:1.35,elev:2.83,fin:'white'},
+ cooker:{label:'Rice cooker',kind:'cooker',w:1,d:1,h:1,elev:2.83,fin:'white'},
+ fan:{label:'Ceiling fan',kind:'fan',w:3.8,d:3.8,h:1.3,elev:8.7,fin:'walnut'},
+ box:{label:'Custom unit',kind:'wardrobe',w:2,d:2,h:3,elev:0,fin:'white'}
+};
+const NOCOL=new Set(['wallpaper','rug','hob','sink','purifier','cylinder','fan']);
+const CARP={openshelf:1,wardrobe:1,loft:1,kbase:1,kwall:1,crockery:1,puja:1,dressing:1,shelf:2,study:2,murphy:2};
+
+let uidN=1;const uid=()=>'i'+(Date.now().toString(36))+(uidN++);
+function make(k,x,y,rot,o){const t=LIB[k];return Object.assign({id:uid(),key:k,kind:t.kind,label:t.label,w:t.w,d:t.d,h:t.h,elev:t.elev,fin:t.fin,rot:rot||0},JSON.parse(JSON.stringify(t.extra||{})),o||{},{x:x,y:y});}
+const SEED={"plan":"C607 planner realistic v1","note":"Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.","ceiling_ft":10,"items":[{"label":"Brother's bed","kind":"bed","room":"Brother's room","x_in":208,"y_in":390,"w_in":61,"d_in":76,"h_in":18,"elev_in":0,"rot":90,"finish":"#dd5340","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":130,"y_in":372,"w_in":96,"d_in":23,"h_in":84,"elev_in":0,"rot":270,"finish":"#c13c1a","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Brother's room","x_in":130,"y_in":335,"w_in":133,"d_in":23,"h_in":30,"elev_in":90,"rot":270,"finish":"#e65f33","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Your bed","kind":"bed","room":"Your room","x_in":55,"y_in":144,"w_in":54,"d_in":81,"h_in":18,"elev_in":0,"rot":90,"finish":"oak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Your room","x_in":45,"y_in":82,"w_in":64,"d_in":24,"h_in":30,"elev_in":0,"rot":0,"finish":"#000000","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study chair","kind":"chair","room":"Your room","x_in":61,"y_in":106,"w_in":19,"d_in":19,"h_in":36,"elev_in":0,"rot":180,"finish":"charcoal","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe (sliding)","kind":"wardrobe","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":84,"elev_in":0,"rot":90,"finish":"#b21f1f","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Your room","x_in":111,"y_in":82,"w_in":122,"d_in":25,"h_in":30,"elev_in":90,"rot":90,"finish":"#c22424","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, top run","kind":"kbase","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, side run","kind":"kbase","room":"Kitchen","x_in":216,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hob","kind":"hob","room":"Kitchen","x_in":185,"y_in":84,"w_in":30,"d_in":19,"h_in":1,"elev_in":34,"rot":0,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Sink","kind":"sink","room":"Kitchen","x_in":220,"y_in":115,"w_in":24,"d_in":17,"h_in":1,"elev_in":34,"rot":90,"finish":"#1d221c","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Water purifier","kind":"purifier","room":"Kitchen","x_in":234,"y_in":136,"w_in":15,"d_in":6,"h_in":19,"elev_in":53,"rot":90,"finish":"midnight","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":142,"y_in":82,"w_in":36,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Chimney","kind":"chimney","room":"Kitchen","x_in":182,"y_in":82,"w_in":36,"d_in":19,"h_in":19,"elev_in":60,"rot":0,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":218,"y_in":82,"w_in":22,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":22,"h_in":30,"elev_in":90,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":218,"y_in":104,"w_in":100,"d_in":22,"h_in":30,"elev_in":90,"rot":90,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone, corner","kind":"kbase","room":"Utility","x_in":246,"y_in":82,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"gigrey","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone + sink","kind":"kbase","room":"Utility","x_in":246,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":270,"finish":"gigrey","granite":true,"sinkTop":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Gas cylinder (under stone)","kind":"cylinder","room":"Utility","x_in":247,"y_in":84,"w_in":13,"d_in":13,"h_in":32,"elev_in":0,"rot":0,"finish":"terracotta","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Top-load washer (no stone above)","kind":"wm","room":"Utility","x_in":256,"y_in":177,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"gigrey","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wall box (west wall)","kind":"kwall","room":"Utility","x_in":252,"y_in":190,"w_in":36,"d_in":14,"h_in":24,"elev_in":54,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Fridge","kind":"fridge","room":"Kitchen","x_in":173,"y_in":178,"w_in":25,"d_in":27,"h_in":70,"elev_in":0,"rot":180,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Puja unit","kind":"puja","room":"Hall","x_in":44,"y_in":210,"w_in":32,"d_in":18,"h_in":78,"elev_in":0,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining, against north wall","kind":"dining","room":"Hall","x_in":0,"y_in":274,"w_in":48,"d_in":30,"h_in":30,"elev_in":0,"rot":270,"finish":"sage","wall":true,"seats":4,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Jhula","kind":"jhula","room":"Hall","x_in":78,"y_in":293,"w_in":42,"d_in":24,"h_in":120,"elev_in":0,"rot":0,"finish":"sage","swing":1.5,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mom's Murphy queen + sofa","kind":"murphy","room":"Hall","x_in":82,"y_in":376,"w_in":84,"d_in":42,"h_in":72,"elev_in":0,"rot":90,"finish":"sage","openD":5.4,"open":false,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wallpaper","kind":"wallpaper","room":"Hall","x_in":0,"y_in":354,"w_in":60,"d_in":1,"h_in":120,"elev_in":0,"rot":270,"finish":"wpB","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Floating TV box (UPS, router)","kind":"kwall","room":"Hall","x_in":0,"y_in":345,"w_in":82,"d_in":15,"h_in":24,"elev_in":7,"rot":270,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"TV 32in","kind":"tv","room":"Hall","x_in":0,"y_in":370,"w_in":32,"d_in":2,"h_in":21,"elev_in":46,"rot":270,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Kitchen","x_in":199,"y_in":186,"w_in":40,"d_in":18,"h_in":34,"elev_in":0,"rot":180,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Microwave","kind":"micro","room":"Hall","x_in":76,"y_in":213,"w_in":20,"d_in":15,"h_in":12,"elev_in":34,"rot":180,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mixer","kind":"mixer","room":"Kitchen","x_in":206,"y_in":193,"w_in":9,"d_in":9,"h_in":16,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Rice cooker","kind":"cooker","room":"Kitchen","x_in":222,"y_in":190,"w_in":12,"d_in":12,"h_in":12,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Kitchen","x_in":200,"y_in":192,"w_in":40,"d_in":12,"h_in":24,"elev_in":58,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":168,"y_in":449,"w_in":38,"d_in":20,"h_in":84,"elev_in":0,"rot":180,"finish":"obsidian","doors":"hinged","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Side table","kind":"wardrobe","room":"Brother's room","x_in":266,"y_in":451,"w_in":18,"d_in":18,"h_in":22,"elev_in":0,"rot":90,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Brother's room","x_in":260,"y_in":341,"w_in":49,"d_in":24,"h_in":30,"elev_in":0,"rot":90,"finish":"teak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":18,"h_in":29,"elev_in":0,"rot":0,"finish":"dusty_rose","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":12,"h_in":24,"elev_in":48,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"}]};
+function fromExport(i){return {id:uid(),key:'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:'oak',open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass'};}
+function defaults(){return SEED.items.map(fromExport);}
+let state={items:[],sel:null,wallMode:'full',wallColor:'cream',roomWallColors:{},ceilingMode:'auto',use3dModels:true};
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:4,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels}));}catch(e){}}
+function load(){
+ try{
+  const raw=localStorage.getItem(STORE);
+  if(!raw) return false;
+  const s=JSON.parse(raw||'null');
+  if(s&&s.v===4&&Array.isArray(s.items)&&s.items.length){
+   state.items=s.items;
+   H=s.H||10;
+   state.wallMode=s.wallMode||'full';
+   state.wallColor=s.wallColor||'cream';
+   state.roomWallColors=s.roomWallColors||{};
+   state.ceilingMode=s.ceilingMode||'auto';
+   state.use3dModels=s.use3dModels!==false;
+   return true;
+  }
+ }catch(e){}
+ return false;
+}
+
+const fmt=ft=>{let t=Math.round(ft*12);const n=t<0;t=Math.abs(t);const f=Math.floor(t/12),i=t%12;return (n?'-':'')+(f?f+"'":'')+(i?i+'"':(f?'':'0"'));};
+const r2=v=>Math.round(v*1000)/1000;
+function fp(it){const r=((it.rot%360)+360)%360,s=(r===90||r===270);return {x:it.x,y:it.y,w:s?it.d:it.w,h:s?it.w:it.d};}
+const frontVec=r=>({0:[0,1],90:[-1,0],180:[0,-1],270:[1,0]})[((r%360)+360)%360];
+const isOver=it=>it.elev>=4.5||it.kind==='chimney'||it.kind==='fan';
+const byId=id=>state.items.find(i=>i.id===id);
+function roomOf(x,y){for(const r of ROOMS){if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.d)return r.n;}return 'Other';}
+
+function wallPieces(Hc,low){
+ const P=[],G=[];
+ for(const W of WALLS){
+  const hz=W.w>=W.d,wh=W.h?W.h:(low?3.5:Hc),a0=hz?W.x:W.y,a1=a0+(hz?W.w:W.d);
+  const mk=(a,b,z0,z1,win,arr)=>{if(b-a<0.001||z1-z0<0.001)return;(arr||P).push(hz?{x:a,y:W.y,w:b-a,h:W.d,z0:z0,z1:z1,win:win}:{x:W.x,y:a,w:W.w,h:b-a,z0:z0,z1:z1,win:win});};
+  const ops=(W.op||[]).slice().sort((p,q)=>p.a-q.a);let cur=a0;
+  for(const o of ops){mk(cur,o.a,0,wh);if(o.zb>0)mk(o.a,o.b,0,Math.min(o.zb,wh),o.t==='win');if(o.zt<wh)mk(o.a,o.b,o.zt,wh);if(o.t==='win'&&wh>o.zb)mk(o.a,o.b,o.zb,Math.min(o.zt,wh),true,G);cur=o.b;}
+  mk(cur,a1,0,wh);
+ }
+ return {P:P,G:G};
+}
+
+/* ---------- 2D plan ---------- */
+const svg=$('#plan');
+const FIT={x:-1.6,y:-1.6,w:27.8,h:42.6};
+let vb=Object.assign({},FIT);
+function setVB(){svg.setAttribute('viewBox',vb.x+' '+vb.y+' '+vb.w+' '+vb.h);}
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]);
+
+function overlaps(){
+ const bad=new Set(),L=state.items.filter(i=>!NOCOL.has(i.kind));
+ for(let i=0;i<L.length;i++)for(let j=i+1;j<L.length;j++){
+  const a=L[i],b=L[j],fa=fp(a),fb=fp(b);
+  if(fa.x<fb.x+fb.w-0.03&&fa.x+fa.w>fb.x+0.03&&fa.y<fb.y+fb.h-0.03&&fa.y+fa.h>fb.y+0.03&&a.elev<b.elev+b.h-0.03&&a.elev+a.h>b.elev+0.03){bad.add(a.id);bad.add(b.id);}
+ }
+ return bad;
+}
+function chairSpots(it){
+ const s=it.seats||4,w=it.w,d=it.d,out=[];
+ if(it.kind==='dining_round'){const r=w/2+0.7;for(let k=0;k<s;k++){const a=2*Math.PI*k/s+Math.PI/4;out.push({x:r*Math.cos(a),z:r*Math.sin(a),ang:Math.atan2(Math.cos(a),Math.sin(a))});}return out;}
+ if(it.wall){const nf=s>=4?2:(s===3?1:Math.min(s,2)),ne=s>=3?2:0;for(let i=0;i<nf;i++)out.push({x:-w/2+w*(i+0.5)/nf,z:d/2+0.75,ang:0});if(ne){out.push({x:w/2+0.75,z:0,ang:Math.PI/2});out.push({x:-w/2-0.75,z:0,ang:-Math.PI/2});}return out;}
+ const per=s>=6?2:Math.max(1,Math.floor(s/2)),ends=s>=6?1:0;
+ for(const sg of [-1,1])for(let i=0;i<per;i++)out.push({x:-w/2+w*(i+0.5)/per,z:sg*(d/2+0.75),ang:sg>0?0:Math.PI});
+ if(ends){out.push({x:w/2+0.75,z:0,ang:Math.PI/2});out.push({x:-w/2-0.75,z:0,ang:-Math.PI/2});}
+ return out;
+}
+function itemSVG(it,bad){
+ const f=fp(it),cx=f.x+f.w/2,cy=f.y+f.h/2,F=FIN[it.fin]||((typeof it.fin==='string'&&it.fin.startsWith('#'))?{hex:it.fin,n:'Custom',type:'solid'}:{hex:'#bbb'}),col=F.hex,over=isOver(it),sel=state.sel===it.id;
+ const w=it.w,d=it.d,x0=-w/2,y0=-d/2;
+ const stroke=bad.has(it.id)?'var(--danger)':(sel?'var(--accent)':'var(--ink)');
+ const sw=sel||bad.has(it.id)?0.11:0.035;
+ const dash=over?' stroke-dasharray="0.28 0.16"':'';
+ const fo=over?0.2:(it.kind==='wallpaper'?1:0.88);
+ let s='<g data-id="'+it.id+'" style="cursor:move">';
+ s+='<g transform="translate('+r2(cx)+' '+r2(cy)+') rotate('+it.rot+')">';
+ s+='<rect x="'+(x0-0.25)+'" y="'+(y0-0.25)+'" width="'+(w+0.5)+'" height="'+(d+0.5)+'" fill="transparent"/>';
+ if(it.kind==='dining_round'||it.kind==='plant'||it.kind==='cylinder'||it.kind==='cooker'){
+  s+='<circle r="'+(w/2)+'" fill="'+col+'" fill-opacity="'+fo+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+ }else{
+  s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="'+d+'" rx="0.05" fill="'+col+'" fill-opacity="'+fo+'" stroke="'+stroke+'" stroke-width="'+sw+'"'+dash+(over?' stroke-opacity="0.8"':' stroke-opacity="'+(sel?1:0.45)+'"')+'/>';
+ }
+ const K=it.kind;
+ if(K==='bed'){const n=w>=4?2:1,pw=(w-0.5)/n-0.15;for(let i=0;i<n;i++)s+='<rect x="'+(x0+0.25+i*(pw+0.15)+0.075)+'" y="'+(y0+0.35)+'" width="'+pw+'" height="1" rx="0.15" fill="#fff" fill-opacity=".9" stroke="#0004" stroke-width="0.02"/>';s+='<rect x="'+(x0+0.1)+'" y="'+(y0+d*0.48)+'" width="'+(w-0.2)+'" height="'+(d*0.5)+'" fill="#a9b8c9" fill-opacity=".55"/>';}
+ if(K==='sofa'){s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.7" fill="#0002"/><rect x="'+x0+'" y="'+y0+'" width="0.5" height="'+d+'" fill="#0002"/><rect x="'+(w/2-0.5)+'" y="'+y0+'" width="0.5" height="'+d+'" fill="#0002"/>';}
+ if(K==='murphy'){s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="1.2" fill="#0003"/>';s+='<rect x="'+(x0+0.2)+'" y="'+(y0+1.2)+'" width="'+(w-0.4)+'" height="'+(d-1.2)+'" fill="#d9c8a9" fill-opacity=".8"/>';
+  s+='<rect x="'+(x0+0.2)+'" y="'+y0+'" width="'+(w-0.4)+'" height="'+(it.openD||3.6)+'" fill="'+(it.open?'#fff':'none')+'" fill-opacity=".55" stroke="var(--accent)" stroke-width="0.05" stroke-dasharray="0.25 0.15"/>';}
+ if(K==='jhula'){const sw2=it.swing!=null?it.swing:1.5;s+='<rect x="'+x0+'" y="'+(y0-sw2)+'" width="'+w+'" height="'+(d+2*sw2)+'" fill="none" stroke="var(--accent)" stroke-width="0.05" stroke-dasharray="0.25 0.15" opacity=".8"/>';for(const p of [[x0+0.15,y0+0.15],[-x0-0.15,y0+0.15],[x0+0.15,-y0-0.15],[-x0-0.15,-y0-0.15]])s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="0.09" fill="var(--ink)"/>';s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.35" fill="#0003"/>';}
+ if(K==='dining'||K==='dining_round'){for(const c of chairSpots(it))s+='<rect x="'+(c.x-0.68)+'" y="'+(c.z-0.68)+'" width="1.36" height="1.36" rx="0.15" fill="'+col+'" fill-opacity=".45" stroke="var(--ink)" stroke-opacity=".4" stroke-width="0.03"/>';}
+ if(K==='wardrobe'&&it.doors==='hinged'){const n=Math.max(1,Math.round(w/1.5)),sw=w/n,yf=d/2;for(let i=0;i<n;i++){const left=i%2===0,xh=left?x0+i*sw:x0+(i+1)*sw,xc=left?xh+sw:xh-sw;s+='<path d="M'+r2(xh)+' '+r2(yf)+' L'+r2(xh)+' '+r2(yf+sw)+' A'+r2(sw)+' '+r2(sw)+' 0 0 '+(left?0:1)+' '+r2(xc)+' '+r2(yf)+'" fill="none" stroke="var(--accent)" stroke-width="0.035" stroke-dasharray="0.18 0.12" opacity=".75"/>';}}
+ if(K==='wardrobe'&&it.doors==='sliding'){s+='<line x1="'+(x0+0.1)+'" y1="'+(d/2-0.12)+'" x2="'+(w/2-0.1)+'" y2="'+(d/2-0.12)+'" stroke="var(--ink)" stroke-opacity=".6" stroke-width="0.05"/><line x1="'+(x0+0.1)+'" y1="'+(d/2-0.28)+'" x2="'+(w/2-0.1)+'" y2="'+(d/2-0.28)+'" stroke="var(--ink)" stroke-opacity=".6" stroke-width="0.05"/>';}
+ if(K==='wardrobe'||K==='crockery'||K==='puja'||K==='dressing'){s+='<line x1="'+x0+'" y1="'+(-y0)+'" x2="'+(-x0)+'" y2="'+y0+'" stroke="var(--ink)" stroke-opacity=".35" stroke-width="0.03"/>';}
+ if(K==='hob'){s+='<circle cx="'+(-w/4)+'" cy="0" r="0.32" fill="none" stroke="#ddd" stroke-width="0.05"/><circle cx="'+(w/4)+'" cy="0" r="0.32" fill="none" stroke="#ddd" stroke-width="0.05"/>';}
+ if(K==='sink'){s+='<rect x="'+(x0+0.15)+'" y="'+(y0+0.15)+'" width="'+(w-0.3)+'" height="'+(d-0.3)+'" rx="0.15" fill="#fff" fill-opacity=".5" stroke="#555" stroke-width="0.03"/>';}
+ if(K==='chair'){s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.3" fill="#0004"/>';}
+ if(K==='fan'){
+  s+='<circle cx="0" cy="0" r="'+r2(w/2)+'" fill="none" stroke="var(--accent)" stroke-width="0.035" stroke-dasharray="0.14 0.1" opacity="0.65"/>';
+  for(let a=0;a<3;a++){
+   const rad=a*Math.PI*2/3-Math.PI/2;
+   const x2=(w/2-0.12)*Math.cos(rad),y2=(w/2-0.12)*Math.sin(rad);
+   s+='<line x1="0" y1="0" x2="'+r2(x2)+'" y2="'+r2(y2)+'" stroke="var(--ink)" stroke-width="0.08" stroke-linecap="round" opacity="0.6"/>';
+  }
+  s+='<circle cx="0" cy="0" r="0.38" fill="var(--panel)" stroke="var(--ink)" stroke-width="0.04"/>';
+  s+='<circle cx="0" cy="0" r="0.15" fill="var(--accent)"/>';
+ }
+ if(!['dining_round','rug','plant','hob','sink','dining','cylinder','cooker','fan'].includes(K))s+='<line x1="'+x0+'" y1="'+y0+'" x2="'+(-x0)+'" y2="'+y0+'" stroke="var(--ink)" stroke-width="0.1" stroke-opacity="'+(over?0.45:0.75)+'"/>';
+ s+='</g>';
+ if(K!=='wallpaper'||sel){
+  let lx=cx,ly=cy;const mn=Math.min(f.w,f.h),mx=Math.max(f.w,f.h),vert=f.h>f.w*1.3,fv=frontVec(it.rot);
+  if(mn<0.7){lx+=fv[0]*(mn/2+0.45);ly+=fv[1]*(mn/2+0.45);}
+  else if(over){lx-=fv[0]*(mn/2-0.35);ly-=fv[1]*(mn/2-0.35);}
+  const txt=(over?'↑ ':'')+it.label;
+  const fs=Math.max(0.22,Math.min(over?0.36:0.42,mx*1.7/Math.max(5,txt.length)));
+  s+='<text x="'+r2(lx)+'" y="'+r2(ly)+'" font-size="'+r2(fs)+'" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" stroke="var(--bg)" stroke-width="'+r2(fs*0.28)+'" paint-order="stroke" style="pointer-events:none;font-weight:500"'+(vert?' transform="rotate(-90 '+r2(lx)+' '+r2(ly)+')"':'')+'>'+esc(txt)+'</text>';
+ }
+ return s+'</g>';
+}
+function computeGaps(it){
+ const f=fp(it),z0=it.elev,z1=it.elev+it.h,obs=[];
+ const zo=(a,b)=>a<z1-0.01&&b>z0+0.01;
+ for(const p of PIECES.P)if(zo(p.z0,p.z1))obs.push(p);
+ for(const o of state.items)if(o.id!==it.id&&!NOCOL.has(o.kind)&&zo(o.elev,o.elev+o.h))obs.push(fp(o));
+ for(const x of FIXTURES)if(zo(0,x.h))obs.push({x:x.x,y:x.y,w:x.w,h:x.d});
+ const R=[],cxm=f.x+f.w/2,cym=f.y+f.h/2;
+ let b=1e9;for(const o of obs)if(o.y<f.y+f.h-0.01&&o.y+o.h>f.y+0.01&&o.x>=f.x+f.w-0.01)b=Math.min(b,o.x-(f.x+f.w));if(b<25&&b>0.03)R.push([f.x+f.w,cym,f.x+f.w+b,cym,b,'r']);
+ b=1e9;for(const o of obs)if(o.y<f.y+f.h-0.01&&o.y+o.h>f.y+0.01&&o.x+o.w<=f.x+0.01)b=Math.min(b,f.x-(o.x+o.w));if(b<25&&b>0.03)R.push([f.x-b,cym,f.x,cym,b,'l']);
+ b=1e9;for(const o of obs)if(o.x<f.x+f.w-0.01&&o.x+o.w>f.x+0.01&&o.y>=f.y+f.h-0.01)b=Math.min(b,o.y-(f.y+f.h));if(b<25&&b>0.03)R.push([cxm,f.y+f.h,cxm,f.y+f.h+b,b,'d']);
+ b=1e9;for(const o of obs)if(o.x<f.x+f.w-0.01&&o.x+o.w>f.x+0.01&&o.y+o.h<=f.y+0.01)b=Math.min(b,f.y-(o.y+o.h));if(b<25&&b>0.03)R.push([cxm,f.y-b,cxm,f.y,b,'u']);
+ return R;
+}
+let PIECES=wallPieces(H,false);
+function renderPlan(){
+ PIECES=wallPieces(H,false);
+ const bad=overlaps();
+ let s='';
+ for(const r of ROOMS){s+='<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.d+'" fill="'+(r.t==='wet'?'var(--floor-wet)':r.t==='out'?'var(--floor-out)':'var(--floor)')+'"/>';}
+ for(const W of WALLS){const hz=W.w>=W.d;for(const o of (W.op||[]))if(o.t==='door')s+=hz?'<rect x="'+o.a+'" y="'+W.y+'" width="'+(o.b-o.a)+'" height="'+W.d+'" fill="var(--floor)"/>':'<rect x="'+W.x+'" y="'+o.a+'" width="'+W.w+'" height="'+(o.b-o.a)+'" fill="var(--floor)"/>';}
+ for(const r of ROOMS){if(r.hide)continue;s+='<text x="'+(r.x+0.35)+'" y="'+(r.y+0.7)+'" font-size="0.5" fill="var(--muted)" style="pointer-events:none;font-weight:600">'+esc(r.n)+'</text><text x="'+(r.x+0.35)+'" y="'+(r.y+1.25)+'" font-size="0.4" fill="var(--muted)" style="pointer-events:none">'+fmt(r.w)+' × '+fmt(r.d)+'</text>';}
+ for(const x of FIXTURES)s+='<rect x="'+x.x+'" y="'+x.y+'" width="'+x.w+'" height="'+x.d+'" rx="0.2" fill="#fff" fill-opacity=".7" stroke="var(--muted)" stroke-width="0.04"/><text x="'+(x.x+x.w/2)+'" y="'+(x.y+x.d/2)+'" font-size="0.3" text-anchor="middle" dominant-baseline="central" fill="#555" style="pointer-events:none">'+x.label+'</text>';
+ const floorI=state.items.filter(i=>!isOver(i)),overI=state.items.filter(isOver);
+ const selI=state.items.find(i=>i.id===state.sel);
+ for(const it of floorI)if(it!==selI)s+=itemSVG(it,bad);
+ for(const it of overI)if(it!==selI)s+=itemSVG(it,bad);
+ for(const p of PIECES.P)if(p.z0===0)s+='<rect x="'+r2(p.x)+'" y="'+r2(p.y)+'" width="'+r2(p.w)+'" height="'+r2(p.h)+'" fill="var(--wall)"/>';
+ for(const W of WALLS){const hz=W.w>=W.d;for(const o of (W.op||[]))if(o.t==='win'){s+=hz?'<rect x="'+o.a+'" y="'+(W.y+0.12)+'" width="'+(o.b-o.a)+'" height="'+(W.d-0.24)+'" fill="var(--win)"/>':'<rect x="'+(W.x+0.12)+'" y="'+o.a+'" width="'+(W.w-0.24)+'" height="'+(o.b-o.a)+'" fill="var(--win)"/>';}}
+ if(selI){
+  s+=itemSVG(selI,bad);
+  for(const g of computeGaps(selI)){
+   const [x1,y1,x2,y2,v]=g,mx=(x1+x2)/2,my=(y1+y2)/2,hz=y1===y2;
+   s+='<line x1="'+r2(x1)+'" y1="'+r2(y1)+'" x2="'+r2(x2)+'" y2="'+r2(y2)+'" stroke="var(--accent)" stroke-width="0.05"/>';
+   const t=0.2;s+=hz?'<line x1="'+x1+'" y1="'+(y1-t)+'" x2="'+x1+'" y2="'+(y1+t)+'" stroke="var(--accent)" stroke-width="0.05"/><line x1="'+x2+'" y1="'+(y2-t)+'" x2="'+x2+'" y2="'+(y2+t)+'" stroke="var(--accent)" stroke-width="0.05"/>':'<line x1="'+(x1-t)+'" y1="'+y1+'" x2="'+(x1+t)+'" y2="'+y1+'" stroke="var(--accent)" stroke-width="0.05"/><line x1="'+(x2-t)+'" y1="'+y2+'" x2="'+(x2+t)+'" y2="'+y2+'" stroke="var(--accent)" stroke-width="0.05"/>';
+   s+='<text x="'+r2(mx)+'" y="'+r2(my)+'" font-size="0.42" text-anchor="middle" dominant-baseline="central" fill="var(--accent)" stroke="var(--bg)" stroke-width="0.14" paint-order="stroke" style="pointer-events:none;font-weight:600">'+fmt(v)+'</text>';
+  }
+ }
+ s+='<text x="12.2" y="-0.95" font-size="0.48" text-anchor="middle" fill="var(--muted)">East · balcony, sunrise</text>';
+ s+='<text x="12" y="40.35" font-size="0.48" text-anchor="middle" fill="var(--muted)">West · main door</text>';
+ s+='<text x="-1.05" y="26" font-size="0.55" text-anchor="middle" fill="var(--muted)" style="font-weight:600">N</text>';
+ s+='<text x="25.6" y="33" font-size="0.55" text-anchor="middle" fill="var(--muted)" style="font-weight:600">S</text>';
+ const CEILING_FANS_2D=[
+  {x:5.2,y:34.0},
+  {x:5.2,y:23.5},
+  {x:5.66,y:12.0},
+  {x:17.25,y:33.5},
+  {x:15.9,y:12.0}
+ ];
+ for(const f of CEILING_FANS_2D){
+  s+='<g class="ceiling-fan-fixed" style="pointer-events:none">';
+  s+='<circle cx="'+r2(f.x)+'" cy="'+r2(f.y)+'" r="1.85" fill="none" stroke="var(--accent)" stroke-width="0.03" stroke-dasharray="0.15 0.12" opacity="0.55"/>';
+  for(let a=0;a<3;a++){
+   const rad=a*Math.PI*2/3-Math.PI/2;
+   const x2=f.x+1.65*Math.cos(rad),y2=f.y+1.65*Math.sin(rad);
+   s+='<line x1="'+r2(f.x)+'" y1="'+r2(f.y)+'" x2="'+r2(x2)+'" y2="'+r2(y2)+'" stroke="var(--ink)" stroke-width="0.07" stroke-linecap="round" opacity="0.5"/>';
+  }
+  s+='<circle cx="'+r2(f.x)+'" cy="'+r2(f.y)+'" r="0.36" fill="var(--panel)" stroke="var(--ink)" stroke-width="0.035" stroke-opacity="0.6"/>';
+  s+='<circle cx="'+r2(f.x)+'" cy="'+r2(f.y)+'" r="0.14" fill="var(--accent)" fill-opacity="0.8"/>';
+  s+='<text x="'+r2(f.x)+'" y="'+r2(f.y+0.62)+'" font-size="0.28" text-anchor="middle" fill="var(--accent)" font-weight="600" opacity="0.85">Fan</text>';
+  s+='</g>';
+ }
+ // RCC Ceiling Beam between Living and Dining (at y = 27.5 ft / 330 in, where Jhula hangs)
+ s+='<g class="rcc-beam-2d" style="pointer-events:none">';
+ s+='<rect x="0" y="27.21" width="10.35" height="0.58" fill="rgba(120,110,95,0.18)" stroke="#584e40" stroke-width="0.04" stroke-dasharray="0.3 0.15"/>';
+ s+='<text x="5.18" y="27.5" font-size="0.32" text-anchor="middle" dominant-baseline="central" fill="#584e40" font-weight="700" letter-spacing="0.04em">═══ RCC CEILING BEAM (DROP 14\") ═══</text>';
+ s+='</g>';
+
+ // Curtain Partition ahead of beam on dining side (at y = 27.09 ft)
+ s+='<g class="curtain-partition-2d" style="pointer-events:none">';
+ s+='<line x1="0.15" y1="27.09" x2="4.25" y2="27.09" stroke="#9e8f7a" stroke-width="0.07" stroke-dasharray="0.15 0.1"/>';
+ s+='<line x1="6.25" y1="27.09" x2="10.2" y2="27.09" stroke="#9e8f7a" stroke-width="0.07" stroke-dasharray="0.15 0.1"/>';
+ s+='<text x="2.2" y="26.75" font-size="0.26" text-anchor="middle" fill="#8c806d" font-style="italic">Curtain (Dining Side)</text>';
+ s+='<text x="8.2" y="26.75" font-size="0.26" text-anchor="middle" fill="#8c806d" font-style="italic">Curtain (Dining Side)</text>';
+ s+='<text x="5.25" y="26.75" font-size="0.25" text-anchor="middle" fill="var(--accent)" font-weight="600">🚶 Walkthrough</text>';
+ s+='</g>';
+
+ s+='<g id="planAvatar"></g>';
+ svg.innerHTML=s;setVB();if(typeof updatePlanAvatar==='function')updatePlanAvatar();
+}
+function toPlan(e){const pt=svg.createSVGPoint();pt.x=e.clientX;pt.y=e.clientY;return pt.matrixTransform(svg.getScreenCTM().inverse());}
+let drag=null,pan=null;
+function edgeSets(it){
+ const xs=[],ys=[];
+ for(const p of PIECES.P)if(p.z0===0){xs.push(p.x,p.x+p.w);ys.push(p.y,p.y+p.h);}
+ for(const o of state.items)if(o.id!==it.id){const f=fp(o);xs.push(f.x,f.x+f.w);ys.push(f.y,f.y+f.h);}
+ return {xs:xs,ys:ys};
+}
+function snapTo(v,size,arr){let best=v,bd=0.3;for(const e of arr){if(Math.abs(v-e)<bd){bd=Math.abs(v-e);best=e;}if(Math.abs(v+size-e)<bd){bd=Math.abs(v+size-e);best=e-size;}}return best;}
+svg.addEventListener('pointerdown',e=>{
+ if(typeof viewMode!=='undefined'&&viewMode==='walk'){
+  const p=toPlan(e);
+  if(p.x>=-0.5&&p.x<=25&&p.y>=-0.5&&p.y<=40){
+   player.x=r2(p.x);player.z=r2(p.y);
+   if(camera)camera.position.set(player.x,walkEyeH,player.z);
+   if(typeof updateRoomBadge==='function')updateRoomBadge();
+   if(typeof updatePlanAvatar==='function')updatePlanAvatar();
+   render3D();
+   return;
+  }
+ }
+ const g=e.target.closest('[data-id]');
+ if(g){const it=byId(g.dataset.id);if(!it)return;select(it.id);const p=toPlan(e);drag={id:it.id,dx:p.x-it.x,dy:p.y-it.y,E:edgeSets(it),moved:false};}
+ else{pan={cx:e.clientX,cy:e.clientY,vx:vb.x,vy:vb.y,moved:false};}
+ svg.setPointerCapture(e.pointerId);e.preventDefault();
+});
+svg.addEventListener('pointermove',e=>{
+ if(drag){const it=byId(drag.id);if(!it)return;const p=toPlan(e),f=fp(it);
+  let nx=Math.round((p.x-drag.dx)*4)/4,ny=Math.round((p.y-drag.dy)*4)/4;
+  nx=snapTo(nx,f.w,drag.E.xs);ny=snapTo(ny,f.h,drag.E.ys);
+  nx=Math.max(-0.5,Math.min(25-f.w,nx));ny=Math.max(-0.5,Math.min(39.5-f.h,ny));
+  if(nx!==it.x||ny!==it.y){it.x=r2(nx);it.y=r2(ny);drag.moved=true;schedule();}
+ }else if(pan){const rect=svg.getBoundingClientRect(),sc=Math.max(vb.w/rect.width,vb.h/rect.height);
+  const dx=(e.clientX-pan.cx)*sc,dy=(e.clientY-pan.cy)*sc;if(Math.abs(dx)+Math.abs(dy)>0.1)pan.moved=true;vb.x=pan.vx-dx;vb.y=pan.vy-dy;setVB();}
+});
+const endPtr=e=>{
+ if(pan&&!pan.moved){
+  select(null);
+  if(e){
+   const p=toPlan(e);
+   const rm=roomOf(p.x,p.y);
+   if(rm&&rm!=='Other'&&$('#wallRoomSelect')){
+    $('#wallRoomSelect').value=rm;
+    if(typeof syncWallColorUI==='function')syncWallColorUI();
+   }
+  }
+ }
+ drag=null;pan=null;
+};
+svg.addEventListener('pointerup',endPtr);svg.addEventListener('pointercancel',endPtr);
+function zoom(fac){const s=byId(state.sel);let cx=vb.x+vb.w/2,cy=vb.y+vb.h/2;if(s){const f=fp(s);cx=f.x+f.w/2;cy=f.y+f.h/2;}vb.w=Math.max(6,Math.min(FIT.w*1.2,vb.w*fac));vb.h=vb.w*FIT.h/FIT.w;vb.x=cx-vb.w/2;vb.y=cy-vb.h/2;setVB();}
+$('#zIn').onclick=()=>zoom(0.7);$('#zOut').onclick=()=>zoom(1/0.7);$('#zFit').onclick=()=>{vb=Object.assign({},FIT);setVB();};
+
+/* ---------- selection & inspector ---------- */
+function select(id){state.sel=id;renderInspector();schedule();}
+function rotate(it,dir){const f=fp(it),cx=f.x+f.w/2,cy=f.y+f.h/2;it.rot=((it.rot+dir*90)%360+360)%360;const g=fp(it);it.x=Math.round((cx-g.w/2)*12)/12;it.y=Math.round((cy-g.h/2)*12)/12;}
+ function renderInspector(){
+  const el=$('#insp'),it=byId(state.sel);
+  if(!it){el.innerHTML='<h2>Selected item</h2><p class="empty">Tap an item on the plan or in 3D to edit its size, height, finish and rotation. Add new items from the library.</p>';return;}
+  let fins='';
+  if(it.kind==='wallpaper'){
+   for(const k in FIN){if(FIN[k].wp)fins+='<option value="'+k+'"'+(k===it.fin?' selected':'')+'>'+FIN[k].n+'</option>';}
+  }else{
+   if(it.fin && it.fin.startsWith('#') && !FIN[it.fin]){
+    fins+='<option value="'+it.fin+'" selected>🎨 Custom Color ('+it.fin.toUpperCase()+')</option>';
+   }
+   const fGroups=[
+    ['Woods & Veneers',k=>(FIN[k].type==='wood'||FIN[k].wood)],
+    ['Fabrics & Upholstery',k=>(FIN[k].type==='fabric'||FIN[k].fabric)],
+    ['Cabinetry & Solids',k=>(FIN[k].type==='solid')],
+    ['Metals & Hardware',k=>(FIN[k].type==='metal'||FIN[k].metal)]
+   ];
+   for(const [gLabel,gFn] of fGroups){
+    let gHtml='';
+    for(const k in FIN){
+     if(!FIN[k].wp&&gFn(k))gHtml+='<option value="'+k+'"'+(k===it.fin?' selected':'')+'>'+FIN[k].n+'</option>';
+    }
+    if(gHtml)fins+='<optgroup label="'+gLabel+'">'+gHtml+'</optgroup>';
+   }
+   fins+='<option value="custom">🎨 Choose Custom Color Swatch...</option>';
+  }
+  let extra='';
+  if(it.kind==='wallpaper'){
+   const wpStyle = it.wpStyle || 'fluted';
+   const wpColor = it.wpColor || (FIN[it.fin] ? FIN[it.fin].hex : '#22252a');
+   const wpAccent = it.wpAccent || 'brass';
+
+   const styles = [
+    ['fluted', '🪵 3D Fluted Timber Slats (Acoustic Felt Channels)'],
+    ['geo_brass', '✨ Art-Deco Brass Geometric Inlay on Velvet'],
+    ['marble', '🏛️ Bookmatched Calacatta Marble Slab with Inlay'],
+    ['chevron', '📐 Architectural Chevron / Herringbone Slats'],
+    ['linen', '🧵 Belgian Raw Woven Linen Textile'],
+    ['plaster', '🖌️ Venetian Troweled Micro-Cement Stucco'],
+    ['damask', '⚜️ Modern Silk Brocade Damask']
+   ];
+
+   const presets = [
+    ['fluted_walnut', 'Smoked Walnut Fluted Slats', 'fluted', '#4a2d18', 'brass'],
+    ['fluted_oak', 'Honey Oak Fluted Slats', 'fluted', '#c49969', 'brass'],
+    ['fluted_charcoal', 'Modern Charcoal Slats + Dark Felt', 'fluted', '#22252a', 'brass'],
+    ['geo_charcoal', 'Charcoal Velvet & Brass Geometric', 'geo_brass', '#24282e', 'brass'],
+    ['geo_emerald', 'Forest Emerald & Gold Geometric', 'geo_brass', '#223828', 'brass'],
+    ['geo_navy', 'Midnight Navy & Brass Geometric', 'geo_brass', '#1e293b', 'brass'],
+    ['marble_calacatta', 'Italian Calacatta Gold Marble', 'marble', '#f5f2eb', 'brass'],
+    ['marble_nero', 'Nero Marquina Black & Gold Marble', 'marble', '#1c1e22', 'brass'],
+    ['chevron_teak', 'Burmese Teak Herringbone Slats', 'chevron', '#8c5932', 'brass'],
+    ['plaster_greige', 'Venetian Warm Greige Micro-Cement', 'plaster', '#d0c7b8', 'brass'],
+    ['linen_cashmere', 'Cashmere Belgian Woven Linen', 'linen', '#ded6c8', 'brass'],
+    ['damask_silk', 'Royal Botanical Silk Damask', 'damask', '#3e4a46', 'rosegold']
+   ];
+
+   let styleOpts = styles.map(([val, txt]) => '<option value="'+val+'"'+(val===wpStyle?' selected':'')+'>'+txt+'</option>').join('');
+   let presetOpts = '<option value="">-- Choose Designer Preset --</option>' + presets.map(([val, txt]) => '<option value="'+val+'">'+txt+'</option>').join('');
+   let accentOpts = [
+    ['brass', 'Brushed Architectural Brass Gold'],
+    ['rosegold', 'Rose Gold / Warm Copper'],
+    ['black', 'Matte Black Iron'],
+    ['chrome', 'Polished Chrome Steel']
+   ].map(([val, txt]) => '<option value="'+val+'"'+(val===wpAccent?' selected':'')+'>'+txt+'</option>').join('');
+
+   extra += '<div class="wallpaper-panel" style="margin-top:10px;padding:12px;background:rgba(0,0,0,0.04);border-radius:8px;border:1px solid rgba(0,0,0,0.08);width:100%">' +
+    '<h3 style="margin:0 0 8px;font-size:13px;font-weight:700;color:var(--text)">🎨 TV Feature Wall Texture & Color</h3>' +
+    '<label style="display:block;margin-bottom:6px">Texture Style' +
+     '<select id="f-wp-style" style="width:100%;margin-top:2px">'+styleOpts+'</select>' +
+    '</label>' +
+    '<label style="display:block;margin-bottom:6px">Designer Presets' +
+     '<select id="f-wp-preset" style="width:100%;margin-top:2px">'+presetOpts+'</select>' +
+    '</label>' +
+    '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px">' +
+     '<label style="flex:1">Base Color' +
+      '<div style="display:flex;gap:6px;align-items:center;margin-top:2px">' +
+       '<input type="color" id="f-wp-color" value="'+wpColor+'" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer">' +
+       '<input type="text" id="f-wp-color-hex" value="'+wpColor+'" style="flex:1;height:28px;font-family:monospace;font-size:12px;padding:2px 6px">' +
+      '</div>' +
+     '</label>' +
+     '<label style="flex:1">Accent Metal' +
+      '<select id="f-wp-accent" style="width:100%;margin-top:2px;height:28px">'+accentOpts+'</select>' +
+     '</label>' +
+    '</div>' +
+   '</div>';
+  }
+  if(it.kind==='murphy')extra+='<label class="inline"><input type="checkbox" id="f-open"'+(it.open?' checked':'')+'> Show bed open</label>';
+  if(it.kind==='dining'||it.kind==='dining_round')extra+='<label>Seats<select id="f-seats">'+[2,4,6].map(n=>'<option'+(n===(it.seats||4)?' selected':'')+'>'+n+'</option>').join('')+'</select></label>';
+  if(it.kind==='wardrobe'&&it.doors)extra+='<label>Doors<select id="f-doors"><option value="hinged"'+(it.doors==='hinged'?' selected':'')+'>Hinged (open out)</option><option value="sliding"'+(it.doors==='sliding'?' selected':'')+'>Sliding</option></select></label>';
+  if(it.kind==='dining')extra+='<label class="inline"><input type="checkbox" id="f-wall"'+(it.wall?' checked':'')+'> Back against wall</label>';
+  if(it.kind==='jhula')extra+='<label>Swing each way (in)<input type="number" id="f-sw" min="0" step="1" value="'+Math.round((it.swing!=null?it.swing:1.5)*12)+'" style="width:90px"></label>';
+  if(it.kind==='kbase')extra+='<label class="inline"><input type="checkbox" id="f-granite"'+(it.granite!==false?' checked':'')+'> Stone top</label>';
+  let modelBadge = '';
+  const mKey = (typeof getModelKey === 'function') ? getModelKey(it) : null;
+  if (state.use3dModels !== false && mKey && typeof MODEL_CACHE !== 'undefined' && MODEL_CACHE.has(mKey)) {
+   modelBadge = '<span style="display:inline-block;margin-left:8px;font-size:11px;background:#e2f0f6;color:#0e7fae;padding:2px 8px;border-radius:12px;font-weight:600;vertical-align:middle">📦 3D glTF: '+mKey+'</span>';
+  } else {
+   modelBadge = '<span style="display:inline-block;margin-left:8px;font-size:11px;background:var(--bg);color:var(--muted);padding:2px 8px;border-radius:12px;font-weight:500;vertical-align:middle">📐 Procedural PBR</span>';
+  }
+  const curItemHex = (FIN[it.fin] ? FIN[it.fin].hex : (typeof it.fin === 'string' && it.fin.startsWith('#') ? it.fin : '#c49969'));
+  el.innerHTML='<h2>Selected item '+modelBadge+'</h2><input type="text" id="f-label" value="'+esc(it.label)+'" aria-label="Item name">'+
+  '<div class="ig"><label>Width (in)<input type="number" id="f-w" min="1" step="1"></label><label>Depth (in)<input type="number" id="f-d" min="1" step="1"></label><label>Height (in)<input type="number" id="f-h" min="1" step="1"></label><label>From floor (in)<input type="number" id="f-e" min="0" step="1"></label></div>'+
+  '<div class="row">'+(it.kind==='wallpaper'?'':'<label style="flex:1">Finish &amp; Color<div style="display:flex;gap:6px;align-items:center;margin-top:3px"><select id="f-fin" style="flex:1">'+fins+'</select><input type="color" id="f-fin-color" value="'+curItemHex+'" title="Pick custom item color" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer"></div></label>')+extra+'</div>'+
+  '<div class="row"><button id="b-rl">Rotate ⟲</button><button id="b-rr">Rotate ⟳</button><button id="b-dup">Duplicate</button><button id="b-del" class="warn">Delete</button></div>'+
+  '<p class="hint" id="f-info"></p>';
+  syncInspector();
+  const num=(id,key)=>{const e=$(id);if(!e)return;e.addEventListener('input',ev=>{const v=parseFloat(ev.target.value);if(!isFinite(v))return;if(key!=='elev'&&v<1)return;it[key]=r2(v/12);schedule();});};
+  num('#f-w','w');num('#f-d','d');num('#f-h','h');num('#f-e','elev');
+  if($('#f-label'))$('#f-label').addEventListener('input',e=>{it.label=e.target.value;schedule();});
+  if($('#f-fin'))$('#f-fin').addEventListener('change',e=>{
+    const val = e.target.value;
+    if(val==='custom'){
+      if($('#f-fin-color')) $('#f-fin-color').click();
+      return;
+    }
+    it.fin=val;
+    if($('#f-fin-color') && FIN[val]) $('#f-fin-color').value = FIN[val].hex;
+    schedule();
+  });
+  if($('#f-fin-color'))$('#f-fin-color').addEventListener('input',e=>{
+    it.fin=e.target.value;
+    schedule();
+  });
+  if($('#f-open'))$('#f-open').addEventListener('change',e=>{it.open=e.target.checked;schedule();});
+  if($('#f-seats'))$('#f-seats').addEventListener('change',e=>{it.seats=parseInt(e.target.value,10);schedule();});
+  if($('#f-doors'))$('#f-doors').addEventListener('change',e=>{it.doors=e.target.value;schedule();});
+  if($('#f-wall'))$('#f-wall').addEventListener('change',e=>{it.wall=e.target.checked;schedule();});
+  if($('#f-sw'))$('#f-sw').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(isFinite(v)&&v>=0){it.swing=v/12;schedule();}});
+  if($('#f-granite'))$('#f-granite').addEventListener('change',e=>{it.granite=e.target.checked;schedule();});
+
+  // TV Wallpaper event listeners
+  if($('#f-wp-style')) $('#f-wp-style').addEventListener('change', e => { it.wpStyle = e.target.value; schedule(); });
+  if($('#f-wp-accent')) $('#f-wp-accent').addEventListener('change', e => { it.wpAccent = e.target.value; schedule(); });
+  if($('#f-wp-color')) $('#f-wp-color').addEventListener('input', e => {
+    it.wpColor = e.target.value;
+    if($('#f-wp-color-hex')) $('#f-wp-color-hex').value = e.target.value;
+    schedule();
+  });
+  if($('#f-wp-color-hex')) $('#f-wp-color-hex').addEventListener('change', e => {
+    let v = e.target.value.trim();
+    if (!v.startsWith('#')) v = '#' + v;
+    if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+      it.wpColor = v;
+      if($('#f-wp-color')) $('#f-wp-color').value = v;
+      schedule();
+    }
+  });
+  if($('#f-wp-preset')) $('#f-wp-preset').addEventListener('change', e => {
+    const val = e.target.value;
+    if (!val) return;
+    const presets = [
+      ['fluted_walnut', 'Smoked Walnut Fluted Slats', 'fluted', '#4a2d18', 'brass'],
+      ['fluted_oak', 'Honey Oak Fluted Slats', 'fluted', '#c49969', 'brass'],
+      ['fluted_charcoal', 'Modern Charcoal Slats + Dark Felt', 'fluted', '#22252a', 'brass'],
+      ['geo_charcoal', 'Charcoal Velvet & Brass Geometric', 'geo_brass', '#24282e', 'brass'],
+      ['geo_emerald', 'Forest Emerald & Gold Geometric', 'geo_brass', '#223828', 'brass'],
+      ['geo_navy', 'Midnight Navy & Brass Geometric', 'geo_brass', '#1e293b', 'brass'],
+      ['marble_calacatta', 'Italian Calacatta Gold Marble', 'marble', '#f5f2eb', 'brass'],
+      ['marble_nero', 'Nero Marquina Black & Gold Marble', 'marble', '#1c1e22', 'brass'],
+      ['chevron_teak', 'Burmese Teak Herringbone Slats', 'chevron', '#8c5932', 'brass'],
+      ['plaster_greige', 'Venetian Warm Greige Micro-Cement', 'plaster', '#d0c7b8', 'brass'],
+      ['linen_cashmere', 'Cashmere Belgian Woven Linen', 'linen', '#ded6c8', 'brass'],
+      ['damask_silk', 'Royal Botanical Silk Damask', 'damask', '#3e4a46', 'rosegold']
+    ];
+    const match = presets.find(p => p[0] === val);
+    if (match) {
+      it.wpStyle = match[2];
+      it.wpColor = match[3];
+      it.wpAccent = match[4];
+      if($('#f-wp-style')) $('#f-wp-style').value = match[2];
+      if($('#f-wp-color')) $('#f-wp-color').value = match[3];
+      if($('#f-wp-color-hex')) $('#f-wp-color-hex').value = match[3];
+      if($('#f-wp-accent')) $('#f-wp-accent').value = match[4];
+      schedule();
+    }
+  });
+
+  $('#b-rl').onclick=()=>{rotate(it,-1);schedule();};$('#b-rr').onclick=()=>{rotate(it,1);schedule();};
+  $('#b-dup').onclick=()=>{const c=JSON.parse(JSON.stringify(it));c.id=uid();c.x=r2(it.x+0.5);c.y=r2(it.y+0.5);state.items.push(c);select(c.id);};
+  $('#b-del').onclick=()=>{state.items=state.items.filter(i=>i.id!==it.id);select(null);};
+ }
+function syncInspector(){
+ const it=byId(state.sel);if(!it||!$('#f-w'))return;
+ const set=(id,v)=>{const e=$(id);if(e&&document.activeElement!==e)e.value=Math.round(v*12);};
+ set('#f-w',it.w);set('#f-d',it.d);set('#f-h',it.h);set('#f-e',it.elev);
+ const f=fp(it);
+ $('#f-info').textContent=roomOf(f.x+f.w/2,f.y+f.h/2)+' · '+fmt(it.w)+' wide × '+fmt(it.d)+' deep × '+fmt(it.h)+' tall'+(it.elev>0?', starts '+fmt(it.elev)+' above floor':'')+'. Thick edge on the plan is the back.';
+ if(it.kind==='wardrobe'&&it.doors){const fv=frontVec(it.rot),dir=fv[0]>0?'r':fv[0]<0?'l':fv[1]>0?'d':'u';const g=computeGaps(it).find(x=>x[5]===dir),clear=g?g[4]:99;
+  if(it.doors==='hinged'){const n=Math.max(1,Math.round(it.w/1.5)),sw=it.w/n;$('#f-info').textContent+=' Hinged shutters are about '+fmt(sw)+' wide, so they need '+fmt(sw)+' clear in front'+(clear<99?'; you have '+fmt(clear)+'.':'.')+(clear<sw+0.5?' Too tight to stand and open: go sliding or move it.':'');}
+  else $('#f-info').textContent+=' Sliding shutters need no swing space, but sliding wardrobes run about 2" deeper for the track'+(clear<99?'. Clear in front: '+fmt(clear)+'.':'.');}
+ if($('#f-fin-color')){
+  const ch=(FIN[it.fin]?FIN[it.fin].hex:(typeof it.fin==='string'&&it.fin.startsWith('#')?it.fin:'#c49969'));
+  $('#f-fin-color').value=ch;
+ }
+ if($('#f-fin')){
+  if(FIN[it.fin]) $('#f-fin').value=it.fin;
+  else if(typeof it.fin==='string'&&it.fin.startsWith('#')) $('#f-fin').value=it.fin;
+ }
+}
+document.addEventListener('keydown',e=>{
+ if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
+ const k=e.code||e.key;
+ if(k==='KeyF'||e.key==='f'||e.key==='F'){
+  if(typeof toggleFullscreen==='function')toggleFullscreen();
+  e.preventDefault();return;
+ }
+ if(e.key==='Escape'){
+  const wrap=$('#viewWrap');
+  if(wrap&&wrap.classList.contains('is-fullscreen')){
+   if(typeof toggleFullscreen==='function')toggleFullscreen();
+  }
+ }
+ if(typeof viewMode!=='undefined'&&viewMode==='walk'){
+  if(k==='KeyC'||e.key==='c'||e.key==='C'){
+   collisionEnabled=!collisionEnabled;
+   const cb=$('#btnCollision');
+   if(cb){
+    cb.textContent='Collisions: '+(collisionEnabled?'ON':'OFF');
+    cb.classList.toggle('warn',!collisionEnabled);
+   }
+   e.preventDefault();return;
+  }
+  if(k==='KeyQ'||e.key==='q'||e.key==='Q'){
+   if(typeof setEyeHeight==='function')setEyeHeight(walkEyeH-0.2);
+   e.preventDefault();return;
+  }
+  if(k==='KeyE'||e.key==='e'||e.key==='E'){
+   if(typeof setEyeHeight==='function')setEyeHeight(walkEyeH+0.2);
+   e.preventDefault();return;
+  }
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','KeyW','KeyA','KeyS','KeyD','ShiftLeft','ShiftRight'].includes(k)||['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)){
+   keysDown[k]=true;keysDown[e.key]=true;
+   e.preventDefault();return;
+  }
+ }
+ const it=byId(state.sel);if(!it)return;
+ const st=e.shiftKey?0.5:1/12;let used=true;
+ if(e.key==='ArrowLeft')it.x=r2(it.x-st);else if(e.key==='ArrowRight')it.x=r2(it.x+st);
+ else if(e.key==='ArrowUp')it.y=r2(it.y-st);else if(e.key==='ArrowDown')it.y=r2(it.y+st);
+ else if(e.key==='r'||e.key==='R')rotate(it,e.shiftKey?-1:1);
+ else if(e.key==='Delete'||e.key==='Backspace'){state.items=state.items.filter(i=>i.id!==it.id);select(null);return;}
+ else used=false;
+ if(used){e.preventDefault();schedule();}
+});
+document.addEventListener('keyup',e=>{
+ const k=e.code||e.key;
+ if(typeof keysDown!=='undefined'){
+  keysDown[k]=false;keysDown[e.key]=false;
+ }
+});
+
+/* ---------- library ---------- */
+(function(){let s='';for(const [g,keys] of GROUPS){s+='<h3>'+g+'</h3><div class="chips">';for(const k of keys)s+='<button data-k="'+k+'">'+LIB[k].label+'</button>';s+='</div>';}$('#lib').innerHTML=s;
+ $('#lib').addEventListener('click',e=>{const b=e.target.closest('[data-k]');if(!b)return;const k=b.dataset.k,t=LIB[k];const o={};if(k==='wallpaper')o.h=H;if(k==='loft'||k==='kloft')o.h=r2(H-7.5);if(k==='jhula')o.h=H;const it=make(k,4,26,0,o);state.items.push(it);select(it.id);});})();
+
+/* ---------- scope table ---------- */
+function renderScope(){
+ const rows={},loose=[];
+ for(const it of state.items){const f=fp(it),rm=roomOf(f.x+f.w/2,f.y+f.h/2),c=CARP[it.kind];
+  if(c){(rows[rm]=rows[rm]||[]).push({it:it,sft:c===1?it.w*it.h:null});}
+  else if(!['wallpaper','hob','sink','chimney','rug','plant'].includes(it.kind))loose.push(it.label+' ('+rm+')');}
+ let s='<table><thead><tr><th>Item</th><th>W × H × D</th><th>Finish</th><th class="num">Front sft</th></tr></thead><tbody>',tot=0;
+ for(const rm of Object.keys(rows)){let rt=0;let body='';
+  for(const r of rows[rm]){const it=r.it;if(r.sft)rt+=r.sft;body+='<tr><td>'+esc(it.label)+'</td><td>'+fmt(it.w)+' × '+fmt(it.h)+' × '+fmt(it.d)+(it.elev>0?' <span class="note">@ '+fmt(it.elev)+'</span>':'')+'</td><td>'+(FIN[it.fin]?FIN[it.fin].n:(typeof it.fin==='string'&&it.fin.startsWith('#')?'🎨 '+it.fin.toUpperCase():''))+'</td><td class="num">'+(r.sft?r.sft.toFixed(1):'unit')+'</td></tr>';}
+  tot+=rt;s+='<tr class="room"><td colspan="3">'+esc(rm)+'</td><td class="num">'+rt.toFixed(1)+'</td></tr>'+body;}
+ s+='<tr class="room"><td colspan="3">Total priced by area</td><td class="num">'+tot.toFixed(1)+'</td></tr></tbody></table>';
+ if(loose.length)s+='<p class="note" style="margin-top:10px">Not carpentry (loose furniture or appliances, budget separately): '+esc(loose.join(', '))+'.</p>';
+ $('#scope').innerHTML=s;
+}
+
+/* ---------- 3D REALISTIC ENGINE ---------- */
+let T=window.THREE,renderer,scene,camera,controls;
+let gStatic,gWalls,gCeiling,gCeilingSlab,gItems,gLights,selHelper,fanBlades=[],rccBeamMesh=null;
+const matCache={};
+const texCache={};
+
+function updateBeamMaterial(){
+ if(rccBeamMesh){
+  const wc=getWallColorForRoom('Hall');
+  rccBeamMesh.material=getRoyalePaintMaterial(wc.hex);
+ }
+}
+
+function shade(hex,f){const n=parseInt(hex.slice(1),16);const c=[n>>16,(n>>8)&255,n&255].map(v=>Math.max(0,Math.min(255,Math.round(v*f))));return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');}
+
+/* Procedural canvas textures for realistic grain and tactile surfaces */
+function getWoodTex(baseHex,grainHex){
+ const key='w_'+baseHex;if(texCache[key])return texCache[key];
+ const c=document.createElement('canvas');c.width=128;c.height=256;
+ const x=c.getContext('2d');
+ x.fillStyle=baseHex;x.fillRect(0,0,128,256);
+ const dark=grainHex||shade(baseHex,0.78),light=shade(baseHex,1.1);
+ x.lineWidth=1.5;
+ for(let i=0;i<26;i++){
+  x.beginPath();const bx=Math.random()*128;x.moveTo(bx,0);
+  x.bezierCurveTo(bx+Math.random()*24-12,80,bx+Math.random()*24-12,160,bx+Math.random()*16-8,256);
+  x.strokeStyle=i%2===0?dark:light;
+  x.globalAlpha=0.18+Math.random()*0.24;x.stroke();
+ }
+ x.globalAlpha=1.0;
+ const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
+}
+
+function getFabricTex(baseHex){
+ const key='f_'+baseHex;if(texCache[key])return texCache[key];
+ const c=document.createElement('canvas');c.width=64;c.height=64;
+ const x=c.getContext('2d');
+ x.fillStyle=baseHex;x.fillRect(0,0,64,64);
+ const d=shade(baseHex,0.86),l=shade(baseHex,1.12);
+ x.lineWidth=1;
+ for(let i=0;i<64;i+=4){
+  x.strokeStyle=(i%8===0)?d:l;
+  x.beginPath();x.moveTo(i,0);x.lineTo(i,64);x.stroke();
+  x.beginPath();x.moveTo(0,i);x.lineTo(64,i);x.stroke();
+ }
+ const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
+}
+
+let contactShadowTex=null;
+function getContactShadowTex(){
+ if(contactShadowTex)return contactShadowTex;
+ const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+ const g=x.createRadialGradient(64,64,12,64,64,64);
+ g.addColorStop(0,'rgba(10,8,6,0.65)');
+ g.addColorStop(0.35,'rgba(15,12,10,0.38)');
+ g.addColorStop(0.7,'rgba(20,16,14,0.12)');
+ g.addColorStop(1,'rgba(0,0,0,0)');
+ x.fillStyle=g;x.fillRect(0,0,128,128);
+ const t=new T.CanvasTexture(c);
+ return contactShadowTex=t;
+}
+function addContactShadow(g,w,d,opacity){
+ const me=new T.Mesh(new T.PlaneGeometry(w+0.35,d+0.35),new T.MeshBasicMaterial({map:getContactShadowTex(),transparent:true,opacity:opacity||0.45,depthWrite:false}));
+ me.rotation.x=-Math.PI/2;me.position.set(0,0.003,0);g.add(me);
+}
+
+let pTex=null;
+function initProceduralTextures(){
+ if(pTex)return pTex;
+ // 1. Large-Format 2x4 (2ft x 4ft / 600x1200mm) Cream Vitrified Glazed Tiles (1024x1024)
+ const c1=document.createElement('canvas');c1.width=c1.height=1024;const x1=c1.getContext('2d');
+ x1.fillStyle='#f7f2e4';x1.fillRect(0,0,1024,1024);
+
+ for(let tile=0;tile<2;tile++){
+  const ox=tile*512;
+  for(let i=0;i<300;i++){
+   const alpha=0.08+Math.random()*0.16;
+   x1.fillStyle=Math.random()>0.55?'rgba(255,255,255,'+alpha+')':(Math.random()>0.5?'rgba(236,224,204,'+alpha+')':'rgba(222,208,186,'+(alpha*0.8)+')');
+   const sz=36+Math.random()*85;
+   x1.beginPath();
+   x1.ellipse(ox+Math.random()*512,Math.random()*1024,sz,sz*0.5,Math.random()*Math.PI,0,Math.PI*2);
+   x1.fill();
+  }
+  const nVeins=4+Math.floor(Math.random()*3);
+  for(let v=0;v<nVeins;v++){
+   x1.strokeStyle=v%2?'rgba(182,158,128,0.28)':'rgba(215,198,172,0.36)';
+   x1.lineWidth=1.5+Math.random()*2.0;
+   x1.beginPath();
+   let vy=Math.random()*1024;
+   x1.moveTo(ox,vy);
+   x1.bezierCurveTo(ox+120,vy+(Math.random()*160-80),ox+380,vy+(Math.random()*160-80),ox+512,vy+(Math.random()*160-80));
+   x1.stroke();
+  }
+ }
+
+ // Grout lines: 2x4 tiles (each slab 512px wide x 1024px long = 2ft wide x 4ft long)
+ // High-contrast, bold warm biscuit/sand epoxy grouting (#68543e) with deep joint relief
+ x1.strokeStyle='#68543e';x1.lineWidth=14;
+ x1.strokeRect(7,7,1010,1010);
+ x1.beginPath();x1.moveTo(512,0);x1.lineTo(512,1024);x1.stroke();
+
+ // Grout center shadow line for deep physical recess (#2c2216)
+ x1.strokeStyle='#2c2216';x1.lineWidth=5;
+ x1.strokeRect(7,7,1010,1010);
+ x1.beginPath();x1.moveTo(512,0);x1.lineTo(512,1024);x1.stroke();
+
+ // Factory-polished rectified chamfer edge highlights (crisp gleam framing every 2x4 slab)
+ x1.strokeStyle='rgba(255,255,255,0.92)';x1.lineWidth=3.5;
+ x1.strokeRect(15,15,482,994);
+ x1.strokeRect(527,15,482,994);
+
+ const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
+ const tIn=new T.CanvasTexture(c1);tIn.wrapS=tIn.wrapT=T.RepeatWrapping;tIn.anisotropy=maxAniso;
+
+ // Roughness Map: High-gloss polished porcelain (0.06), dry matte grout (0.98)
+ const c1r=document.createElement('canvas');c1r.width=c1r.height=1024;const x1r=c1r.getContext('2d');
+ x1r.fillStyle='#0e0e0e';x1r.fillRect(0,0,1024,1024);
+ x1r.strokeStyle='#ffffff';x1r.lineWidth=18;
+ x1r.strokeRect(9,9,1006,1006);
+ x1r.beginPath();x1r.moveTo(512,0);x1r.lineTo(512,1024);x1r.stroke();
+ const tInRough=new T.CanvasTexture(c1r);tInRough.wrapS=tInRough.wrapT=T.RepeatWrapping;tInRough.anisotropy=maxAniso;
+
+ // Bump Map: Flat elevated porcelain face (#ffffff), deep sunken grout joint (#000000)
+ const c1b=document.createElement('canvas');c1b.width=c1b.height=1024;const x1b=c1b.getContext('2d');
+ x1b.fillStyle='#ffffff';x1b.fillRect(0,0,1024,1024);
+ x1b.strokeStyle='#000000';x1b.lineWidth=16;
+ x1b.strokeRect(8,8,1008,1008);
+ x1b.beginPath();x1b.moveTo(512,0);x1b.lineTo(512,1024);x1b.stroke();
+ const tInBump=new T.CanvasTexture(c1b);tInBump.wrapS=tInBump.wrapT=T.RepeatWrapping;tInBump.anisotropy=maxAniso;
+
+ // 2. Slate bathroom tile (128x128)
+ const c2=document.createElement('canvas');c2.width=c2.height=128;const x2=c2.getContext('2d');
+ x2.fillStyle='#3a3f44';x2.fillRect(0,0,128,128);
+ for(let i=0;i<140;i++){x2.fillStyle=Math.random()>0.5?'rgba(80,88,96,0.25)':'rgba(35,40,44,0.3)';x2.fillRect(Math.random()*128,Math.random()*128,8+Math.random()*16,6+Math.random()*12);}
+ x2.strokeStyle='#22262a';x2.lineWidth=3;x2.strokeRect(1,1,126,126);
+ const tWet=new T.CanvasTexture(c2);tWet.wrapS=tWet.wrapT=T.RepeatWrapping;
+
+ // 3. Balcony terracotta pavers (128x128)
+ const c3=document.createElement('canvas');c3.width=c3.height=128;const x3=c3.getContext('2d');
+ x3.fillStyle='#b8694a';x3.fillRect(0,0,128,128);
+ for(let i=0;i<100;i++){x3.fillStyle=Math.random()>0.5?'rgba(220,135,100,0.2)':'rgba(140,65,40,0.25)';x3.fillRect(Math.random()*128,Math.random()*128,10+Math.random()*18,10+Math.random()*18);}
+ x3.strokeStyle='#7c3f28';x3.lineWidth=3;x3.strokeRect(1,1,126,126);
+ const tOut=new T.CanvasTexture(c3);tOut.wrapS=tOut.wrapT=T.RepeatWrapping;
+
+ // 4. Quilted duvet texture (128x128)
+ const c4=document.createElement('canvas');c4.width=c4.height=128;const x4=c4.getContext('2d');
+ x4.fillStyle='#faf8f4';x4.fillRect(0,0,128,128);
+ x4.strokeStyle='rgba(180,172,160,0.34)';x4.lineWidth=1.5;
+ for(let i=-64;i<192;i+=32){x4.beginPath();x4.moveTo(i,0);x4.lineTo(i+128,128);x4.stroke();x4.beginPath();x4.moveTo(i+128,0);x4.lineTo(i,128);x4.stroke();}
+ const tBed=new T.CanvasTexture(c4);tBed.wrapS=tBed.wrapT=T.RepeatWrapping;
+
+ // 5. Subway backsplash tile (128x128)
+ const c5=document.createElement('canvas');c5.width=c5.height=128;const x5=c5.getContext('2d');
+ x5.fillStyle='#f5f2ec';x5.fillRect(0,0,128,128);
+ x5.strokeStyle='#b8b0a2';x5.lineWidth=2;
+ x5.strokeRect(0,0,64,32);x5.strokeRect(64,0,64,32);
+ x5.strokeRect(-32,32,64,32);x5.strokeRect(32,32,64,32);x5.strokeRect(96,32,64,32);
+ x5.strokeRect(0,64,64,32);x5.strokeRect(64,64,64,32);
+ x5.strokeRect(-32,96,64,32);x5.strokeRect(32,96,64,32);x5.strokeRect(96,96,64,32);
+ const tSplash=new T.CanvasTexture(c5);tSplash.wrapS=tSplash.wrapT=T.RepeatWrapping;
+
+ // 6. Woven living room rug (256x256)
+ const c6=document.createElement('canvas');c6.width=c6.height=256;const x6=c6.getContext('2d');
+ x6.fillStyle='#d8d2c4';x6.fillRect(0,0,256,256);
+ x6.strokeStyle='rgba(120,112,98,0.22)';x6.lineWidth=1.5;
+ for(let i=0;i<256;i+=16){x6.strokeRect(i,0,8,256);x6.strokeRect(0,i,256,8);}
+ x6.strokeStyle='#988e7d';x6.lineWidth=4;x6.strokeRect(8,8,240,240);
+ const tRug=new T.CanvasTexture(c6);tRug.wrapS=tRug.wrapT=T.RepeatWrapping;
+
+ return pTex={in:tIn,inRough:tInRough,inBump:tInBump,wet:tWet,out:tOut,bed:tBed,splash:tSplash,rug:tRug};
+}
+
+function mat(hex,metal,extra){
+ const k=hex+'|'+(metal?1:0)+'|'+(extra||'');if(matCache[k])return matCache[k];let m;
+ if(extra==='glass')m=new T.MeshStandardMaterial({color:'#cbe4f2',transparent:true,opacity:0.32,roughness:0.06,metalness:0.15,envMapIntensity:0.8});
+ else if(extra==='glow')m=new T.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:1.2,roughness:0.9});
+ else if(extra==='mirror')m=new T.MeshStandardMaterial({color:'#e4ebf0',roughness:0.03,metalness:0.95,envMapIntensity:1.8});
+ else if(extra==='granite')m=new T.MeshStandardMaterial({color:'#121315',roughness:0.16,metalness:0.18,envMapIntensity:1.4});
+ else if(extra==='fabric'){const t=getFabricTex(hex);t.repeat.set(1.5,1.5);m=new T.MeshStandardMaterial({map:t,roughness:0.92,metalness:0.02,envMapIntensity:0.2});}
+ else if(extra==='wood'){const t=getWoodTex(hex);t.repeat.set(1,2);m=new T.MeshStandardMaterial({map:t,roughness:0.48,metalness:0.04,envMapIntensity:0.6});}
+ else if(extra==='bedding'){const t=pTex?pTex.bed.clone():null;if(t){t.needsUpdate=true;t.repeat.set(2,2);}m=new T.MeshStandardMaterial({map:t||undefined,color:'#f8f6f2',roughness:0.88,envMapIntensity:0.2});}
+ else if(extra==='brass')m=new T.MeshStandardMaterial({color:'#e0be53',roughness:0.18,metalness:0.92,envMapIntensity:1.8});
+ else if(extra==='steel')m=new T.MeshStandardMaterial({color:'#c5cbd0',roughness:0.22,metalness:0.92,envMapIntensity:1.6});
+ else m=new T.MeshStandardMaterial({color:hex,roughness:metal?0.32:0.65,metalness:metal?0.75:0.04,envMapIntensity:metal?1.3:0.4});
+ return matCache[k]=m;
+}
+
+const mF=(fin,f,extra)=>{
+ const isHex = typeof fin === 'string' && fin.startsWith('#');
+ const F = FIN[fin] || (isHex ? { hex: fin, type: 'solid' } : { hex: '#c49969', type: 'wood' });
+ const col = f ? shade(F.hex, f) : F.hex;
+ let ex = extra;
+ if(!ex){
+  if(F.type==='wood'||F.wood) ex='wood';
+  else if(F.type==='fabric'||F.fabric) ex='fabric';
+  else if(F.type==='metal'||F.metal) ex=(F.brass||F.gold||fin==='brass'||fin==='champagne_gold'||fin==='rosegold')?'brass':'steel';
+ }
+ return mat(col, !!(F.metal||F.type==='metal'), ex);
+};
+
+function B(g,w,h,d,x,y,z,m){
+ const me=new T.Mesh(new T.BoxGeometry(Math.max(w,0.01),Math.max(h,0.01),Math.max(d,0.01)),m);
+ me.position.set(x,y,z);
+ me.castShadow=true;
+ me.receiveShadow=true;
+ g.add(me);
+ return me;
+}
+function C(g,rt,rb,h,x,y,z,m){
+ const me=new T.Mesh(new T.CylinderGeometry(rt,rb,h,28),m);
+ me.position.set(x,y,z);
+ me.castShadow=true;
+ me.receiveShadow=true;
+ g.add(me);
+ return me;
+}
+
+/* Fronts with distinct shutter seams, recessed plinth, and sleek profile handles */
+function fronts(g,w,h,d,y0,m,mc,o){
+ o=o||{};
+ const plinthH=o.plinth!=null?o.plinth:0.25;
+ if(plinthH>0)B(g,w-0.1,plinthH,d-0.15,0,y0+plinthH/2,-0.075,mat('#2c241c'));
+ const fh=h-plinthH,fy0=y0+plinthH;
+ B(g,w,fh,d-0.06,0,fy0+fh/2,-0.03,mc);
+ const n=Math.max(1,Math.round(w/(o.sw||1.5))),sw=w/n,hm=mat('#222224',true);
+ for(let i=0;i<n;i++){
+  const xc=-w/2+sw*(i+0.5);
+  B(g,sw-0.04,fh-0.04,0.06,xc,fy0+fh/2,d/2-0.03,o.glass?mat('',0,'glass'):m);
+  if(o.handle!==false){
+   const ex=i%2===0?xc+sw/2-0.16:xc-sw/2+0.16;
+   B(g,0.035,Math.min(1.2,fh*0.4),0.04,ex,fy0+(o.hy!=null?Math.min(o.hy,fh-0.5):fh*0.5),d/2+0.015,hm);
+  }
+ }
+}
+
+function chair3(g,x,z,ang,m,cushM){
+ const c=new T.Group();c.position.set(x,0,z);c.rotation.y=ang;
+ B(c,1.35,0.12,1.35,0,1.5,0,m);
+ B(c,1.25,0.08,1.25,0,1.56,0,cushM||mat('#42474e',false,'fabric'));
+ const legM=mat('#2c251f',false,'wood');
+ for(const a of [-0.55,0.55])for(const b of [-0.55,0.55]){
+  B(c,0.09,1.44,0.09,a,0.72,b,legM);
+  C(c,0.05,0.05,0.15,a,0.08,b,mat('',0,'brass'));
+ }
+ B(c,1.35,1.5,0.1,0,2.25,0.62,m);
+ g.add(c);
+}
+
+let wpTexCache={};
+function wpTex(hex){
+ if(wpTexCache[hex])return wpTexCache[hex];
+ const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+ x.fillStyle=hex;x.fillRect(0,0,128,128);x.strokeStyle=shade(hex,1.18);x.lineWidth=3;
+ for(let i=0;i<4;i++){x.beginPath();x.moveTo(i*32+16,0);x.lineTo(i*32+32,32);x.lineTo(i*32+16,64);x.lineTo(i*32,32);x.closePath();x.stroke();x.beginPath();x.moveTo(i*32+16,64);x.lineTo(i*32+32,96);x.lineTo(i*32+16,128);x.lineTo(i*32,96);x.closePath();x.stroke();}
+ const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return wpTexCache[hex]=t;
+}
+
+let wpMatCache={};
+function getWallpaperMaterial(it, w, h) {
+  const style = it.wpStyle || 'fluted';
+  const baseColor = it.wpColor || (FIN[it.fin] ? FIN[it.fin].hex : '#22252a');
+  const accent = it.wpAccent || 'brass';
+  const accentHex = accent === 'brass' ? '#d4af37' : (accent === 'rosegold' ? '#b76e79' : (accent === 'black' ? '#141416' : (accent === 'chrome' ? '#c5cbd0' : '#4a2d18')));
+  
+  const cacheKey = [style, baseColor, accent, Math.round((w||5)*10), Math.round((h||10)*10)].join('|');
+  if (wpMatCache[cacheKey]) return wpMatCache[cacheKey];
+
+  const c = document.createElement('canvas');
+  c.width = 512;
+  c.height = 512;
+  const ctx = c.getContext('2d');
+
+  let bumpCanvas = null;
+  let roughness = 0.65;
+  let metalness = 0.04;
+  let bumpScale = 0.01;
+
+  if (style === 'fluted') {
+    // 3D Fluted Timber Slats with dark acoustic felt shadow channels
+    roughness = 0.45;
+    bumpScale = 0.035;
+    ctx.fillStyle = '#101214';
+    ctx.fillRect(0, 0, 512, 512);
+
+    bumpCanvas = document.createElement('canvas');
+    bumpCanvas.width = bumpCanvas.height = 512;
+    const bCtx = bumpCanvas.getContext('2d');
+    bCtx.fillStyle = '#000000';
+    bCtx.fillRect(0, 0, 512, 512);
+
+    const nSlats = 24;
+    const slatPitch = 512 / nSlats;
+    const slatW = slatPitch * 0.76;
+    const grooveW = slatPitch - slatW;
+
+    for (let i = 0; i < nSlats; i++) {
+      const sx = i * slatPitch + grooveW / 2;
+      const grad = ctx.createLinearGradient(sx, 0, sx + slatW, 0);
+      grad.addColorStop(0, shade(baseColor, 0.78));
+      grad.addColorStop(0.18, shade(baseColor, 1.08));
+      grad.addColorStop(0.82, shade(baseColor, 0.98));
+      grad.addColorStop(1, shade(baseColor, 0.72));
+      ctx.fillStyle = grad;
+      ctx.fillRect(sx, 0, slatW, 512);
+
+      ctx.fillStyle = 'rgba(0,0,0,0.06)';
+      for (let g = 0; g < 4; g++) {
+        ctx.fillRect(sx + Math.random() * slatW, 0, 1.2, 512);
+      }
+
+      bCtx.fillStyle = '#ffffff';
+      bCtx.fillRect(sx, 0, slatW, 512);
+      bCtx.fillStyle = '#666666';
+      bCtx.fillRect(sx, 0, 1.5, 512);
+      bCtx.fillRect(sx + slatW - 1.5, 0, 1.5, 512);
+    }
+  } else if (style === 'geo_brass') {
+    roughness = 0.72;
+    metalness = 0.12;
+    bumpScale = 0.015;
+
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    const imgData = ctx.getImageData(0, 0, 512, 512);
+    const data = imgData.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const n = (Math.random() - 0.5) * 14;
+      data[i] = Math.max(0, Math.min(255, data[i] + n));
+      data[i+1] = Math.max(0, Math.min(255, data[i+1] + n));
+      data[i+2] = Math.max(0, Math.min(255, data[i+2] + n));
+    }
+    ctx.putImageData(imgData, 0, 0);
+
+    ctx.strokeStyle = accentHex;
+    ctx.lineWidth = 4;
+    ctx.shadowColor = 'rgba(0,0,0,0.45)';
+    ctx.shadowBlur = 4;
+
+    ctx.strokeRect(16, 16, 480, 480);
+    ctx.strokeRect(40, 40, 432, 432);
+
+    ctx.beginPath();
+    ctx.moveTo(256, 40); ctx.lineTo(472, 256); ctx.lineTo(256, 472); ctx.lineTo(40, 256); ctx.closePath();
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(40, 40); ctx.lineTo(472, 472);
+    ctx.moveTo(472, 40); ctx.lineTo(40, 472);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(256, 256, 48, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.shadowColor = 'transparent';
+  } else if (style === 'marble') {
+    roughness = 0.14;
+    metalness = 0.08;
+    bumpScale = 0.005;
+
+    ctx.fillStyle = baseColor || '#f6f3eb';
+    ctx.fillRect(0, 0, 512, 512);
+
+    for (let i = 0; i < 40; i++) {
+      ctx.fillStyle = 'rgba(215, 205, 190, 0.08)';
+      ctx.beginPath();
+      ctx.ellipse(Math.random()*512, Math.random()*512, 60+Math.random()*80, 30+Math.random()*40, Math.random()*Math.PI, 0, Math.PI*2);
+      ctx.fill();
+    }
+
+    for (let v = 0; v < 5; v++) {
+      ctx.strokeStyle = v % 2 ? accentHex : 'rgba(110, 102, 92, 0.45)';
+      ctx.lineWidth = 2.5 + Math.random() * 3.5;
+      ctx.beginPath();
+      let vy = 40 + v * 95;
+      ctx.moveTo(0, vy);
+      ctx.bezierCurveTo(140, vy + (Math.random()*70-35), 340, vy + (Math.random()*90-45), 512, vy + (Math.random()*60-30));
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = accentHex;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(256, 0); ctx.lineTo(256, 512);
+    ctx.stroke();
+  } else if (style === 'linen') {
+    roughness = 0.92;
+    metalness = 0.02;
+    bumpScale = 0.02;
+
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    ctx.strokeStyle = shade(baseColor, 1.15);
+    ctx.lineWidth = 1.8;
+    for (let x = 0; x < 512; x += 6) {
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, 512); ctx.stroke();
+    }
+    ctx.strokeStyle = shade(baseColor, 0.88);
+    for (let y = 0; y < 512; y += 6) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(512, y); ctx.stroke();
+    }
+  } else if (style === 'chevron') {
+    roughness = 0.48;
+    bumpScale = 0.03;
+
+    ctx.fillStyle = shade(baseColor, 0.85);
+    ctx.fillRect(0, 0, 512, 512);
+
+    const pitch = 32;
+    for (let y = -32; y < 544; y += pitch) {
+      const gradL = ctx.createLinearGradient(0, y, 256, y + pitch * 1.5);
+      gradL.addColorStop(0, shade(baseColor, 1.06));
+      gradL.addColorStop(1, shade(baseColor, 0.90));
+      ctx.fillStyle = gradL;
+      ctx.beginPath();
+      ctx.moveTo(0, y); ctx.lineTo(256, y + pitch * 1.2); ctx.lineTo(256, y + pitch * 1.2 + pitch * 0.8); ctx.lineTo(0, y + pitch * 0.8); ctx.closePath();
+      ctx.fill();
+
+      const gradR = ctx.createLinearGradient(256, y + pitch * 1.2, 512, y);
+      gradR.addColorStop(0, shade(baseColor, 0.94));
+      gradR.addColorStop(1, shade(baseColor, 1.12));
+      ctx.fillStyle = gradR;
+      ctx.beginPath();
+      ctx.moveTo(256, y + pitch * 1.2); ctx.lineTo(512, y); ctx.lineTo(512, y + pitch * 0.8); ctx.lineTo(256, y + pitch * 1.2 + pitch * 0.8); ctx.closePath();
+      ctx.fill();
+    }
+    ctx.strokeStyle = '#121315';
+    ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(256, 0); ctx.lineTo(256, 512); ctx.stroke();
+  } else if (style === 'plaster') {
+    roughness = 0.62;
+    metalness = 0.03;
+    bumpScale = 0.015;
+
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    for (let i = 0; i < 60; i++) {
+      ctx.fillStyle = Math.random() > 0.5 ? shade(baseColor, 1.08) : shade(baseColor, 0.92);
+      ctx.globalAlpha = 0.18;
+      ctx.beginPath();
+      const px = Math.random() * 512, py = Math.random() * 512;
+      ctx.ellipse(px, py, 40 + Math.random() * 90, 15 + Math.random() * 35, (Math.random() - 0.5) * 0.8, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1.0;
+  } else {
+    roughness = 0.78;
+    metalness = 0.08;
+    bumpScale = 0.012;
+
+    ctx.fillStyle = baseColor;
+    ctx.fillRect(0, 0, 512, 512);
+
+    ctx.strokeStyle = shade(baseColor, 1.22);
+    ctx.lineWidth = 2.5;
+    for (let r = 0; r < 4; r++) {
+      for (let col = 0; col < 4; col++) {
+        const cx = col * 128 + 64, cy = r * 128 + 64;
+        ctx.beginPath();
+        ctx.arc(cx, cy, 32, 0, Math.PI * 2);
+        ctx.arc(cx, cy, 18, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+    }
+  }
+
+  const tex = new T.CanvasTexture(c);
+  tex.wrapS = tex.wrapT = T.RepeatWrapping;
+  const rw = (w || 5) / 2.5;
+  const rh = (h || 10) / 2.5;
+  tex.repeat.set(Math.max(1, rw), Math.max(1, rh));
+
+  let bumpTex = null;
+  if (bumpCanvas) {
+    bumpTex = new T.CanvasTexture(bumpCanvas);
+    bumpTex.wrapS = bumpTex.wrapT = T.RepeatWrapping;
+    bumpTex.repeat.set(Math.max(1, rw), Math.max(1, rh));
+  }
+
+  const mat = new T.MeshStandardMaterial({
+    map: tex,
+    bumpMap: bumpTex || undefined,
+    bumpScale: bumpScale,
+    roughness: roughness,
+    metalness: metalness,
+    envMapIntensity: 0.6
+  });
+
+  return wpMatCache[cacheKey] = mat;
+}
+
+function buildProceduralItem(g,it){
+ const w=it.w,d=it.d,h=it.h,m=mF(it.fin),mc=mF(it.fin,0.85),K=it.kind;
+ const white=mat('#f4f2ec'),fab=mat('#d4c1a3',false,'fabric');
+
+ if(K==='wardrobe'&&it.doors==='sliding'){
+  B(g,w-0.1,0.25,d-0.2,0,0.125,-0.1,mat('#2c241c'));
+  B(g,w,h-0.25,d-0.2,0,0.25+(h-0.25)/2,-0.1,mc);
+  const n=Math.max(2,Math.round(w/2.5)),pw=w/n;
+  for(let i=0;i<n;i++){
+   B(g,pw+0.06,h-0.35,0.05,-w/2+pw*(i+0.5),0.25+(h-0.25)/2,d/2-(i%2?0.13:0.04),m);
+   B(g,0.035,h*0.7,0.04,-w/2+pw*(i+0.5)+(i%2?pw/2-0.12:-pw/2+0.12),0.25+(h-0.25)/2,d/2-(i%2?0.13:0.04)+0.02,mat('#222224',true));
+  }
+  B(g,w,0.08,0.22,0,h-0.04,d/2-0.11,mat('#44484d',true));
+ }
+ else if(K==='wardrobe')fronts(g,w,h,d,0,m,mc,{hy:3.6,plinth:0.25});
+ else if(K==='loft')fronts(g,w,h,d,0,m,mc,{handle:false,plinth:0});
+ else if(K==='kwall'){
+  fronts(g,w,h,d,0,m,mc,{hy:0.3,plinth:0});
+  // Under-cabinet warm continuous LED strip
+  B(g,w-0.2,0.03,0.16,0,-0.015,0,mat('#ffeed8',0,'glow'));
+ }
+ else if(K==='crockery'){
+  fronts(g,w,3,d,0,m,mc,{hy:2.6,plinth:0.25});B(g,w,0.1,d,0,3.05,0,mc);
+  fronts(g,w,h-3.6,d*0.75,3.6,m,mc,{glass:true,handle:false,plinth:0});
+  B(g,w,0.6,d*0.75,0,3.3,-d*0.125,mc);
+ }
+ else if(K==='dressing'){
+  fronts(g,w,2.5,d,0,m,mc,{sw:2,hy:2.2,plinth:0.25});
+  B(g,w,h-2.5,0.12,0,2.5+(h-2.5)/2,-d/2+0.06,m);
+  B(g,w*0.72,(h-2.5)*0.78,0.03,0,2.5+(h-2.5)/2,-d/2+0.14,mat('',0,'mirror'));
+ }
+ else if(K==='kbase'){
+  B(g,w-0.1,0.25,d-0.3,0,0.125,-0.15,mat('#222222'));
+  const ch=h-0.13-0.25,n=Math.max(1,Math.round(w/2)),mw=w/n;
+  B(g,w,ch,d-0.06,0,0.25+ch/2,-0.03,mc);
+  const hm=mat('#333336',true);
+  for(let i=0;i<n;i++){
+   const xc=-w/2+mw*(i+0.5);
+   if(i%2===0){
+    const dh=ch/3;
+    for(let j=0;j<3;j++){
+     B(g,mw-0.035,dh-0.035,0.06,xc,0.25+dh*(j+0.5),d/2-0.03,m);
+     B(g,Math.min(0.9,mw*0.5),0.035,0.04,xc,0.25+dh*(j+1)-0.18,d/2+0.02,hm);
+    }
+   }else{
+    B(g,mw-0.035,ch-0.035,0.06,xc,0.25+ch/2,d/2-0.03,m);
+    B(g,0.035,0.7,0.04,xc+mw/2-0.15,0.25+ch-0.55,d/2+0.02,hm);
+   }
+  }
+  if(it.granite!==false){
+   B(g,w+0.04,0.13,d+0.08,0,h-0.065,0.04,mat('',0,'granite'));
+   B(g,w+0.04,0.18,0.08,0,h+0.09,-d/2+0.04,mat('',0,'granite'));
+  }
+  if(it.sinkTop){
+   // Stainless steel drop-in sink rim and recessed basin
+   B(g,Math.min(1.8,w-0.4),0.025,1.3,0,h+0.008,0.05,mat('',0,'steel'));
+   B(g,Math.min(1.4,w-0.8),0.012,1.0,0,h+0.012,0.05,mat('#1c2024',true));
+   // Architectural gooseneck mixer faucet
+   C(g,0.05,0.05,0.12,0,h+0.12,-d/2+0.25,mat('',0,'steel'));
+   C(g,0.032,0.032,0.75,0,h+0.52,-d/2+0.25,mat('',0,'steel'));
+   C(g,0.028,0.028,0.36,0,h+0.92,-d/2+0.12,mat('',0,'steel'));
+   B(g,0.02,0.12,0.05,0.07,h+0.25,-d/2+0.25,mat('',0,'steel'));
+  }
+ }
+ else if(K==='bed'){
+  // Sturdy wooden base with recessed plinth
+  B(g,w-0.2,0.25,d-0.2,0,0.125,0,mat('#2c241c'));
+  const isFinWood=(FIN[it.fin]&&FIN[it.fin].type==='wood')||it.fin==='oak'||it.fin==='walnut';
+  const frameMat=isFinWood?m:mat('#34291f',false,'wood');
+  B(g,w,0.75,d,0,0.625,0,frameMat);
+  // Headboard with wood surround and upholstered panel reflecting the selected finish!
+  B(g,w,3.4,0.28,0,1.7,-d/2+0.14,frameMat);
+  const headboardFab=isFinWood?mat(shade(FIN[it.fin].hex,1.18),false,'fabric'):mF(it.fin,1.0,'fabric');
+  B(g,w-0.3,2.8,0.12,0,1.8,-d/2+0.26,headboardFab);
+  // Crisp quilted mattress
+  B(g,w-0.15,0.65,d-0.25,0,1.25,0.05,mat('',0,'bedding'));
+  // Folded duvet runner over bottom half prominently displaying the chosen finish color!
+  const duvetM=isFinWood?mF('navy',0,'fabric'):mF(it.fin,1.0,'fabric');
+  B(g,w-0.1,0.12,d*0.52,0,1.6,d/2-d*0.26-0.05,duvetM);
+  B(g,w-0.12,0.06,0.3,0,1.65,d/2-d*0.52+0.1,mat('#e8dcc8',false,'fabric'));
+  // Pillows
+  const n=w>=4?2:1,pw=(w-0.5)/n-0.15;
+  const accentPillowM=isFinWood?mF('terracotta',0,'fabric'):mF(it.fin,1.18,'fabric');
+  for(let i=0;i<n;i++){
+   const px=-w/2+0.25+i*(pw+0.15)+0.075+pw/2;
+   B(g,pw,0.32,1.05,px,1.72,-d/2+0.9,white);
+   B(g,pw*0.75,0.24,0.75,px,1.82,-d/2+1.2,accentPillowM);
+  }
+ }
+ else if(K==='sofa'){
+  // Elevated legs
+  for(const sx of [-1,1])for(const sz of [-1,1]){
+   C(g,0.06,0.04,0.45,sx*(w/2-0.35),0.225,sz*(d/2-0.35),mat('#2c241c',false,'wood'));
+   C(g,0.045,0.045,0.1,sx*(w/2-0.35),0.05,sz*(d/2-0.35),mat('',0,'brass'));
+  }
+  B(g,w,0.65,d,0,0.775,0,m);
+  // Padded arms
+  for(const s of [-1,1])B(g,0.5,1.7,d,s*(w/2-0.25),1.3,0,mF(it.fin,0.95,'fabric'));
+  // Backrest
+  B(g,w-1.0,1.45,0.65,0,1.85,-d/2+0.35,mF(it.fin,0.92,'fabric'));
+  // Individual seat cushions
+  const nCush=w>=6?3:2,cw=(w-1.0)/nCush;
+  for(let i=0;i<nCush;i++){
+   B(g,cw-0.06,0.38,d-0.85,-w/2+0.5+cw*(i+0.5),1.28,0.28,mF(it.fin,1.08,'fabric'));
+  }
+  // Accent throw pillows on corners
+  B(g,0.85,0.85,0.3,-w/2+0.85,1.8,0.15,mF(it.fin,1.25,'fabric'));
+  B(g,0.85,0.85,0.3,w/2-0.85,1.8,0.15,mF(it.fin,0.82,'fabric'));
+ }
+ else if(K==='murphy'){
+  B(g,w-0.1,0.25,1.2,0,0.125,-d/2+0.6,mat('#2c241c'));
+  B(g,w,h-0.25,1.2,0,0.25+(h-0.25)/2,-d/2+0.6,m);
+  B(g,w-0.2,0.04,0.03,0,h-0.3,-d/2+1.21,mc);
+  const murphyCushM=mF(it.fin,1.0,'fabric');
+  B(g,w-0.2,1.3,d-1.25,0,0.65,-d/2+1.2+(d-1.25)/2,murphyCushM);
+  B(g,w-0.6,0.35,d-1.55,0,1.475,-d/2+1.35+(d-1.55)/2,mF(it.fin,1.08,'fabric'));
+  if(!it.open){
+   for(const s of [-1,1])B(g,(w-0.8)/2-0.1,1.1,0.4,s*((w-0.8)/4+0.05),2.05,-d/2+1.45,mF(it.fin,0.92,'fabric'));
+  }else{
+   const od=it.openD||3.6;
+   B(g,w-0.4,0.22,od-0.1,0,1.72,-d/2+od/2+0.05,m);
+   B(g,w-0.6,0.55,od-0.3,0,2.1,-d/2+od/2+0.1,mat('',0,'bedding'));
+   B(g,1.1,0.3,Math.min(od-0.8,3.6),-w/2+0.85,2.5,-d/2+od/2,white);
+   // Fold-down leg bar
+   B(g,w-0.8,0.08,0.08,0,1.65,od-0.3,mat('#333',true));
+   C(g,0.04,0.04,1.65,-w/2+0.5,0.825,od-0.3,mat('#333',true));
+   C(g,0.04,0.04,1.65,w/2-0.5,0.825,od-0.3,mat('#333',true));
+  }
+ }
+ else if(K==='jhula'){
+  const top=H;
+  // Wooden carved plank
+  B(g,w,0.2,d,0,1.6,0,m);
+  B(g,w,1.25,0.14,0,2.3,-d/2+0.1,m);
+  for(const s of [-1,1])B(g,0.14,0.65,d,s*(w/2-0.07),1.95,0,m);
+  // Tufted cushion and bolsters
+  B(g,w-0.25,0.24,d-0.25,0,1.82,0.04,mF(it.fin,1.0,'fabric'));
+  C(g,0.25,0.25,d-0.3,-w/2+0.35,2.05,0.05,mF(it.fin,1.18,'fabric'));
+  C(g,0.25,0.25,d-0.3,w/2-0.35,2.05,0.05,mF(it.fin,1.18,'fabric'));
+  // Brass chains to ceiling
+  const ch=mat('',0,'brass'),len=top-1.7;
+  for(const a of [-1,1])for(const b of [-1,1]){
+   C(g,0.025,0.025,len,a*(w/2-0.1),1.7+len/2,b*(d/2-0.1),ch);
+   C(g,0.08,0.08,0.08,a*(w/2-0.1),top-0.04,b*(d/2-0.1),ch);
+  }
+  B(g,w+0.2,0.1,0.1,0,top-0.05,-d/2+0.1,ch);
+  B(g,w+0.2,0.1,0.1,0,top-0.05,d/2-0.1,ch);
+ }
+ else if(K==='dining'){
+  B(g,w,0.12,d,0,h-0.06,0,m);
+  // Center fabric runner
+  B(g,w*0.38,0.015,d+0.08,0,h+0.008,0,mat('#e6ded0',false,'fabric'));
+  // Ceramic centerpiece bowl with succulent accent
+  C(g,0.42,0.22,0.16,0,h+0.09,0,mat('#eae5dc'));
+  C(g,0.32,0.32,0.08,0,h+0.18,0,mat('#4e6d46',false,'fabric'));
+  for(const a of [-1,1])for(const b of [-1,1]){
+   C(g,0.09,0.06,h-0.12,a*(w/2-0.25),(h-0.12)/2,b*(d/2-0.25),mc);
+   C(g,0.07,0.07,0.1,a*(w/2-0.25),0.05,b*(d/2-0.25),mat('',0,'brass'));
+  }
+  for(const c of chairSpots(it))chair3(g,c.x,c.z,c.ang,mF(it.fin,0.9),mF(it.fin,1.15,'fabric'));
+ }
+ else if(K==='dining_round'){
+  C(g,w/2,w/2,0.12,0,h-0.06,0,m);
+  C(g,0.25,0.32,h-0.12,0,(h-0.12)/2,0,mc);
+  C(g,0.9,0.9,0.08,0,0.04,0,mc);
+  // Ceramic centerpiece bowl
+  C(g,0.38,0.2,0.14,0,h+0.08,0,mat('#eae5dc'));
+  for(const c of chairSpots(it))chair3(g,c.x,c.z,c.ang,mF(it.fin,0.9),mF(it.fin,1.15,'fabric'));
+ }
+ else if(K==='study'){
+  B(g,w,0.14,d,0,h-0.07,0,m);
+  // Grommet hole
+  C(g,0.08,0.08,0.16,-w/2+0.5,h-0.06,-d/2+0.4,mat('#222',true));
+  // Legs and modesty panel
+  B(g,0.12,h-0.14,d-0.1,-w/2+0.06,(h-0.14)/2,0,mc);
+  B(g,w-1.5,1.2,0.06,-0.75+0.06,h-0.8,-d/2+0.06,mc);
+  // 3-drawer pedestal unit
+  fronts(g,1.4,h-0.15,d-0.1,0,m,mc,{sw:1.4,hy:h-0.6,plinth:0.2});
+  g.children.slice(-3).forEach(c=>c.position.x+=w/2-0.7);
+  // Open MacBook / Laptop
+  const lapG=new T.Group();lapG.position.set(-0.2,h+0.01,-0.1);
+  B(lapG,1.1,0.02,0.75,0,0.01,0,mat('#c5cbd0',true));
+  B(lapG,0.9,0.01,0.4,0,0.022,-0.1,mat('#1a1a1c'));
+  B(lapG,0.4,0.005,0.22,0,0.022,0.2,mat('#a8b0b8',true));
+  const lapScr=new T.Group();lapScr.position.set(0,0.02,-0.37);lapScr.rotation.x=-0.22;
+  B(lapScr,1.1,0.72,0.02,0,0.36,0,mat('#202226',true));
+  B(lapScr,1.02,0.64,0.008,0,0.36,0.012,mat('#72b8e8',0,'glow'));
+  lapG.add(lapScr);
+  g.add(lapG);
+  // Stack of designer books
+  B(g,0.75,0.06,0.55,-w/2+1.0,h+0.03,0.1,mat('#c0392b',false,'fabric'));
+  B(g,0.7,0.05,0.5,-w/2+1.02,h+0.085,0.12,mat('#2c3e50',false,'fabric'));
+  // Ceramic coffee mug
+  C(g,0.12,0.1,0.28,-w/2+1.45,h+0.14,-d/2+0.5,mat('#f5f4f0'));
+ }
+ else if(K==='chair'){chair3(g,0,0,Math.PI,m,mF(it.fin,1.1,'fabric'));}
+ else if(K==='puja'){
+  fronts(g,w,2.3,d,0,m,mc,{sw:1.25,hy:2.0,plinth:0.25});
+  B(g,w,0.1,d,0,2.35,0,mc);
+  B(g,w,2.9,0.08,0,3.85,-d/2+0.04,mc);
+  for(const s of [-1,1])B(g,0.1,2.9,d,s*(w/2-0.05),3.85,0,m);
+  // Warm golden sanctum glow
+  B(g,w*0.55,1.4,0.02,0,3.7,-d/2+0.1,mat('#ffc766',0,'glow'));
+  C(g,0.08,0.04,0.22,0,4.6,-d/2+0.4,mat('',0,'brass'));
+  const tp=h-5.3;
+  B(g,w+0.1,tp,d+0.05,0,5.3+tp/2,0,m);
+  const cone=new T.Mesh(new T.ConeGeometry(w*0.28,0.65,4),m);
+  cone.position.set(0,h+0.32,0);cone.rotation.y=Math.PI/4;g.add(cone);
+  C(g,0.04,0.04,0.18,0,h+0.7,0,mat('',0,'brass'));
+ }
+ else if(K==='shelf'){B(g,w,h,d,0,h/2,0,m);}
+ else if(K==='tv'){
+  B(g,w,h,0.08,0,h/2,-d/2+0.04,mat('#141416'));
+  B(g,w-0.08,h-0.08,0.01,0,h/2,-d/2+0.085,mat('#1d222a'));
+  // Subtle warm wall back-halo (bias lighting)
+  B(g,w*1.06,h*1.06,0.01,0,h/2,-d/2+0.005,mat('#eedac5',0,'glow'));
+  // Tiny power LED
+  C(g,0.015,0.015,0.02,0,0.04,-d/2+0.085,mat('#38ef7d',0,'glow'));
+  // Slim soundbar beneath
+  B(g,w*0.78,0.22,0.24,0,-0.28,-d/2+0.12,mat('#202226',true));
+ }
+ else if(K==='wallpaper'){
+  const mm=getWallpaperMaterial(it, w, h);
+  B(g, w, h, 0.04, 0, h/2, -d/2 + 0.02, mm);
+
+  // Architectural framing trim in selected accent metal (brass, rose gold, black, chrome)
+  const accentHex = (it.wpAccent === 'rosegold') ? '#b76e79' : ((it.wpAccent === 'black') ? '#141416' : ((it.wpAccent === 'chrome') ? '#c5cbd0' : '#d4af37'));
+  const frameMat = new T.MeshStandardMaterial({ color: accentHex, roughness: 0.2, metalness: 0.9 });
+  // Top & bottom trim
+  B(g, w + 0.04, 0.03, 0.05, 0, h - 0.015, -d/2 + 0.025, frameMat);
+  B(g, w + 0.04, 0.03, 0.05, 0, 0.015, -d/2 + 0.025, frameMat);
+  // Left & right vertical trim
+  B(g, 0.03, h, 0.05, -w/2 - 0.005, h/2, -d/2 + 0.025, frameMat);
+  B(g, 0.03, h, 0.05, w/2 + 0.005, h/2, -d/2 + 0.025, frameMat);
+ }
+ else if(K==='fridge'){
+  B(g,w,h,d,0,h/2,0,m);
+  B(g,w+0.01,0.03,0.02,0,h*0.68,d/2,mat('#1e2022',true));
+  for(const y of [h*0.84,h*0.4])B(g,0.05,0.9,0.07,w/2-0.22,y,d/2+0.04,mat('#111315',true));
+ }
+ else if(K==='wm'){
+  B(g,w,h,d,0,h/2,0,m);
+  const r=new T.Mesh(new T.CylinderGeometry(0.62,0.62,0.06,32),mat('#242629',true));
+  r.rotation.x=Math.PI/2;r.position.set(0,h*0.45,d/2+0.02);g.add(r);
+  const glass=new T.Mesh(new T.CylinderGeometry(0.48,0.48,0.07,24),mat('',0,'glass'));
+  glass.rotation.x=Math.PI/2;glass.position.set(0,h*0.45,d/2+0.025);g.add(glass);
+  B(g,w-0.1,0.32,0.03,0,h-0.24,d/2+0.015,mc);
+  B(g,w*0.35,0.14,0.035,w*0.2,h-0.22,d/2+0.02,mat('#0c0d0f'));
+  C(g,0.07,0.07,0.045,-w*0.2,h-0.22,d/2+0.025,mat('',0,'steel'));
+ }
+ else if(K==='openshelf'){
+  for(const sx of [-1,1])B(g,0.06,h,d,sx*(w/2-0.03),h/2,0,m);
+  for(const y of [0.03,h/2,h-0.03])B(g,w,0.06,d,0,y,0,m);
+  B(g,w,h,0.03,0,h/2,-d/2+0.015,mF(it.fin,0.9));
+ }
+ else if(K==='micro'){
+  B(g,w,h,d,0,h/2,0,m);
+  B(g,w*0.62,h*0.7,0.02,-w*0.12,h/2,d/2+0.01,mat('#111315'));
+  B(g,w*0.2,h*0.7,0.02,w*0.36,h/2,d/2+0.01,mc);
+ }
+ else if(K==='mixer'){
+  B(g,w,h*0.35,d,0,h*0.175,0,m);
+  C(g,w*0.32,w*0.26,h*0.62,0,h*0.35+h*0.31,0,mat('','','glass'));
+ }
+ else if(K==='cooker'){
+  C(g,w/2,w/2,h*0.8,0,h*0.4,0,m);
+  C(g,w*0.42,w/2,h*0.2,0,h*0.9,0,mF(it.fin,0.85));
+ }
+ else if(K==='purifier'){
+  B(g,w,h,d,0,h/2,0,m);
+  B(g,w*0.78,h*0.48,0.02,0,h*0.48,d/2+0.01,mc);
+  B(g,w*0.5,0.18,0.025,0,h*0.82,d/2+0.015,mat('#3da4db',0,'glow'));
+  C(g,0.025,0.025,0.14,0,h*0.18,d/2+0.06,mat('',0,'steel'));
+ }
+ else if(K==='fan'){
+  const bg=makeCeilingFan(g,0,h,0,it.fin?(FIN[it.fin]?FIN[it.fin].hex:it.fin):'#2c251f');
+  fanBlades.push(bg);
+ }
+ else if(K==='chimney'){
+  B(g,w,0.4,d,0,0.2,0,mat('',0,'glass'));
+  B(g,1.0,h-0.4,0.9,0,0.4+(h-0.4)/2,-d/2+0.45,mat('',0,'steel'));
+  B(g,w-0.2,0.02,d-0.2,0,0.01,0,mat('#555',true));
+ }
+ else if(K==='hob'){
+  B(g,w,h,d,0,h/2,0,mat('#141416'));
+  B(g,w-0.06,0.02,d-0.06,0,h+0.01,0,mat('#1b1e22',true));
+  for(const s of [-1,1]){
+   C(g,0.34,0.34,0.035,s*w/4,h+0.02,0,mat('#242629',true));
+   C(g,0.12,0.12,0.045,s*w/4,h+0.03,0,mat('',0,'brass'));
+   // Cast iron trivet burner prongs
+   B(g,0.46,0.02,0.05,s*w/4,h+0.04,0,mat('#141618',true));
+   B(g,0.05,0.02,0.46,s*w/4,h+0.04,0,mat('#141618',true));
+  }
+  // Front burner control knobs
+  for(let k=0;k<3;k++)C(g,0.03,0.03,0.025,-w/4+k*(w/4),h+0.02,d/2-0.12,mat('',0,'steel'));
+ }
+ else if(K==='sink'){
+  B(g,w,0.04,d,0,0.02,0,mat('',0,'steel'));
+  C(g,0.035,0.035,0.9,0,0.45,-d/2+0.12,mat('',0,'steel'));
+ }
+ else if(K==='rug'){
+  B(g,w,h,d,0,h/2,0,m);
+  B(g,w-0.4,h+0.005,d-0.4,0,h/2,0,mF(it.fin,1.15,'fabric'));
+ }
+ else if(K==='cylinder'){
+  C(g,w/2,w/2,h-0.35,0,(h-0.35)/2,0,mat('#c0392b'));
+  C(g,0.22,0.3,0.35,0,h-0.175,0,mat('#c0392b'));
+ }
+ else if(K==='plant'){
+  C(g,0.42,0.32,1.1,0,0.55,0,m);
+  const s=new T.Mesh(new T.SphereGeometry(0.75,16,12),mat('#3b6e32',false,'fabric'));
+  s.position.set(0,1.9,0);g.add(s);
+ }
+ else B(g,w,h,d,0,h/2,0,m);
+}
+
+/* ==========================================================================
+   Option B: 3D glTF / GLB Model Loading Engine & Asset Pipeline
+   ========================================================================== */
+const MODEL_CACHE = new Map();
+let gltfLoader = null;
+let modelsLoading = false;
+let modelsLoaded = false;
+
+function initModelLoader() {
+  if (typeof THREE === 'undefined' || !THREE.GLTFLoader) {
+    console.warn('[Option B] Three.js GLTFLoader is not available');
+    return;
+  }
+  try {
+    gltfLoader = new THREE.GLTFLoader();
+    if (THREE.DRACOLoader) {
+      const draco = new THREE.DRACOLoader();
+      draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.3/');
+      gltfLoader.setDRACOLoader(draco);
+    }
+  } catch (err) {
+    console.warn('[Option B] Could not initialize DRACOLoader:', err);
+  }
+
+  if (!window.EMBEDDED_MODELS) {
+    console.warn('[Option B] window.EMBEDDED_MODELS bundle not found');
+    return;
+  }
+
+  const entries = Object.entries(window.EMBEDDED_MODELS);
+  if (!entries.length) return;
+
+  modelsLoading = true;
+  let loadedCount = 0;
+  const total = entries.length;
+
+  entries.forEach(([key, uri]) => {
+    try {
+      gltfLoader.load(uri, gltf => {
+        MODEL_CACHE.set(key, gltf.scene);
+        loadedCount++;
+        if (loadedCount === total) {
+          modelsLoaded = true;
+          modelsLoading = false;
+          console.log(`[Option B] All ${total} 3D glTF models loaded and cached successfully!`);
+          if (state.use3dModels !== false) {
+            buildItems();
+            render3D();
+          }
+        }
+      }, undefined, err => {
+        console.warn(`[Option B] Failed to load model "${key}":`, err);
+        loadedCount++;
+        if (loadedCount === total) {
+          modelsLoaded = true;
+          modelsLoading = false;
+          if (state.use3dModels !== false) {
+            buildItems();
+            render3D();
+          }
+        }
+      });
+    } catch (e) {
+      console.warn(`[Option B] Error parsing model "${key}":`, e);
+    }
+  });
+}
+
+function getModelKey(it) {
+  const K = it.kind;
+  const lbl = (it.label || '').toLowerCase();
+  
+  if (K === 'bed') {
+    return (it.w < 4.2) ? 'bed_single' : 'bed';
+  }
+  if (lbl.includes('side table') || (K === 'wardrobe' && it.w <= 2.2 && it.d <= 2.2 && it.h <= 2.5)) {
+    return 'sidetable';
+  }
+  if (K === 'sofa') return 'sofa';
+  if (K === 'dining' || K === 'dining_round') return 'dining';
+  if (K === 'chair') return 'chair';
+  if (K === 'study' || K === 'desk') return 'study';
+  if (K === 'tv') return 'tv';
+  if (K === 'fridge') return 'fridge';
+  if (K === 'sink') return 'sink';
+  if (K === 'wc') return 'wc';
+  if (K === 'plant') return 'plant';
+  if (K === 'shelf' || K === 'bookshelf' || K === 'openshelf') return 'shelf';
+  if (K === 'micro' || K === 'oven') return 'oven';
+  if (K === 'wardrobe' && it.doors !== 'sliding' && it.w <= 4.5) return 'wardrobe';
+  return null;
+}
+
+function hasModelFor(it) {
+  const key = getModelKey(it);
+  return !!(key && MODEL_CACHE.has(key));
+}
+
+function fitModelToDimensions(modelScene, targetW, targetD, targetH, rotY = 0) {
+  const pivot = new THREE.Group();
+  if (rotY) modelScene.rotation.y = rotY;
+  pivot.add(modelScene);
+  pivot.updateMatrixWorld(true);
+
+  const box = new THREE.Box3().setFromObject(pivot);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+
+  pivot.position.set(-center.x, -box.min.y, -center.z);
+
+  const wrapper = new THREE.Group();
+  wrapper.add(pivot);
+
+  const sx = targetW / (size.x || 1);
+  const sy = targetH / (size.y || 1);
+  const sz = targetD / (size.z || 1);
+  wrapper.scale.set(sx, sy, sz);
+
+  return wrapper;
+}
+
+function applyModelFinish(modelGroup, it) {
+  const finKey = it.fin || 'oak';
+  const isHex = typeof finKey === 'string' && finKey.startsWith('#');
+  const finInfo = FIN[finKey] || (isHex ? { hex: finKey, n: 'Custom Color', type: 'solid' } : (FIN.oak || { hex: '#c8a474', type: 'wood' }));
+  const isWood = finInfo.type === 'wood' || finInfo.wood;
+  const isFabric = finInfo.type === 'fabric' || finInfo.fabric;
+  const isMetal = finInfo.type === 'metal' || finInfo.metal;
+
+  const furnMat = isFabric ? mF(finKey, 1.0, 'fabric') : (isWood ? mF(finKey, 1.0, 'wood') : mF(finKey, 1.0));
+  const accentWoodMat = mF(isWood ? finKey : 'walnut', 0.9, 'wood');
+
+  modelGroup.traverse(child => {
+    if (!child.isMesh) return;
+    child.castShadow = true;
+    child.receiveShadow = true;
+
+    const matName = (child.material && child.material.name ? child.material.name : '').toLowerCase();
+    const meshName = (child.name || '').toLowerCase();
+    const allNames = meshName + ' ' + matName;
+
+    // 1. Screens (TV screens, computer monitors, laptop displays)
+    if (allNames.includes('screen') || allNames.includes('tvscreen') || matName === 'tvscreen') {
+      child.material = mat('#121316', true);
+      return;
+    }
+
+    // 2. Glass (doors, shelves, coffee table tops, window panes)
+    if (allNames.includes('glass')) {
+      child.material = mat('', 0, 'glass');
+      return;
+    }
+
+    // 3. Mirrors
+    if (allNames.includes('mirror')) {
+      child.material = mat('', 0, 'mirror');
+      return;
+    }
+
+    // 4. White sanitaryware (WC, washbasin)
+    if (it.kind === 'wc') {
+      child.material = mat('#faf9f6', false);
+      return;
+    }
+    if (it.kind === 'sink') {
+      if (allNames.includes('basin') || allNames.includes('sink')) {
+        child.material = mat('#f7f7f5', false);
+      } else {
+        child.material = mat('', 0, 'steel');
+      }
+      return;
+    }
+
+    // 5. Plants (foliage stays lush green; pot takes the selected finish/color)
+    if (it.kind === 'plant') {
+      if (allNames.includes('pot') || allNames.includes('base') || allNames.includes('soil')) {
+        child.material = mat(finInfo.hex || '#d4b499', false);
+      } else {
+        child.material = mat('#2d5a27', false, 'fabric');
+      }
+      return;
+    }
+
+    // 6. Bedding elements (mattress, pillows, sheets) remain crisp hotel linen
+    if (allNames.includes('mattress') || allNames.includes('sheet') || allNames.includes('bedding') || allNames.includes('quilt') || allNames.includes('duvet')) {
+      child.material = mat('#f7f5ee', false, 'fabric');
+      return;
+    }
+    if (allNames.includes('pillow') || allNames.includes('cushion')) {
+      child.material = mat(allNames.includes('accent') ? (isFabric ? finInfo.hex : '#dfb8a6') : '#faf8f4', false, 'fabric');
+      return;
+    }
+
+    // 7. Kitchen appliances
+    if (it.kind === 'fridge') {
+      child.material = mat(finInfo.hex || '#c5cbd0', isMetal);
+      return;
+    }
+    if (it.kind === 'micro' || it.kind === 'oven') {
+      if (allNames.includes('window') || allNames.includes('screen') || allNames.includes('glass')) {
+        child.material = mat('#15171a', true);
+      } else {
+        child.material = mat(finInfo.hex || '#242629', true);
+      }
+      return;
+    }
+    if (it.kind === 'tv') {
+      child.material = mat('#1a1c1e', true);
+      return;
+    }
+
+    // 8. Dining table & chairs
+    if (it.kind === 'dining' || it.kind === 'dining_round') {
+      child.material = furnMat;
+      return;
+    }
+
+    // 9. Study desk / Study table
+    if (it.kind === 'study' || it.kind === 'desk') {
+      child.material = furnMat;
+      return;
+    }
+
+    // 10. Open shelves, Floating shelves, Bookshelves
+    if (it.kind === 'shelf' || it.kind === 'openshelf' || it.kind === 'bookshelf') {
+      child.material = furnMat;
+      return;
+    }
+
+    // 11. Wardrobes, Side tables, Lofts, Kitchen cabinets
+    if (it.kind === 'wardrobe' || it.kind === 'sidetable' || it.kind === 'loft' || it.kind === 'kwall' || it.kind === 'kbase') {
+      child.material = furnMat;
+      return;
+    }
+
+    // 12. Sofa & Chairs
+    if (it.kind === 'sofa' || it.kind === 'chair') {
+      if (allNames.includes('leg') || allNames.includes('frame')) {
+        child.material = isWood ? accentWoodMat : mat('#1c1e20', true);
+      } else {
+        child.material = furnMat;
+      }
+      return;
+    }
+
+    // 13. Bed frame / headboard
+    if (it.kind === 'bed') {
+      child.material = furnMat;
+      return;
+    }
+
+    // 14. Universal fallback for any other furniture mesh
+    child.material = furnMat;
+  });
+}
+
+function instantiateModel(it) {
+  const key = getModelKey(it);
+  if (!key || !MODEL_CACHE.has(key)) return null;
+
+  const baseScene = MODEL_CACHE.get(key);
+  const modelClone = baseScene.clone(true);
+
+  modelClone.traverse(c => {
+    if (c.isMesh && c.material) {
+      c.material = c.material.clone();
+      c.castShadow = true;
+      c.receiveShadow = true;
+    }
+  });
+
+  applyModelFinish(modelClone, it);
+
+  let rotY = 0;
+  if (key === 'bed') {
+    rotY = -Math.PI / 2;
+  } else if (key === 'wardrobe') {
+    // Wardrobe model front (doors) faces +Z by default; rotate π so doors face -Z (into room, away from wall)
+    rotY = Math.PI;
+  }
+
+  const wrapper = fitModelToDimensions(modelClone, it.w, it.d, it.h, rotY);
+  return wrapper;
+}
+
+function addModelAccessories(g, it) {
+  const w = it.w, d = it.d, h = it.h, K = it.kind;
+  
+  if (K === 'study' || K === 'desk') {
+    const lapG = new T.Group();
+    lapG.position.set(-0.2, h + 0.01, -0.1);
+    B(lapG, 1.1, 0.02, 0.75, 0, 0.01, 0, mat('#c5cbd0', true));
+    B(lapG, 0.9, 0.01, 0.4, 0, 0.022, -0.1, mat('#1a1a1c'));
+    B(lapG, 0.4, 0.005, 0.22, 0, 0.022, 0.2, mat('#a8b0b8', true));
+    const lapScr = new T.Group();
+    lapScr.position.set(0, 0.02, -0.37);
+    lapScr.rotation.x = -0.22;
+    B(lapScr, 1.1, 0.72, 0.02, 0, 0.36, 0, mat('#202226', true));
+    B(lapScr, 1.02, 0.64, 0.008, 0, 0.36, 0.012, mat('#72b8e8', 0, 'glow'));
+    lapG.add(lapScr);
+    g.add(lapG);
+
+    B(g, 0.75, 0.06, 0.55, -w/2 + 1.0, h + 0.03, 0.1, mat('#c0392b', false, 'fabric'));
+    B(g, 0.7, 0.05, 0.5, -w/2 + 1.02, h + 0.085, 0.12, mat('#2c3e50', false, 'fabric'));
+    C(g, 0.12, 0.1, 0.28, -w/2 + 1.45, h + 0.14, -d/2 + 0.5, mat('#f5f4f0'));
+  }
+  else if (K === 'dining' || K === 'dining_round') {
+    C(g, 0.42, 0.22, 0.16, 0, h + 0.09, 0, mat('#eae5dc'));
+    C(g, 0.32, 0.32, 0.08, 0, h + 0.18, 0, mat('#4e6d46', false, 'fabric'));
+    for (const c of chairSpots(it)) {
+      if (MODEL_CACHE.has('chair')) {
+        const chBase = MODEL_CACHE.get('chair').clone(true);
+        chBase.traverse(ch => { if (ch.isMesh && ch.material) ch.material = ch.material.clone(); });
+        applyModelFinish(chBase, { kind: 'chair', fin: it.fin });
+        const chWrap = fitModelToDimensions(chBase, 1.4, 1.4, 2.8, 0);
+        chWrap.position.set(c.x, 0, c.z);
+        chWrap.rotation.y = c.ang + Math.PI;
+        g.add(chWrap);
+      } else {
+        chair3(g, c.x, c.z, c.ang, mF(it.fin, 0.9), mF(it.fin, 1.15, 'fabric'));
+      }
+    }
+  }
+  else if (K === 'tv') {
+    B(g, w * 1.06, h * 1.06, 0.01, 0, h / 2, -d/2 + 0.005, mat('#eedac5', 0, 'glow'));
+    C(g, 0.015, 0.015, 0.02, 0, 0.04, -d/2 + 0.085, mat('#38ef7d', 0, 'glow'));
+  }
+  else if (K === 'sink') {
+    C(g, 0.05, 0.05, 0.12, 0, h + 0.12, -d/2 + 0.25, mat('', 0, 'steel'));
+    C(g, 0.032, 0.032, 0.75, 0, h + 0.52, -d/2 + 0.25, mat('', 0, 'steel'));
+    C(g, 0.028, 0.028, 0.36, 0, h + 0.92, -d/2 + 0.12, mat('', 0, 'steel'));
+  }
+}
+
+function buildItem(it) {
+  const g = new T.Group();
+  g.userData.id = it.id;
+  const f = fp(it);
+  g.position.set(f.x + f.w / 2, it.elev, f.y + f.h / 2);
+  g.rotation.y = -it.rot * Math.PI / 180;
+  const w = it.w, d = it.d, h = it.h, K = it.kind;
+
+  if ((it.elev || 0) === 0 && K !== 'fan' && K !== 'wallpaper' && K !== 'loft' && K !== 'kwall' && K !== 'shelf' && K !== 'chimney') {
+    addContactShadow(g, w, d, 0.52);
+  }
+
+  // 1. Try 3D glTF Model if enabled
+  if (state.use3dModels !== false && hasModelFor(it)) {
+    const modelGroup = instantiateModel(it);
+    if (modelGroup) {
+      g.add(modelGroup);
+      addModelAccessories(g, it);
+      return g;
+    }
+  }
+
+  // 2. Procedural Option A Fallback
+  buildProceduralItem(g, it);
+  return g;
+}
+
+function toggleModelMode() {
+  state.use3dModels = !state.use3dModels;
+  updateModelModeUI();
+  buildItems();
+  save();
+  if (renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
+  render3D();
+}
+
+function updateModelModeUI() {
+  const isOn = state.use3dModels !== false;
+  const b1 = $('#btnModelMode');
+  if (b1) {
+    b1.className = isOn ? 'walk-btn on' : 'walk-btn';
+    b1.textContent = isOn ? '📦 3D Models: ON' : '📐 Models: Procedural';
+    b1.title = isOn ? 'Switch to procedural geometric primitives' : 'Switch to photorealistic 3D glTF models';
+  }
+  const b2 = $('#walkModelToggle');
+  if (b2) {
+    b2.className = isOn ? 'walk-chip on' : 'walk-chip';
+    b2.textContent = isOn ? '📦 3D Models: ON' : '📐 Procedural';
+    b2.title = isOn ? 'Switch to procedural geometric primitives' : 'Switch to photorealistic 3D glTF models';
+  }
+  renderInspector();
+}
+
+function disposeGroup(g){
+ if(!g)return;
+ g.traverse(o=>{if(o.geometry)o.geometry.dispose();if(o.material&&o.material.map&&o.material.map.dispose)o.material.map.dispose();});
+ while(g.children.length)g.remove(g.children[0]);
+}
+
+/* ==========================================================================
+   Asian Paints Royale Luxury Emulsion: Smooth Touch Texture & Color Engine
+   ========================================================================== */
+const WALL_COLORS={
+ // Royale Creams & Whisper Whites
+ cream:{n:'Royale Warm Cream',hex:'#ede5d6',skirt:'#dcd3c1',group:'Creams & Whites'},
+ ivory:{n:'Royale Classic Ivory',hex:'#f3ebe0',skirt:'#e0d6c5',group:'Creams & Whites'},
+ champagne:{n:'Royale Champagne Silk',hex:'#f1e3ce',skirt:'#dbcbaf',group:'Creams & Whites'},
+ chiffon:{n:'Royale French Chiffon',hex:'#e8dccb',skirt:'#cfc1ad',group:'Creams & Whites'},
+ white:{n:'Royale Whisper White',hex:'#f6f4ee',skirt:'#dedbd2',group:'Creams & Whites'},
+
+ // Royale Modern Greiges & Cashmeres
+ cashmere:{n:'Royale Cashmere Veil',hex:'#ded6c8',skirt:'#c7bdad',group:'Greiges & Cashmeres'},
+ warmgrey:{n:'Royale Warm Greige',hex:'#d6cebf',skirt:'#bfb5a3',group:'Greiges & Cashmeres'},
+ taupe:{n:'Royale Velvet Taupe',hex:'#c8bcae',skirt:'#ab9f90',group:'Greiges & Cashmeres'},
+ pearlash:{n:'Royale Pearl Ash',hex:'#dfdbd4',skirt:'#c5c0b8',group:'Greiges & Cashmeres'},
+
+ // Royale Earthy & Botanical Undertones
+ sage:{n:'Royale Sage Whisper',hex:'#cfd8cb',skirt:'#b2bea8',group:'Earthy & Botanicals'},
+ eucalyptus:{n:'Royale Eucalyptus Soft',hex:'#c2cdbf',skirt:'#a5b3a1',group:'Earthy & Botanicals'},
+ olive:{n:'Royale Dusty Olive',hex:'#b4c0ad',skirt:'#94a28c',group:'Earthy & Botanicals'},
+ terracotta:{n:'Royale Terracotta Silk',hex:'#d7ab96',skirt:'#ba8d77',group:'Earthy & Botanicals'},
+ ochre:{n:'Royale Amber Ochre',hex:'#ddc69d',skirt:'#c2a87b',group:'Earthy & Botanicals'},
+
+ // Royale Rich Luxury Accents
+ teal:{n:'Royale Dusty Teal',hex:'#789793',skirt:'#577571',group:'Rich Accents'},
+ aegean:{n:'Royale Royal Aegean',hex:'#33536f',skirt:'#203950',group:'Rich Accents'},
+ navy:{n:'Royale Midnight Velvet',hex:'#253040',skirt:'#161e2a',group:'Rich Accents'},
+ charcoal:{n:'Royale Charcoal Satin',hex:'#32363c',skirt:'#1e2126',group:'Rich Accents'}
+};
+
+function getWallColorInfo(keyOrHex){
+ if(WALL_COLORS[keyOrHex])return WALL_COLORS[keyOrHex];
+ if(typeof keyOrHex==='string'&&keyOrHex.startsWith('#')){
+  return {n:'Custom Royale ('+keyOrHex.toUpperCase()+')',hex:keyOrHex,skirt:shade(keyOrHex,0.85),group:'Custom Royale'};
+ }
+ return WALL_COLORS.cream;
+}
+
+function getWallColorForRoom(roomName){
+ if(roomName && state.roomWallColors && state.roomWallColors[roomName]){
+  return getWallColorInfo(state.roomWallColors[roomName]);
+ }
+ return getWallColorInfo(state.wallColor);
+}
+
+let royaleTexCache={};
+let royaleBumpMap=null;
+
+function getRoyalePaintBump(){
+ if(royaleBumpMap)return royaleBumpMap;
+ const c=document.createElement('canvas');c.width=c.height=512;
+ const ctx=c.getContext('2d');
+ ctx.fillStyle='#808080';ctx.fillRect(0,0,512,512);
+
+ // Micro-stipple airless roller spray dispersion
+ const imgData=ctx.getImageData(0,0,512,512);
+ const data=imgData.data;
+ for(let i=0;i<data.length;i+=4){
+  const n=(Math.random()-0.5)*26;
+  const v=Math.max(0,Math.min(255,128+n));
+  data[i]=v;data[i+1]=v;data[i+2]=v;
+ }
+ ctx.putImageData(imgData,0,0);
+
+ royaleBumpMap=new T.CanvasTexture(c);
+ royaleBumpMap.wrapS=royaleBumpMap.wrapT=T.RepeatWrapping;
+ royaleBumpMap.repeat.set(8,8);
+ return royaleBumpMap;
+}
+
+function getRoyalePaintTex(hex){
+ if(royaleTexCache[hex])return royaleTexCache[hex];
+ const c=document.createElement('canvas');c.width=c.height=512;
+ const ctx=c.getContext('2d');
+ ctx.fillStyle=hex;ctx.fillRect(0,0,512,512);
+
+ // Velvety micro-dispersion grain
+ const imgData=ctx.getImageData(0,0,512,512);
+ const data=imgData.data;
+ for(let i=0;i<data.length;i+=4){
+  const delta=(Math.random()-0.5)*12;
+  data[i]=Math.max(0,Math.min(255,data[i]+delta));
+  data[i+1]=Math.max(0,Math.min(255,data[i+1]+delta));
+  data[i+2]=Math.max(0,Math.min(255,data[i+2]+delta));
+ }
+ ctx.putImageData(imgData,0,0);
+
+ const t=new T.CanvasTexture(c);
+ t.wrapS=t.wrapT=T.RepeatWrapping;
+ t.repeat.set(6,6);
+ return royaleTexCache[hex]=t;
+}
+
+function getRoyalePaintMaterial(hex){
+ const map=getRoyalePaintTex(hex);
+ const bump=getRoyalePaintBump();
+ return new T.MeshStandardMaterial({
+  color:hex,
+  map:map,
+  bumpMap:bump,
+  bumpScale:0.0035, // Ultra-fine eggshell stipple
+  roughness:0.58,   // Velvet low-sheen eggshell
+  metalness:0.01,
+  envMapIntensity:0.45
+ });
+}
+
+function buildStatic(){
+ disposeGroup(gStatic);
+ const tex=initProceduralTextures();
+ for(const r of ROOMS){
+  const isWet=r.t==='wet',isOut=r.t==='out';
+  const t=(isWet?tex.wet:(isOut?tex.out:tex.in)).clone();
+  t.needsUpdate=true;
+  const tw=r.w/(isWet||isOut?1.5:4.0), td=r.d/(isWet||isOut?1.5:4.0);
+  t.repeat.set(tw,td);
+  const ox=((r.x%4.0)+4.0)%4.0/4.0;
+  const oy=((-(r.y+r.d)%4.0)+4.0)%4.0/4.0;
+  t.offset.set(ox,oy);
+  const matParams={
+   map:t,
+   roughness:isWet?0.72:(isOut?0.82:0.08),
+   metalness:isWet?0.06:0.03,
+   envMapIntensity:isWet?0.6:(isOut?0.4:2.2)
+  };
+  if(!isWet&&!isOut){
+   const tr=tex.inRough.clone();tr.needsUpdate=true;tr.repeat.set(tw,td);tr.offset.set(ox,oy);
+   const tb=tex.inBump.clone();tb.needsUpdate=true;tb.repeat.set(tw,td);tb.offset.set(ox,oy);
+   matParams.roughnessMap=tr;
+   matParams.bumpMap=tb;
+   matParams.bumpScale=0.032;
+  }
+  const me=new T.Mesh(new T.PlaneGeometry(r.w,r.d),new T.MeshStandardMaterial(matParams));
+  me.rotation.x=-Math.PI/2;me.position.set(r.x+r.w/2,0,r.y+r.d/2);
+  me.receiveShadow=true;
+  gStatic.add(me);
+ }
+
+ // Architectural potted monstera plant in corner
+ const plG=new T.Group();plG.position.set(1.6,0,27.2);
+ C(plG,0.48,0.4,1.3,0,0.65,0,mat('#e8e5df'));
+ C(plG,0.5,0.5,0.06,0,1.28,0,mat('',0,'brass'));
+ C(plG,0.44,0.44,0.08,0,1.26,0,mat('#2c241c'));
+ for(let lp=0;lp<7;lp++){
+  const ang=(lp*Math.PI*2)/7;
+  const leaf=new T.Mesh(new T.SphereGeometry(0.38,8,6),mat('#2e5628',false,'fabric'));
+  leaf.scale.set(0.8,0.18,1.4);
+  leaf.rotation.set(0.4*Math.sin(ang),ang,0.4*Math.cos(ang));
+  leaf.position.set(Math.sin(ang)*0.38,1.45+lp*0.1,Math.cos(ang)*0.38);
+  leaf.castShadow=true;plG.add(leaf);
+ }
+ gStatic.add(plG);
+
+ // Concrete subfloor base
+ const base=new T.Mesh(new T.BoxGeometry(25.5,0.3,40),mat('#7d776f'));
+ base.position.set(12.25,-0.16,19.5);
+ base.receiveShadow=true;
+ gStatic.add(base);
+
+ // ── RCC Ceiling beam between Living and Dining area ──
+ // Placed at z=27.5 (where the Jhula is located, between dining z=23.5 and living z=31.3),
+ // spanning the full Hall width (x 0 → 10.33). Drop 1.15ft from ceiling, 7 inches deep.
+ (function(){
+  const beamW=10.35, beamH=1.15, beamD=0.58;
+  const beamX=beamW/2, beamY=H-beamH/2, beamZ=27.5;
+  const wc=getWallColorForRoom('Hall');
+  const beamMat=getRoyalePaintMaterial(wc.hex);
+  const beam=new T.Mesh(new T.BoxGeometry(beamW,beamH,beamD),beamMat);
+  beam.position.set(beamX,beamY,beamZ);
+  beam.castShadow=true;
+  beam.receiveShadow=true;
+  rccBeamMesh=beam;
+  gStatic.add(beam);
+
+  // Thin bottom reveal strip (architectural shadow line)
+  const revealMat=new T.MeshStandardMaterial({color:'#4a4238',roughness:0.9,metalness:0.02});
+  const reveal=new T.Mesh(new T.BoxGeometry(beamW,0.035,beamD+0.02),revealMat);
+  reveal.position.set(beamX,H-beamH-0.017,beamZ);
+  gStatic.add(reveal);
+
+  // Structural anchor eye-bolts on beam underside for the Jhula at x=6.5
+  const anchorMat=new T.MeshStandardMaterial({color:'#d4af37',roughness:0.18,metalness:0.92});
+  for(const ax of [5.6, 7.4]){
+   const ring=new T.Mesh(new T.TorusGeometry(0.08,0.02,8,16),anchorMat);
+   ring.rotation.x=Math.PI/2;
+   ring.position.set(ax,H-beamH-0.06,beamZ);
+   gStatic.add(ring);
+   const mountPlate=new T.Mesh(new T.CylinderGeometry(0.12,0.12,0.025,12),anchorMat);
+   mountPlate.position.set(ax,H-beamH-0.012,beamZ);
+   gStatic.add(mountPlate);
+  }
+
+  // ── Curtain partition on dining area side, just ahead of the beam ──
+  // Positioned at z=27.09 ft (ahead of the beam on dining side)
+  const curtainZ = beamZ - beamD/2 - 0.12;
+  const curtainH = H - 0.15;
+  const curtainMat = new T.MeshStandardMaterial({
+   color: '#ede8df',
+   roughness: 0.94,
+   metalness: 0.02,
+   side: T.DoubleSide,
+   transparent: true,
+   opacity: 0.88
+  });
+
+  // Ceiling track on dining side ahead of beam
+  const trackMat = new T.MeshStandardMaterial({color:'#d4af37',roughness:0.2,metalness:0.9});
+  const track = new T.Mesh(new T.CylinderGeometry(0.025,0.025,beamW,8),trackMat);
+  track.rotation.z = Math.PI/2;
+  track.position.set(beamX, H - 0.03, curtainZ);
+  gStatic.add(track);
+
+  // Dual wavy S-fold linen curtain panels with center walkthrough opening
+  const panels = [
+   { x0: 0.15, w: 4.1 },
+   { x0: 6.25, w: 3.95 }
+  ];
+
+  for(const p of panels){
+   const geo = new T.PlaneGeometry(p.w, curtainH, 24, 1);
+   const pos = geo.attributes.position;
+   for(let i=0; i<pos.count; i++){
+    const u = (pos.getX(i) + p.w/2) / p.w;
+    const wave = Math.sin(u * Math.PI * 8) * 0.12 + Math.sin(u * Math.PI * 16) * 0.04;
+    pos.setZ(i, wave);
+   }
+   geo.computeVertexNormals();
+   const curtainMesh = new T.Mesh(geo, curtainMat);
+   curtainMesh.position.set(p.x0 + p.w/2, H - curtainH/2 - 0.04, curtainZ);
+   curtainMesh.castShadow = true;
+   curtainMesh.receiveShadow = true;
+   gStatic.add(curtainMesh);
+
+   // Brass runner rings along track
+   const nRings = Math.round(p.w / 0.45);
+   for(let r=0; r<nRings; r++){
+    const rx = p.x0 + (r + 0.5) * (p.w / nRings);
+    const ring = new T.Mesh(new T.TorusGeometry(0.045, 0.009, 6, 10), trackMat);
+    ring.rotation.x = Math.PI/2;
+    ring.position.set(rx, H - 0.05, curtainZ);
+    gStatic.add(ring);
+   }
+  }
+ })();
+
+ for(const fx of FIXTURES){
+  const g=new T.Group();g.position.set(fx.x+fx.w/2,0,fx.y+fx.d/2);
+  B(g,fx.w,fx.h,fx.d,0,fx.h/2,0,mat('#f7f7f5'));
+  gStatic.add(g);
+ }
+ if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+}
+
+function buildWalls(){
+ disposeGroup(gWalls);
+ const wp=wallPieces(H,state.wallMode==='low');
+ const baseWc=getWallColorInfo(state.wallColor);
+ const gm=mat('',0,'glass');
+ const skirtH=0.35;
+ const skirtM=new T.MeshStandardMaterial({color:'#eedec8',roughness:0.18,metalness:0.04,envMapIntensity:1.6});
+ const caulkM=mat('#483c2e');
+ for(const p of wp.P){
+  const h=p.z1-p.z0;
+  const hz=p.w>=p.h;
+  const cx=p.x+p.w/2;
+  const cy=p.y+p.h/2;
+  const thick=hz?p.h:p.w;
+  const probeDist=thick/2+0.35;
+  const rPlus=hz?roomOf(cx,cy+probeDist):roomOf(cx+probeDist,cy);
+  const rMinus=hz?roomOf(cx,cy-probeDist):roomOf(cx-probeDist,cy);
+  const cPlus=getWallColorForRoom(rPlus);
+  const cMinus=getWallColorForRoom(rMinus);
+  let wm;
+  if(cPlus.hex===cMinus.hex){
+   wm=getRoyalePaintMaterial(cPlus.hex);
+  }else{
+   const mPlus=getRoyalePaintMaterial(cPlus.hex);
+   const mMinus=getRoyalePaintMaterial(cMinus.hex);
+   const mEnd=getRoyalePaintMaterial(baseWc.hex);
+   // BoxGeometry faces: 0: +X, 1: -X, 2: +Y, 3: -Y, 4: +Z, 5: -Z
+   if(hz){
+    wm=[mEnd,mEnd,mEnd,mEnd,mPlus,mMinus];
+   }else{
+    wm=[mPlus,mMinus,mEnd,mEnd,mEnd,mEnd];
+   }
+  }
+  if(p.z0===0&&h>skirtH+0.2){
+   // Skirting baseboard: 4-inch cream vitrified tile projecting 0.04ft into room
+   const proj=0.04;
+   B(gWalls,p.w,skirtH,p.h+proj,cx,skirtH/2,cy,skirtM);
+   // Dark top caulk/sealant line for sharp architectural shadow definition
+   B(gWalls,p.w,0.02,p.h+proj+0.01,cx,skirtH-0.01,cy,caulkM);
+   // Upper painted wall in Royale Smooth Touch luxury emulsion
+   B(gWalls,p.w,h-skirtH,p.h,cx,skirtH+(h-skirtH)/2,cy,wm);
+  }else{
+   B(gWalls,p.w,h,p.h,cx,(p.z0+p.z1)/2,cy,wm);
+  }
+ }
+ for(const p of wp.G){
+  // Window frame & glass
+  const hz=p.w>p.h;
+  B(gWalls,hz?p.w:0.06,p.z1-p.z0,hz?0.06:p.h,p.x+p.w/2,(p.z0+p.z1)/2,p.y+p.h/2,gm);
+  // Outer frame
+  B(gWalls,hz?p.w:0.1,0.08,hz?0.1:p.h,p.x+p.w/2,p.z0+0.04,p.y+p.h/2,mat('#282b2e',true));
+  B(gWalls,hz?p.w:0.1,0.08,hz?0.1:p.h,p.x+p.w/2,p.z1-0.04,p.y+p.h/2,mat('#282b2e',true));
+ }
+
+ // Add architectural door jambs/architraves for contrast
+ for(const W of WALLS){
+  for(const o of (W.op||[])){
+   if(o.t==='door'){
+    const hz=W.w>=W.d;
+    const jm=mat('#44372c',false,'wood');
+    if(hz){
+     B(gWalls,0.18,o.zt,W.d+0.04,o.a+0.09,o.zt/2,W.y,jm);
+     B(gWalls,0.18,o.zt,W.d+0.04,o.b-0.09,o.zt/2,W.y,jm);
+     B(gWalls,o.b-o.a,0.18,W.d+0.04,(o.a+o.b)/2,o.zt-0.09,W.y,jm);
+     B(gWalls,o.b-o.a,0.03,W.d,(o.a+o.b)/2,0.015,W.y,mat('#726456',true));
+    }else{
+     B(gWalls,W.w+0.04,o.zt,0.18,W.x,o.zt/2,o.a+0.09,jm);
+     B(gWalls,W.w+0.04,o.zt,0.18,W.x,o.zt/2,o.b-0.09,jm);
+     B(gWalls,W.w+0.04,0.18,o.b-o.a,W.x,o.zt-0.09,(o.a+o.b)/2,jm);
+     B(gWalls,W.w,0.03,o.b-o.a,W.x,0.015,(o.a+o.b)/2,mat('#726456',true));
+    }
+   }
+  }
+ }
+ if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+}
+
+function makeCeilingFan(parent,x,y,z,finishColor){
+ const fanG=new T.Group();
+ fanG.position.set(x,y,z);
+ 
+ // Ceiling canopy
+ C(fanG,0.28,0.22,0.16,0,-0.08,0,mat(finishColor||'#232528',true));
+ 
+ // Downrod
+ const rodLen=0.95;
+ C(fanG,0.045,0.045,rodLen,0,-rodLen/2,0,mat('#1c1e20',true));
+ 
+ // Motor housing & cap
+ const motorY=-rodLen-0.14;
+ C(fanG,0.52,0.56,0.24,0,motorY,0,mat(finishColor||'#2c251f',false,'wood'));
+ // Brass decorative bezel ring
+ C(fanG,0.58,0.58,0.04,0,motorY,0,mat('',0,'brass'));
+ // Warm LED bottom dome light
+ C(fanG,0.36,0.26,0.08,0,motorY-0.13,0,mat('#ffeed8',0,'glow'));
+ 
+ // Rotating blades group
+ const bladeG=new T.Group();
+ bladeG.position.set(0,motorY,0);
+ const numBlades=3;
+ const bladeLen=1.85;
+ const bladeW=0.38;
+ const bladeMat=mat(finishColor||'#38271a',false,'wood');
+ const ironMat=mat('#18191a',true);
+ 
+ for(let i=0;i<numBlades;i++){
+  const ang=(i*2*Math.PI)/numBlades;
+  const bArm=new T.Group();
+  bArm.rotation.y=ang;
+  B(bArm,0.12,0.03,0.45,0,0,0.35,ironMat);
+  const bl=new T.Mesh(new T.BoxGeometry(bladeW,0.02,bladeLen),bladeMat);
+  bl.position.set(0,0,0.55+bladeLen/2);
+  bl.rotation.x=0.14;
+  bArm.add(bl);
+  bladeG.add(bArm);
+ }
+ fanG.add(bladeG);
+ parent.add(fanG);
+ return bladeG;
+}
+
+function buildCeilingAndLights(){
+ disposeGroup(gCeiling);
+ disposeGroup(gLights);
+ fanBlades=[];
+
+ const ambLight=new T.AmbientLight(0xfff6ed,0.12);
+ gLights.add(ambLight);
+
+ const hemiLight=new T.HemisphereLight(0xfff0e2,0x221c16,0.14);
+ gLights.add(hemiLight);
+
+ const sun=new T.DirectionalLight(0xfffaee,0.45);
+ sun.position.set(5.6,8.5,1.0);
+ sun.target.position.set(5.6,1.0,18.0);
+ sun.castShadow=true;
+ sun.shadow.mapSize.width=1024;
+ sun.shadow.mapSize.height=1024;
+ sun.shadow.camera.near=0.5;
+ sun.shadow.camera.far=42;
+ sun.shadow.camera.left=-12;
+ sun.shadow.camera.right=12;
+ sun.shadow.camera.top=12;
+ sun.shadow.camera.bottom=-12;
+ sun.shadow.bias=-0.0004;
+ sun.shadow.radius=2.6;
+ gLights.add(sun);
+ gLights.add(sun.target);
+
+ const ROOM_SPOTS=[
+  {n:'Hall Living Center',x:5.2,y:H-0.1,z:33.0,color:0xffeed2,int:0.85,dist:26,shadow:true,pen:0.75,beam:Math.PI/3.0},
+  {n:'Hall Living Accent',x:2.5,y:H-0.1,z:36.0,color:0xffeed2,int:0.55,dist:20,shadow:false,pen:0.8,beam:Math.PI/3.2},
+  {n:'Hall Dining Main',x:5.0,y:H-0.1,z:23.5,color:0xffeed2,int:0.80,dist:22,shadow:true,pen:0.7,beam:Math.PI/3.2},
+  {n:'Kitchen Task 1',x:15.5,y:H-0.1,z:10.5,color:0xfff6ec,int:0.75,dist:22,shadow:true,pen:0.7,beam:Math.PI/3.0},
+  {n:'Kitchen Task 2',x:18.5,y:H-0.1,z:13.5,color:0xfff6ec,int:0.60,dist:18,shadow:false,pen:0.8,beam:Math.PI/3.2},
+  {n:"Brother's Room Center",x:17.0,y:H-0.1,z:33.5,color:0xffeed2,int:0.80,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.0},
+  {n:"Brother's Bed Accent",x:17.5,y:H-0.1,z:37.0,color:0xffeed2,int:0.60,dist:18,shadow:false,pen:0.8,beam:Math.PI/3.2},
+  {n:"Your Room Center",x:5.5,y:H-0.1,z:12.0,color:0xffeed2,int:0.80,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.0},
+  {n:"Your Room Study Spot",x:4.0,y:H-0.1,z:8.5,color:0xffeed2,int:0.60,dist:18,shadow:false,pen:0.8,beam:Math.PI/3.2},
+  {n:'Balcony Light',x:5.6,y:H-0.1,z:3.2,color:0xfff0da,int:0.45,dist:16,shadow:false,pen:0.8,beam:Math.PI/3.0}
+ ];
+
+ for(const l of ROOM_SPOTS){
+  if(l.shadow){
+   const sl=new T.SpotLight(l.color,l.int,l.dist,l.beam||Math.PI/3.2,l.pen||0.7,1.8);
+   sl.position.set(l.x,l.y,l.z);
+   sl.target.position.set(l.x,0,l.z);
+   sl.castShadow=true;
+   sl.shadow.mapSize.width=512;
+   sl.shadow.mapSize.height=512;
+   sl.shadow.camera.near=0.5;
+   sl.shadow.camera.far=24;
+   sl.shadow.bias=-0.0004;
+   sl.shadow.radius=2.2;
+   gLights.add(sl);
+   gLights.add(sl.target);
+  }else{
+   const pl=new T.PointLight(l.color,l.int,l.dist,2);
+   pl.position.set(l.x,l.y,l.z);
+   gLights.add(pl);
+  }
+ }
+
+ const ceilMat=mat('#f7f5f0',false);
+ const ringMat=mat('#dedbd4',true);
+ const spotMat=mat('#ffeed8',0,'glow');
+
+ gCeilingSlab=new T.Group();
+ for(const r of ROOMS){
+  const cMesh=new T.Mesh(new T.PlaneGeometry(r.w,r.d),ceilMat);
+  cMesh.rotation.x=Math.PI/2;
+  cMesh.position.set(r.x+r.w/2,H,r.y+r.d/2);
+  gCeilingSlab.add(cMesh);
+ }
+
+ const COVE_ZONES=[
+  {x:0.6,z:18.2,w:9.2,d:20.2},
+  {x:11.4,z:28.4,w:11.6,d:9.8},
+  {x:0.6,z:7.4,w:10.0,d:9.0}
+ ];
+ const dropH=0.32, borderW=1.15;
+ const fasciaMat=mat('#fcfaf6',false);
+ for(const cv of COVE_ZONES){
+  B(gCeilingSlab,cv.w,dropH,borderW,cv.x+cv.w/2,H-dropH/2,cv.z+borderW/2,fasciaMat);
+  B(gCeilingSlab,cv.w,dropH,borderW,cv.x+cv.w/2,H-dropH/2,cv.z+cv.d-borderW/2,fasciaMat);
+  B(gCeilingSlab,borderW,dropH,cv.d-borderW*2,cv.x+borderW/2,H-dropH/2,cv.z+cv.d/2,fasciaMat);
+  B(gCeilingSlab,borderW,dropH,cv.d-borderW*2,cv.x+cv.w-borderW/2,H-dropH/2,cv.z+cv.d/2,fasciaMat);
+  B(gCeilingSlab,cv.w-borderW*2+0.1,0.03,0.05,cv.x+cv.w/2,H-dropH+0.03,cv.z+borderW+0.02,mat('#ffd899',0,'glow'));
+  B(gCeilingSlab,cv.w-borderW*2+0.1,0.03,0.05,cv.x+cv.w/2,H-dropH+0.03,cv.z+cv.d-borderW-0.02,mat('#ffd899',0,'glow'));
+ }
+ gCeiling.add(gCeilingSlab);
+
+ for(const l of ROOM_SPOTS){
+  C(gCeiling,0.32,0.32,0.04,l.x,H-0.02,l.z,ringMat);
+  C(gCeiling,0.22,0.22,0.05,l.x,H-0.025,l.z,spotMat);
+ }
+
+ // Ceiling Fans in all 5 places: Living, Dining, Master Bed, Brother's Bed, Kitchen
+ const CEILING_FANS_3D=[
+  {n:'Hall Living Fan',x:5.2,z:34.0,fin:'#2c251f'},
+  {n:'Hall Dining Fan',x:5.2,z:23.5,fin:'#2c251f'},
+  {n:'Your Room Fan',x:5.66,z:12.0,fin:'#2c251f'},
+  {n:"Brother's Room Fan",x:17.25,z:33.5,fin:'#2c251f'},
+  {n:'Kitchen Fan',x:15.9,z:12.0,fin:'#e4e4df'}
+ ];
+ for(const f of CEILING_FANS_3D){
+  const bg=makeCeilingFan(gCeiling,f.x,H,f.z,f.fin);
+  fanBlades.push(bg);
+ }
+
+ if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+ syncCeilingVisibility();
+}
+
+function syncCeilingVisibility(){
+ if(!gCeiling)return;
+ if(state.ceilingMode==='on'){
+  gCeiling.visible=true;
+  if(gCeilingSlab)gCeilingSlab.visible=true;
+ }else if(state.ceilingMode==='off'){
+  gCeiling.visible=false;
+ }else{
+  // auto: show ceiling slab in walk POV, hide in orbit so rooms are open
+  gCeiling.visible=true;
+  if(gCeilingSlab)gCeilingSlab.visible=(viewMode==='walk');
+ }
+ const cb=$('#btnCeil');
+ if(cb)cb.textContent='Ceiling: '+(state.ceilingMode||'auto');
+}
+
+function buildItems(){
+ disposeGroup(gItems);for(const it of state.items)gItems.add(buildItem(it));
+ if(selHelper){scene.remove(selHelper);selHelper.geometry.dispose();selHelper=null;}
+ const sg=gItems.children.find(c=>c.userData.id===state.sel);
+ if(sg){selHelper=new T.BoxHelper(sg,getCSS('--accent')||'#0E7FAE');scene.add(selHelper);}
+ if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+}
+const getCSS=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+function updateBg(){if(scene)scene.background=new T.Color(viewMode==='walk'?'#282623':(getCSS('--bg')||'#f6f4ef'));render3D();}
+function render3D(){if(renderer)renderer.render(scene,camera);}
+
+/* ---------- Walk POV & Navigation ---------- */
+let viewMode='orbit';
+let walkEyeH=5.3;
+let walkFov=52; // Default to 52° for natural human perspective without edge/corner elongation
+const WALK_SPAWNS={
+ overview:{x:5.2,z:32.0,yaw:0,pitch:0},
+ kitchen:{x:14.0,z:14.5,yaw:0,pitch:-0.05},
+ mine:{x:3.5,z:14.5,yaw:0,pitch:0},
+ bro:{x:13.5,z:30.5,yaw:-Math.PI/2,pitch:0},
+ hall:{x:5.2,z:32.0,yaw:0,pitch:0}
+};
+let player={x:5.2,y:walkEyeH,z:32.0,yaw:0,pitch:0,vx:0,vz:0};
+let keysDown={};
+let isLocked=false;
+let collisionEnabled=true;
+let walkAnimId=null;
+let lastWalkTime=0;
+
+function setFov(val){
+ walkFov=Math.max(30,Math.min(125,Math.round(val)));
+ if(camera&&viewMode==='walk'){
+  camera.fov=walkFov;
+  camera.updateProjectionMatrix();
+  render3D();
+ }
+ const slider=$('#walkFovSlider');
+ if(slider && Math.round(parseFloat(slider.value))!==walkFov) slider.value=walkFov;
+ updateFovBadge();
+ updatePlanAvatar();
+}
+
+function updateFovBadge(){
+ const fb=$('#walkFovBadge');
+ if(!fb)return;
+ const f=Math.round(walkFov);
+ let tag='Natural';
+ if(f>=110)tag='Panoramic';
+ else if(f>=95)tag='Ultra-Wide';
+ else if(f>=66)tag='Wide';
+ else if(f<=44)tag='Zoom';
+ fb.textContent='FOV: '+f+'° · '+tag;
+ if(f>=95){
+  fb.title='Ultra-wide interior view (covers entire room at once). Click to cycle FOV presets.';
+ }else if(f>=66){
+  fb.title='Wide angle (covers more room area, with mild edge stretch). Click to cycle FOV presets.';
+ }else if(f<=44){
+  fb.title='Zoom / telephoto view. Click to cycle FOV presets.';
+ }else{
+  fb.title='Natural human eye perspective (zero edge distortion). Click to cycle FOV presets.';
+ }
+ const slider=$('#walkFovSlider');
+ if(slider && Math.round(parseFloat(slider.value))!==f) slider.value=f;
+ document.querySelectorAll('#fovChips .walk-chip').forEach(btn=>{
+  const bf=parseFloat(btn.dataset.fov);
+  btn.classList.toggle('on',Math.abs(bf-walkFov)<4);
+ });
+}
+
+function toggleFullscreen(){
+ const wrap=$('#viewWrap');
+ if(!wrap)return;
+ const isFs=!!(document.fullscreenElement||document.webkitFullscreenElement||wrap.classList.contains('is-fullscreen'));
+ if(!isFs){
+  if(wrap.requestFullscreen){
+   wrap.requestFullscreen().catch(err=>{
+    console.warn('Native requestFullscreen blocked, applying overlay fallback:',err);
+    wrap.classList.add('is-fullscreen');
+    onFullscreenChange();
+   });
+  }else if(wrap.webkitRequestFullscreen){
+   wrap.webkitRequestFullscreen();
+  }else{
+   wrap.classList.add('is-fullscreen');
+   onFullscreenChange();
+  }
+ }else{
+  if(document.exitFullscreen){
+   document.exitFullscreen().catch(()=>{});
+  }else if(document.webkitExitFullscreen){
+   document.webkitExitFullscreen();
+  }
+  wrap.classList.remove('is-fullscreen');
+  onFullscreenChange();
+ }
+}
+
+function onFullscreenChange(){
+ const wrap=$('#viewWrap');
+ if(!wrap)return;
+ const isFs=!!(document.fullscreenElement||document.webkitFullscreenElement||wrap.classList.contains('is-fullscreen'));
+ wrap.classList.toggle('is-fullscreen',isFs);
+ const btnFs=$('#btnFullscreen');
+ if(btnFs){
+  btnFs.innerHTML=isFs?'🗗 Exit Fullscreen':'⛶ Fullscreen';
+  btnFs.classList.toggle('on',isFs);
+ }
+ const btnWFs=$('#btnWalkFullscreen');
+ if(btnWFs){
+  btnWFs.innerHTML=isFs?'🗗 Exit Fullscreen':'⛶ Fullscreen';
+  btnWFs.classList.toggle('on',isFs);
+ }
+ setTimeout(()=>{if(window.rs3D)window.rs3D();},40);
+ setTimeout(()=>{if(window.rs3D)window.rs3D();},220);
+}
+document.addEventListener('fullscreenchange',onFullscreenChange);
+document.addEventListener('webkitfullscreenchange',onFullscreenChange);
+
+function setEyeHeight(h){
+ walkEyeH=Math.max(2.5,Math.min(7.5,Math.round(h*10)/10));
+ player.y=walkEyeH;
+ if(camera&&viewMode==='walk'){
+  camera.position.y=walkEyeH;
+  render3D();
+ }
+ syncHeightUI();
+}
+
+function syncHeightUI(){
+ const sl=$('#walkHeightSlider');
+ if(sl&&Math.abs(parseFloat(sl.value)-walkEyeH)>0.05)sl.value=String(walkEyeH);
+ const valEl=$('#walkHeightVal');
+ if(valEl)valEl.textContent=fmt(walkEyeH);
+ document.querySelectorAll('#heightChips .walk-chip').forEach(btn=>{
+  const bh=parseFloat(btn.dataset.h);
+  btn.classList.toggle('on',Math.abs(bh-walkEyeH)<0.25);
+ });
+}
+
+function updatePlanAvatar(){
+ const g=$('#planAvatar');if(!g)return;
+ if(viewMode!=='walk'){g.innerHTML='';return;}
+ const px=player.x,py=player.z;
+ const ang=Math.atan2(-Math.cos(player.yaw),-Math.sin(player.yaw));
+ const curFov=((camera&&camera.fov)||walkFov||75)*Math.PI/180;
+ const r=4.2;
+ const a1=ang-curFov/2,a2=ang+curFov/2;
+ const x1=px+r*Math.cos(a1),y1=py+r*Math.sin(a1);
+ const x2=px+r*Math.cos(a2),y2=py+r*Math.sin(a2);
+ let s='<path d="M '+r2(px)+' '+r2(py)+' L '+r2(x1)+' '+r2(y1)+' A '+r2(r)+' '+r2(r)+' 0 0 1 '+r2(x2)+' '+r2(y2)+' Z" fill="var(--accent)" fill-opacity="0.25" stroke="var(--accent)" stroke-width="0.04" stroke-opacity="0.6"/>';
+ s+='<circle cx="'+r2(px)+'" cy="'+r2(py)+'" r="0.48" fill="var(--accent)" stroke="#fff" stroke-width="0.12"/>';
+ const nx=px+0.75*Math.cos(ang),ny=py+0.75*Math.sin(ang);
+ s+='<line x1="'+r2(px)+'" y1="'+r2(py)+'" x2="'+r2(nx)+'" y2="'+r2(ny)+'" stroke="#fff" stroke-width="0.16" stroke-linecap="round"/>';
+ g.innerHTML=s;
+}
+
+function updateRoomBadge(){
+ const b=$('#walkRoomBadge');if(!b)return;
+ const currentRoom=roomOf(player.x,player.z);
+ b.textContent='📍 '+currentRoom;
+ if($('#walkWallRoomSelect')&&$('#walkWallRoomSelect').value==='current'&&typeof syncWallColorUI==='function'){
+  syncWallColorUI();
+ }
+}
+
+function getObstacles(){
+ const obs=[];
+ const wp=wallPieces(H,false);
+ for(const p of wp.P){
+  if(p.z0<5.8&&p.z1>0.6){
+   obs.push({x1:p.x,x2:p.x+p.w,z1:p.y,z2:p.y+p.h});
+  }
+ }
+ for(const it of state.items){
+  if(NOCOL.has(it.kind)||isOver(it))continue;
+  const f=fp(it);
+  if(it.elev<3.0&&(it.elev+it.h)>0.8){
+   obs.push({x1:f.x,x2:f.x+f.w,z1:f.y,z2:f.y+f.h});
+  }
+ }
+ return obs;
+}
+
+function checkCollision(px,pz,r,obstacles){
+ for(const b of obstacles){
+  const cx=Math.max(b.x1,Math.min(px,b.x2));
+  const cz=Math.max(b.z1,Math.min(pz,b.z2));
+  const dx=px-cx,dz=pz-cz;
+  if((dx*dx+dz*dz)<(r*r))return true;
+ }
+ return false;
+}
+
+function movePlayer(dx,dz){
+ const r=0.48;
+ const obs=collisionEnabled?getObstacles():[];
+ let nx=Math.max(-0.2,Math.min(25.0,player.x+dx));
+ if(!collisionEnabled||!checkCollision(nx,player.z,r,obs)){player.x=nx;}
+ let nz=Math.max(-0.2,Math.min(39.2,player.z+dz));
+ if(!collisionEnabled||!checkCollision(player.x,nz,r,obs)){player.z=nz;}
+}
+
+function walkLoop(now){
+ if(viewMode!=='walk'){walkAnimId=null;return;}
+ if(!lastWalkTime)lastWalkTime=now;
+ const dt=Math.min((now-lastWalkTime)/1000,0.1);
+ lastWalkTime=now;
+ 
+ let fwd=0,strafe=0;
+ if(keysDown['ArrowUp']||keysDown['KeyW'])fwd+=1;
+ if(keysDown['ArrowDown']||keysDown['KeyS'])fwd-=1;
+ if(keysDown['ArrowLeft']||keysDown['KeyA'])strafe-=1;
+ if(keysDown['ArrowRight']||keysDown['KeyD'])strafe+=1;
+ 
+ const sprint=(keysDown['ShiftLeft']||keysDown['ShiftRight'])?1.85:1.0;
+ const speed=7.2*sprint;
+ const isMoving=(fwd!==0||strafe!==0);
+ 
+ if(isMoving){
+  const len=Math.hypot(fwd,strafe);
+  const nf=fwd/len,ns=strafe/len;
+  const fx=-Math.sin(player.yaw);
+  const fz=-Math.cos(player.yaw);
+  const rx=Math.cos(player.yaw);
+  const rz=-Math.sin(player.yaw);
+  const targetVx=(fx*nf+rx*ns)*speed;
+  const targetVz=(fz*nf+rz*ns)*speed;
+  player.vx+=(targetVx-player.vx)*Math.min(1,dt*15);
+  player.vz+=(targetVz-player.vz)*Math.min(1,dt*15);
+ }else{
+  player.vx+=(0-player.vx)*Math.min(1,dt*18);
+  player.vz+=(0-player.vz)*Math.min(1,dt*18);
+ }
+ 
+ const dx=player.vx*dt;
+ const dz=player.vz*dt;
+ if(Math.abs(dx)>0.0001||Math.abs(dz)>0.0001){
+  movePlayer(dx,dz);
+  updateRoomBadge();
+  updatePlanAvatar();
+ }
+ 
+ if(camera){
+  camera.position.set(player.x,walkEyeH,player.z);
+  camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
+  for(let i=0;i<fanBlades.length;i++){
+   fanBlades[i].rotation.y+=0.04;
+  }
+  render3D();
+ }
+ walkAnimId=requestAnimationFrame(walkLoop);
+}
+
+function setViewMode(m, spawnKey){
+ if(viewMode===m){
+  if(m==='walk'&&spawnKey&&WALK_SPAWNS[spawnKey]){
+   const sp=WALK_SPAWNS[spawnKey];
+   player.x=sp.x;player.z=sp.z;player.yaw=sp.yaw;player.pitch=sp.pitch;
+   if(camera){
+    camera.position.set(player.x,walkEyeH,player.z);
+    camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
+   }
+   updateRoomBadge();
+   updatePlanAvatar();
+   render3D();
+  }
+  return;
+ }
+ viewMode=m;
+ $('#btnOrbit').classList.toggle('on',m==='orbit');
+ $('#btnWalk').classList.toggle('on',m==='walk');
+ $('#viewWrap').classList.toggle('walk-mode',m==='walk');
+ syncCeilingVisibility();
+ updateBg();
+ 
+ if(m==='walk'){
+  if(controls)controls.enabled=false;
+  if(state.wallMode!=='full'){state.wallMode='full';wallLabel();if(gWalls)buildWalls();}
+  if(camera){camera.fov=walkFov;camera.updateProjectionMatrix();}
+  
+  const curP=document.querySelector('#presets button.on');
+  const pk=spawnKey||(curP?curP.dataset.p:'hall');
+  const sp=WALK_SPAWNS[pk]||WALK_SPAWNS.hall;
+  player.x=sp.x;player.z=sp.z;player.yaw=sp.yaw;player.pitch=sp.pitch;
+  player.vx=0;player.vz=0;
+  if(camera){
+   camera.position.set(player.x,walkEyeH,player.z);
+   camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
+  }
+  $('#viewHint').textContent='Walk mode: Arrow keys or WASD to walk · Mouse to look · Mouse scroll to zoom / wide view · Q/E: Eye height · Shift: Sprint.';
+  updateRoomBadge();
+  updateFovBadge();
+  syncHeightUI();
+  updatePlanAvatar();
+  render3D();
+  lastWalkTime=performance.now();
+  if(!walkAnimId)walkAnimId=requestAnimationFrame(walkLoop);
+ }else{
+  if(document.pointerLockElement)document.exitPointerLock();
+  if(walkAnimId){cancelAnimationFrame(walkAnimId);walkAnimId=null;}
+  if(controls)controls.enabled=true;
+  if(camera){camera.fov=50;camera.updateProjectionMatrix();}
+  $('#viewHint').textContent='Drag to orbit, scroll or pinch to zoom, right-drag or two-finger drag to pan. Tap an item in 3D to select it.';
+  updatePlanAvatar();
+  const curP=document.querySelector('#presets button.on');
+  preset(curP?curP.dataset.p:'overview');
+ }
+}
+
+document.addEventListener('pointerlockchange',()=>{
+ const cv=$('#view');
+ isLocked=(document.pointerLockElement===cv);
+ const ins=$('#walkInstr .sub-key');
+ if(ins){
+  ins.innerHTML=isLocked?'<b>Mouse lock active</b> (Press <b>Esc</b> to unlock) · <b>Shift</b>: Sprint':'<b>Click view</b> to lock mouse (Esc to unlock) · <b>Shift</b>: Sprint · <b>Click 2D plan</b> to teleport';
+ }
+});
+document.addEventListener('mousemove',e=>{
+ if(viewMode==='walk'&&isLocked){
+  const sens=0.0022;
+  player.yaw-=e.movementX*sens;
+  player.pitch-=e.movementY*sens;
+  player.pitch=Math.max(-1.48,Math.min(1.48,player.pitch));
+  if(camera)camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
+  updatePlanAvatar();
+  render3D();
+ }
+});
+
+const PRESETS={
+ overview:{p:[12,46,64],t:[12,0,21]},
+ kitchen:{p:[16,5.6,16.6],t:[16,5.2,6.9]},
+ mine:{p:[11.2,7.2,16.2],t:[5.5,3.0,9.5]},
+ bro:{p:[22.8,5.6,30.4],t:[11.5,4.6,36]},
+ hall:{p:[5.2,5.4,38.4],t:[5.2,4,18]}
+};
+
+function preset(k){
+ const P=PRESETS[k];if(!camera)return;
+ camera.position.set(P.p[0],P.p[1],P.p[2]);
+ controls.target.set(P.t[0],P.t[1],P.t[2]);
+ controls.update();
+ document.querySelectorAll('#presets [data-p]').forEach(b=>b.classList.toggle('on',b.dataset.p===k));
+ render3D();
+}
+
+let envMapGenerated=false;
+function initEnvMap(rend, scn){
+ if(envMapGenerated||!rend||!scn||!T.PMREMGenerator)return;
+ try{
+  const pmrem=new T.PMREMGenerator(rend);
+  pmrem.compileEquirectangularShader();
+  const c=document.createElement('canvas');c.width=512;c.height=256;
+  const x=c.getContext('2d');
+  // Upper hemisphere: warm architectural interior ceiling bounce
+  const skyG=x.createLinearGradient(0,0,0,128);
+  skyG.addColorStop(0,'#faf6ed');
+  skyG.addColorStop(0.5,'#eee4d2');
+  skyG.addColorStop(1,'#ddd2be');
+  x.fillStyle=skyG;x.fillRect(0,0,512,128);
+  // Lower hemisphere: warm floor bounce
+  const floorG=x.createLinearGradient(0,128,0,256);
+  floorG.addColorStop(0,'#a89c8a');
+  floorG.addColorStop(1,'#564c40');
+  x.fillStyle=floorG;x.fillRect(0,128,512,128);
+  // Soft ambient window / softbox panels on east and south
+  x.fillStyle='rgba(255,250,242,0.52)';
+  x.fillRect(60,20,110,85);
+  x.fillRect(330,25,100,80);
+  // Warm cove light strip
+  x.fillStyle='rgba(255,220,160,0.45)';
+  x.fillRect(0,118,512,10);
+
+  const tex=new T.CanvasTexture(c);
+  const envRT=pmrem.fromEquirectangular(tex);
+  scn.environment=envRT.texture;
+  tex.dispose();
+  pmrem.dispose();
+  envMapGenerated=true;
+ }catch(err){console.warn('initEnvMap error:',err);}
+}
+
+function init3D(){
+ if(!T||!T.OrbitControls){$('#viewMsg').textContent='3D view could not load. The 2D plan still works.';return;}
+ $('#viewMsg').style.display='none';
+ const cv=$('#view');
+ renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
+ renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
+ if(T.sRGBEncoding)renderer.outputEncoding=T.sRGBEncoding;
+ renderer.toneMapping=T.ACESFilmicToneMapping;
+ renderer.toneMappingExposure=0.95;
+ renderer.shadowMap.enabled=true;
+ renderer.shadowMap.type=T.PCFSoftShadowMap;
+ renderer.shadowMap.autoUpdate=false;
+ renderer.shadowMap.needsUpdate=true;
+
+ scene=new T.Scene();
+ initEnvMap(renderer, scene);
+ camera=new T.PerspectiveCamera(52,1,0.1,400);
+ camera.rotation.order='YXZ';
+
+ // Gentle camera point fill (with distance decay so surfaces do not blow out)
+ const camLight=new T.PointLight(0xfff8ee,0.05,12,2);
+ camLight.position.set(0,0,0);
+ camera.add(camLight);
+ scene.add(camera);
+
+ gStatic=new T.Group();
+ gWalls=new T.Group();
+ gCeiling=new T.Group();
+ gItems=new T.Group();
+ gLights=new T.Group();
+ scene.add(gStatic,gWalls,gCeiling,gItems,gLights);
+
+ controls=new T.OrbitControls(camera,cv);
+ controls.addEventListener('change',render3D);
+ controls.maxPolarAngle=Math.PI*0.495;
+
+ updateBg();
+ buildStatic();
+ buildWalls();
+ buildCeilingAndLights();
+ buildItems();
+ initModelLoader();
+
+ const wrap=$('#viewWrap');
+ const rs=()=>{const w=wrap.clientWidth,h=wrap.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();render3D();};
+ window.rs3D=rs;
+ if(window.ResizeObserver)new ResizeObserver(rs).observe(wrap);else window.addEventListener('resize',rs);rs();
+ preset('overview');
+
+ cv.addEventListener('wheel',e=>{
+  if(viewMode==='walk'){
+   e.preventDefault();
+   const delta=e.deltaY>0?2:-2;
+   setFov(walkFov+delta);
+  }
+ },{passive:false});
+
+ let down=null,lookDrag=null;const ray=new T.Raycaster();
+ cv.addEventListener('pointerdown',e=>{
+  if(viewMode==='walk'){
+   lookDrag={x:e.clientX,y:e.clientY,moved:false};
+  }else{
+   down=[e.clientX,e.clientY];
+  }
+ });
+ cv.addEventListener('pointermove',e=>{
+  if(viewMode==='walk'&&!isLocked&&lookDrag){
+   const dx=e.clientX-lookDrag.x,dy=e.clientY-lookDrag.y;
+   if(Math.abs(dx)+Math.abs(dy)>3)lookDrag.moved=true;
+   lookDrag.x=e.clientX;lookDrag.y=e.clientY;
+   const sens=0.0035;
+   player.yaw-=dx*sens;
+   player.pitch-=dy*sens;
+   player.pitch=Math.max(-1.48,Math.min(1.48,player.pitch));
+   if(camera)camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
+   updatePlanAvatar();
+   render3D();
+  }
+ });
+ cv.addEventListener('pointerup',e=>{
+  if(viewMode==='walk'){
+   if(lookDrag&&!lookDrag.moved){
+    if(!isLocked){try{cv.requestPointerLock();}catch(err){}}
+    ray.setFromCamera({x:0,y:0},camera);
+    const hit=ray.intersectObjects(gItems.children,true)[0];
+    if(hit){let o=hit.object;while(o&&!o.userData.id)o=o.parent;if(o)select(o.userData.id);}else select(null);
+   }
+   lookDrag=null;return;
+  }
+  if(!down)return;const mv=Math.abs(e.clientX-down[0])+Math.abs(e.clientY-down[1]);down=null;if(mv>6)return;
+  const r=cv.getBoundingClientRect();ray.setFromCamera({x:((e.clientX-r.left)/r.width)*2-1,y:-((e.clientY-r.top)/r.height)*2+1},camera);
+  const hit=ray.intersectObjects(gItems.children,true)[0];if(!hit){select(null);return;}let o=hit.object;while(o&&!o.userData.id)o=o.parent;if(o)select(o.userData.id);
+ });
+ try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{updateBg();renderPlan();});}catch(e){}
+}
+
+const PRESET_ROOM_MAP={
+ 'hall': 'Hall',
+ 'mine': 'Your room',
+ 'bro': "Brother's room",
+ 'kitchen': 'Kitchen',
+ 'overview': 'all'
+};
+document.querySelectorAll('#presets [data-p]').forEach(b=>b.onclick=()=>{
+ const k=b.dataset.p;
+ document.querySelectorAll('#presets [data-p]').forEach(btn=>btn.classList.toggle('on',btn.dataset.p===k));
+ const targetRoom=PRESET_ROOM_MAP[k]||'all';
+ if($('#wallRoomSelect'))$('#wallRoomSelect').value=targetRoom;
+ if(typeof syncWallColorUI==='function')syncWallColorUI();
+ if(viewMode==='walk'){
+  if(k==='overview'){
+   setViewMode('orbit');
+   preset('overview');
+  }else{
+   const sp=WALK_SPAWNS[k]||WALK_SPAWNS.hall;
+   player.x=sp.x;player.z=sp.z;player.yaw=sp.yaw;player.pitch=sp.pitch;
+   player.vx=0;player.vz=0;
+   if(camera){
+    camera.position.set(player.x,walkEyeH,player.z);
+    camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
+   }
+   updateRoomBadge();updatePlanAvatar();render3D();
+  }
+ }else{
+  if(k!=='overview'&&state.wallMode!=='full'){state.wallMode='full';wallLabel();if(gWalls)buildWalls();}
+  preset(k);
+ }
+});
+$('#btnOrbit').onclick=()=>setViewMode('orbit');
+$('#btnWalk').onclick=()=>setViewMode('walk');
+const bModelMode=$('#btnModelMode');if(bModelMode)bModelMode.onclick=()=>toggleModelMode();
+const wModelToggle=$('#walkModelToggle');if(wModelToggle)wModelToggle.onclick=(e)=>{e.stopPropagation();toggleModelMode();};
+const btnFs=$('#btnFullscreen');if(btnFs)btnFs.onclick=()=>toggleFullscreen();
+const btnWFs=$('#btnWalkFullscreen');if(btnWFs)btnWFs.onclick=(e)=>{e.stopPropagation();toggleFullscreen();};
+const btnFFs=$('#btnFsFloating');if(btnFFs)btnFFs.onclick=(e)=>{e.stopPropagation();toggleFullscreen();};
+
+const FOV_CYCLE=[52, 68, 85, 105, 115];
+function cycleFov(){
+ const cur=Math.round(walkFov);
+ let next=FOV_CYCLE[0];
+ for(let i=0;i<FOV_CYCLE.length;i++){
+  if(FOV_CYCLE[i]>cur+2){next=FOV_CYCLE[i];break;}
+ }
+ setFov(next);
+}
+const wfb=$('#walkFovBadge');if(wfb)wfb.onclick=(e)=>{e.stopPropagation();cycleFov();};
+const fvc=$('#fovChips');if(fvc)fvc.onclick=(e)=>{const b=e.target.closest('[data-fov]');if(!b)return;setFov(parseFloat(b.dataset.fov));};
+const wfs=$('#walkFovSlider');if(wfs)wfs.addEventListener('input',e=>setFov(parseFloat(e.target.value)));
+
+$('#btnCollision').onclick=(e)=>{
+ e.stopPropagation();
+ collisionEnabled=!collisionEnabled;
+ $('#btnCollision').textContent='Collisions: '+(collisionEnabled?'ON':'OFF');
+ $('#btnCollision').classList.toggle('warn',!collisionEnabled);
+};
+function wallLabel(){$('#wallBtn').textContent='Walls: '+(state.wallMode==='full'?'full':'cutaway');$('#wallBtn').classList.toggle('on',state.wallMode==='low');}
+$('#wallBtn').onclick=()=>{state.wallMode=state.wallMode==='full'?'low':'full';wallLabel();if(gWalls){buildWalls();render3D();}save();};
+
+/* Ceiling toggle button */
+$('#btnCeil').onclick=()=>{
+ state.ceilingMode=state.ceilingMode==='auto'?'on':(state.ceilingMode==='on'?'off':'auto');
+ syncCeilingVisibility();
+ render3D();
+ save();
+};
+
+/* ---------- top bar ---------- */
+$('#ceil').addEventListener('change',e=>{
+ const nh=parseFloat(e.target.value);
+ for(const it of state.items){
+  if(it.kind==='wallpaper'&&Math.abs(it.h-H)<0.01)it.h=nh;
+  if((it.kind==='loft')&&Math.abs(it.elev+it.h-H)<0.05)it.h=r2(nh-it.elev);
+  if(it.kind==='jhula')it.h=nh;
+ }
+ H=nh;
+ if(gWalls)buildWalls();
+ if(gCeiling)buildCeilingAndLights();
+ schedule();
+});
+
+let resetArm=0;
+$('#btnReset').onclick=()=>{
+ const b=$('#btnReset');
+ if(Date.now()-resetArm<3000){
+  state.items=defaults();state.sel=null;renderInspector();schedule();
+  b.textContent='Reset layout';b.classList.remove('warn');resetArm=0;return;
+ }
+ resetArm=Date.now();b.textContent='Tap again to reset';b.classList.add('warn');
+ setTimeout(()=>{b.textContent='Reset layout';b.classList.remove('warn');},3000);
+};
+
+function exportText(){
+ const L=state.items.map(it=>{
+  const f=fp(it);
+  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,swing:it.swing,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent};
+ });
+ const out={
+  plan:'C607 planner realistic v1',
+  note:'Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.',
+  ceiling_ft:H,
+  items:L
+ };
+ if(state.wallColor)out.wallColor=state.wallColor;
+ if(state.roomWallColors&&Object.keys(state.roomWallColors).length>0){
+  out.roomWallColors=Object.assign({},state.roomWallColors);
+ }
+ return JSON.stringify(out);
+}
+
+$('#btnExport').onclick=()=>{$('#io').value=exportText();$('#ioCard').scrollIntoView({behavior:'smooth',block:'center'});$('#io').select();};
+$('#btnCopy').onclick=async()=>{
+ const ta=$('#io');if(!ta.value)ta.value=exportText();
+ try{await navigator.clipboard.writeText(ta.value);$('#ioMsg').textContent='Copied.';}
+ catch(e){ta.select();try{document.execCommand('copy');$('#ioMsg').textContent='Copied.';}catch(e2){$('#ioMsg').textContent='Select the text and copy it manually.';}}
+};
+$('#btnLoad').onclick=()=>{
+ try{
+  const o=JSON.parse($('#io').value);if(!o.items)throw 0;
+  state.items=o.items.map(fromExport);
+  if(o.ceiling_ft){H=o.ceiling_ft;$('#ceil').value=String(H);if(gCeiling)buildCeilingAndLights();}
+  if(o.wallColor){state.wallColor=o.wallColor;}
+  if(o.roomWallColors){state.roomWallColors=Object.assign({},o.roomWallColors);}
+  if(gWalls)buildWalls();
+  if(typeof updateBeamMaterial==='function')updateBeamMaterial();
+  syncWallColorUI();
+  state.sel=null;renderInspector();schedule();$('#ioMsg').textContent='Layout loaded.';
+ }catch(e){$('#ioMsg').textContent='That does not look like a layout from this planner.';}
+};
+
+/* ---------- loop ---------- */
+let pending=false;
+function schedule(){
+ if(pending)return;pending=true;
+ requestAnimationFrame(()=>{
+  pending=false;renderPlan();syncInspector();
+  if(gItems){
+   buildItems();
+   if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+   render3D();
+  }
+  renderScope();save();
+ });
+}
+
+if(!load())state.items=defaults();
+$('#ceil').value=String(H);
+wallLabel();
+
+function getSelectedRoomTarget(){
+ const sel=$('#wallRoomSelect');
+ return (sel&&sel.value)?sel.value:'all';
+}
+
+function getWalkRoomTarget(){
+ const sel=$('#walkWallRoomSelect');
+ if(!sel)return 'all';
+ if(sel.value==='current'){
+  return roomOf(player.x,player.z);
+ }
+ return sel.value;
+}
+
+function syncWallColorUI(){
+ const roomTarget=getSelectedRoomTarget();
+ const walkRoomTarget=getWalkRoomTarget();
+
+ // Top bar room color UI
+ const topColorVal=(roomTarget==='all')?state.wallColor:(state.roomWallColors&&state.roomWallColors[roomTarget]?state.roomWallColors[roomTarget]:state.wallColor);
+ const topInfo=getWallColorInfo(topColorVal);
+ if($('#wallColor')){
+  if(WALL_COLORS[topColorVal]) $('#wallColor').value=topColorVal;
+  else $('#wallColor').value='custom';
+ }
+ if($('#customWallColor')) $('#customWallColor').value=topInfo.hex;
+ 
+ const resetBtn=$('#btnResetRoomColor');
+ if(resetBtn){
+  const hasCustom=(roomTarget!=='all'&&state.roomWallColors&&state.roomWallColors[roomTarget]);
+  resetBtn.style.display=hasCustom?'inline-block':'none';
+  if(hasCustom) resetBtn.textContent='↺ Reset '+roomTarget;
+ }
+
+ // Walk overlay room color UI
+ const walkColorVal=(walkRoomTarget==='all')?state.wallColor:(state.roomWallColors&&state.roomWallColors[walkRoomTarget]?state.roomWallColors[walkRoomTarget]:state.wallColor);
+ const walkInfo=getWallColorInfo(walkColorVal);
+ if($('#walkWallColor')){
+  if(WALL_COLORS[walkColorVal]) $('#walkWallColor').value=walkColorVal;
+  else $('#walkWallColor').value='custom';
+ }
+ if($('#walkCustomWallColor')) $('#walkCustomWallColor').value=walkInfo.hex;
+ 
+ const walkResetBtn=$('#walkResetRoomColor');
+ if(walkResetBtn){
+  const hasCustom=(walkRoomTarget!=='all'&&walkRoomTarget!=='Other'&&state.roomWallColors&&state.roomWallColors[walkRoomTarget]);
+  walkResetBtn.style.display=hasCustom?'inline-block':'none';
+  if(hasCustom) walkResetBtn.textContent='↺ Reset '+walkRoomTarget;
+ }
+}
+
+function applyWallColor(val,targetRoom){
+ if(val==='custom'){
+  const cp=$('#customWallColor')||$('#walkCustomWallColor');
+  if(cp)cp.click();
+  return;
+ }
+ const room=targetRoom!==undefined?targetRoom:getSelectedRoomTarget();
+ if(room==='all'||room==='Other'){
+  state.wallColor=val;
+ }else{
+  if(!state.roomWallColors)state.roomWallColors={};
+  state.roomWallColors[room]=val;
+ }
+ syncWallColorUI();
+ if(gWalls){
+  buildWalls();
+  if(typeof updateBeamMaterial==='function')updateBeamMaterial();
+  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+  render3D();
+ }
+ save();
+}
+
+function resetRoomWallColor(room){
+ const r=room||getSelectedRoomTarget();
+ if(r==='all'||!state.roomWallColors)return;
+ delete state.roomWallColors[r];
+ syncWallColorUI();
+ if(gWalls){
+  buildWalls();
+  if(typeof updateBeamMaterial==='function')updateBeamMaterial();
+  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+  render3D();
+ }
+ save();
+}
+
+if($('#wallRoomSelect')){
+ $('#wallRoomSelect').addEventListener('change',()=>syncWallColorUI());
+}
+if($('#walkWallRoomSelect')){
+ $('#walkWallRoomSelect').addEventListener('change',()=>syncWallColorUI());
+}
+if($('#btnResetRoomColor')){
+ $('#btnResetRoomColor').addEventListener('click',()=>resetRoomWallColor(getSelectedRoomTarget()));
+}
+if($('#walkResetRoomColor')){
+ $('#walkResetRoomColor').addEventListener('click',()=>resetRoomWallColor(getWalkRoomTarget()));
+}
+
+if($('#wallColor')){
+ $('#wallColor').addEventListener('change',e=>applyWallColor(e.target.value,getSelectedRoomTarget()));
+}
+if($('#walkWallColor')){
+ $('#walkWallColor').addEventListener('change',e=>applyWallColor(e.target.value,getWalkRoomTarget()));
+}
+if($('#customWallColor')){
+ $('#customWallColor').addEventListener('input',e=>applyWallColor(e.target.value,getSelectedRoomTarget()));
+}
+if($('#walkCustomWallColor')){
+ $('#walkCustomWallColor').addEventListener('input',e=>applyWallColor(e.target.value,getWalkRoomTarget()));
+}
+syncWallColorUI();
+const ioEl=$('#io');if(ioEl&&!ioEl.value)ioEl.value=exportText();
+if($('#walkHeightSlider')){
+ $('#walkHeightSlider').addEventListener('input',e=>{
+  setEyeHeight(parseFloat(e.target.value));
+ });
+}
+document.querySelectorAll('#heightChips .walk-chip').forEach(btn=>{
+ btn.addEventListener('click',e=>{
+  e.stopPropagation();
+  const h=parseFloat(btn.dataset.h);
+  if(!isNaN(h))setEyeHeight(h);
+ });
+});
+document.querySelectorAll('#fovChips .walk-chip').forEach(btn=>{
+ btn.addEventListener('click',e=>{
+  e.stopPropagation();
+  const f=parseFloat(btn.dataset.fov);
+  if(!isNaN(f))setFov(f);
+ });
+});
+updateFovBadge();
+syncHeightUI();
+renderInspector();renderPlan();renderScope();
+try{init3D();}catch(e){
+ console.error(e);
+ $('#viewMsg').style.display='flex';
+ $('#viewMsg').textContent='3D view could not start on this device. The 2D plan still works.';
+}
+try{
+ const urlParams=new URLSearchParams(window.location.search);
+ if(urlParams.has('wallColor'))applyWallColor(urlParams.get('wallColor'));
+ if(urlParams.has('sel')){
+  const q=urlParams.get('sel').toLowerCase();
+  const it=state.items.find(i=>i.label.toLowerCase().includes(q)||i.kind.toLowerCase()===q||i.id===q);
+  if(it){
+   select(it.id);
+   if(urlParams.has('fin')&&FIN[urlParams.get('fin')]){
+    it.fin=urlParams.get('fin');
+    renderInspector();
+    schedule();
+   }
+  }
+ }
+ if(urlParams.has('preset'))preset(urlParams.get('preset'));
+ if(urlParams.get('view')==='walk'){
+  const spk=urlParams.get('spawn');
+  setViewMode('walk',spk);
+  if(urlParams.has('pitch'))player.pitch=parseFloat(urlParams.get('pitch'));
+  if(urlParams.has('yaw'))player.yaw=parseFloat(urlParams.get('yaw'));
+  if(urlParams.has('x'))player.x=parseFloat(urlParams.get('x'));
+  if(urlParams.has('z'))player.z=parseFloat(urlParams.get('z'));
+  if(camera){
+   camera.position.set(player.x,walkEyeH,player.z);
+   camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
+  }
+  updateRoomBadge();
+  updatePlanAvatar();
+  render3D();
+ }
+ if(urlParams.get('fullscreen')==='1'||urlParams.get('fullscreen')==='true'){
+  $('#viewWrap').classList.add('is-fullscreen');
+  onFullscreenChange();
+ }
+ updateModelModeUI();
+}catch(e){}
+})();
+</script>
+</body>
+</html>
