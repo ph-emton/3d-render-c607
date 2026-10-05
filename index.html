@@ -224,6 +224,10 @@ label.inline-select select{padding:4px 6px;font-size:12px}
       <div id="viewWrap">
         <canvas id="view"></canvas>
         <div id="reticle"></div>
+        <div id="statsOverlay" style="display:none;position:absolute;top:12px;left:12px;z-index:30;background:rgba(18,18,22,0.88);color:#4fb3dc;border:1px solid rgba(79,179,220,0.35);border-radius:6px;padding:5px 9px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;pointer-events:none;backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,0.4)">
+          <div id="statsFps" style="font-weight:600">FPS: --</div>
+          <div id="statsMs" style="color:#d4d0c7">Frame: -- ms</div>
+        </div>
         <button id="btnFsFloating" class="walk-btn" title="Exit Fullscreen (Esc or F)" style="display:none;position:absolute;top:12px;right:12px;z-index:25">🗗 Exit Fullscreen</button>
         <div id="walkOverlay">
           <div class="walk-top">
@@ -333,15 +337,46 @@ label.inline-select select{padding:4px 6px;font-size:12px}
   </section>
 </main>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/DRACOLoader.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.174.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.174.0/examples/jsm/"
+  }
+}
+</script>
 <script src="assets/models/models_bundle.js"></script>
-<script>
-(function(){
-'use strict';
-const $=s=>document.querySelector(s);
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+const T = {
+  ...THREE,
+  OrbitControls,
+  GLTFLoader,
+  DRACOLoader,
+  KTX2Loader,
+  MeshoptDecoder,
+  RoomEnvironment,
+  RGBELoader,
+  EffectComposer,
+  RenderPass,
+  ShaderPass,
+  OutputPass
+};
+window.THREE = T;
+
+const $ = s => document.querySelector(s);
 const STORE='c607-planner-3d-models-v5';
 let H=10;
 
@@ -973,6 +1008,10 @@ document.addEventListener('keydown',e=>{
   if(typeof toggleFullscreen==='function')toggleFullscreen();
   e.preventDefault();return;
  }
+ if(k==='KeyP'||e.key==='p'||e.key==='P'){
+  if(typeof toggleStats==='function')toggleStats();
+  e.preventDefault();return;
+ }
  if(e.key==='Escape'){
   const wrap=$('#viewWrap');
   if(wrap&&wrap.classList.contains('is-fullscreen')){
@@ -1038,7 +1077,7 @@ function renderScope(){
 }
 
 /* ---------- 3D REALISTIC ENGINE ---------- */
-let T=window.THREE,renderer,scene,camera,controls;
+let renderer,scene,camera,controls;
 let gStatic,gWalls,gCeiling,gCeilingSlab,gItems,gLights,selHelper,fanBlades=[],rccBeamMesh=null;
 const matCache={};
 const texCache={};
@@ -1067,7 +1106,7 @@ function getWoodTex(baseHex,grainHex){
   x.globalAlpha=0.18+Math.random()*0.24;x.stroke();
  }
  x.globalAlpha=1.0;
- const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
+ const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
 }
 
 function getFabricTex(baseHex){
@@ -1082,7 +1121,7 @@ function getFabricTex(baseHex){
   x.beginPath();x.moveTo(i,0);x.lineTo(i,64);x.stroke();
   x.beginPath();x.moveTo(0,i);x.lineTo(64,i);x.stroke();
  }
- const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
+ const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
 }
 
 let contactShadowTex=null;
@@ -1095,7 +1134,7 @@ function getContactShadowTex(){
  g.addColorStop(0.7,'rgba(20,16,14,0.12)');
  g.addColorStop(1,'rgba(0,0,0,0)');
  x.fillStyle=g;x.fillRect(0,0,128,128);
- const t=new T.CanvasTexture(c);
+ const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;
  return contactShadowTex=t;
 }
 function addContactShadow(g,w,d,opacity){
@@ -1149,7 +1188,7 @@ function initProceduralTextures(){
  x1.strokeRect(527,15,482,994);
 
  const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
- const tIn=new T.CanvasTexture(c1);tIn.wrapS=tIn.wrapT=T.RepeatWrapping;tIn.anisotropy=maxAniso;
+ const tIn=new T.CanvasTexture(c1);tIn.colorSpace=T.SRGBColorSpace;tIn.wrapS=tIn.wrapT=T.RepeatWrapping;tIn.anisotropy=maxAniso;
 
  // Roughness Map: High-gloss polished porcelain (0.06), dry matte grout (0.98)
  const c1r=document.createElement('canvas');c1r.width=c1r.height=1024;const x1r=c1r.getContext('2d');
@@ -1172,21 +1211,21 @@ function initProceduralTextures(){
  x2.fillStyle='#3a3f44';x2.fillRect(0,0,128,128);
  for(let i=0;i<140;i++){x2.fillStyle=Math.random()>0.5?'rgba(80,88,96,0.25)':'rgba(35,40,44,0.3)';x2.fillRect(Math.random()*128,Math.random()*128,8+Math.random()*16,6+Math.random()*12);}
  x2.strokeStyle='#22262a';x2.lineWidth=3;x2.strokeRect(1,1,126,126);
- const tWet=new T.CanvasTexture(c2);tWet.wrapS=tWet.wrapT=T.RepeatWrapping;
+ const tWet=new T.CanvasTexture(c2);tWet.colorSpace=T.SRGBColorSpace;tWet.wrapS=tWet.wrapT=T.RepeatWrapping;
 
  // 3. Balcony terracotta pavers (128x128)
  const c3=document.createElement('canvas');c3.width=c3.height=128;const x3=c3.getContext('2d');
  x3.fillStyle='#b8694a';x3.fillRect(0,0,128,128);
  for(let i=0;i<100;i++){x3.fillStyle=Math.random()>0.5?'rgba(220,135,100,0.2)':'rgba(140,65,40,0.25)';x3.fillRect(Math.random()*128,Math.random()*128,10+Math.random()*18,10+Math.random()*18);}
  x3.strokeStyle='#7c3f28';x3.lineWidth=3;x3.strokeRect(1,1,126,126);
- const tOut=new T.CanvasTexture(c3);tOut.wrapS=tOut.wrapT=T.RepeatWrapping;
+ const tOut=new T.CanvasTexture(c3);tOut.colorSpace=T.SRGBColorSpace;tOut.wrapS=tOut.wrapT=T.RepeatWrapping;
 
  // 4. Quilted duvet texture (128x128)
  const c4=document.createElement('canvas');c4.width=c4.height=128;const x4=c4.getContext('2d');
  x4.fillStyle='#faf8f4';x4.fillRect(0,0,128,128);
  x4.strokeStyle='rgba(180,172,160,0.34)';x4.lineWidth=1.5;
  for(let i=-64;i<192;i+=32){x4.beginPath();x4.moveTo(i,0);x4.lineTo(i+128,128);x4.stroke();x4.beginPath();x4.moveTo(i+128,0);x4.lineTo(i,128);x4.stroke();}
- const tBed=new T.CanvasTexture(c4);tBed.wrapS=tBed.wrapT=T.RepeatWrapping;
+ const tBed=new T.CanvasTexture(c4);tBed.colorSpace=T.SRGBColorSpace;tBed.wrapS=tBed.wrapT=T.RepeatWrapping;
 
  // 5. Subway backsplash tile (128x128)
  const c5=document.createElement('canvas');c5.width=c5.height=128;const x5=c5.getContext('2d');
@@ -1196,7 +1235,7 @@ function initProceduralTextures(){
  x5.strokeRect(-32,32,64,32);x5.strokeRect(32,32,64,32);x5.strokeRect(96,32,64,32);
  x5.strokeRect(0,64,64,32);x5.strokeRect(64,64,64,32);
  x5.strokeRect(-32,96,64,32);x5.strokeRect(32,96,64,32);x5.strokeRect(96,96,64,32);
- const tSplash=new T.CanvasTexture(c5);tSplash.wrapS=tSplash.wrapT=T.RepeatWrapping;
+ const tSplash=new T.CanvasTexture(c5);tSplash.colorSpace=T.SRGBColorSpace;tSplash.wrapS=tSplash.wrapT=T.RepeatWrapping;
 
  // 6. Woven living room rug (256x256)
  const c6=document.createElement('canvas');c6.width=c6.height=256;const x6=c6.getContext('2d');
@@ -1204,7 +1243,7 @@ function initProceduralTextures(){
  x6.strokeStyle='rgba(120,112,98,0.22)';x6.lineWidth=1.5;
  for(let i=0;i<256;i+=16){x6.strokeRect(i,0,8,256);x6.strokeRect(0,i,256,8);}
  x6.strokeStyle='#988e7d';x6.lineWidth=4;x6.strokeRect(8,8,240,240);
- const tRug=new T.CanvasTexture(c6);tRug.wrapS=tRug.wrapT=T.RepeatWrapping;
+ const tRug=new T.CanvasTexture(c6);tRug.colorSpace=T.SRGBColorSpace;tRug.wrapS=tRug.wrapT=T.RepeatWrapping;
 
  return pTex={in:tIn,inRough:tInRough,inBump:tInBump,wet:tWet,out:tOut,bed:tBed,splash:tSplash,rug:tRug};
 }
@@ -1291,7 +1330,7 @@ function wpTex(hex){
  const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
  x.fillStyle=hex;x.fillRect(0,0,128,128);x.strokeStyle=shade(hex,1.18);x.lineWidth=3;
  for(let i=0;i<4;i++){x.beginPath();x.moveTo(i*32+16,0);x.lineTo(i*32+32,32);x.lineTo(i*32+16,64);x.lineTo(i*32,32);x.closePath();x.stroke();x.beginPath();x.moveTo(i*32+16,64);x.lineTo(i*32+32,96);x.lineTo(i*32+16,128);x.lineTo(i*32,96);x.closePath();x.stroke();}
- const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;return wpTexCache[hex]=t;
+ const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;return wpTexCache[hex]=t;
 }
 
 let wpMatCache={};
@@ -1507,6 +1546,7 @@ function getWallpaperMaterial(it, w, h) {
   }
 
   const tex = new T.CanvasTexture(c);
+  tex.colorSpace = T.SRGBColorSpace;
   tex.wrapS = tex.wrapT = T.RepeatWrapping;
   const rw = (w || 5) / 2.5;
   const rh = (h || 10) / 2.5;
@@ -1856,19 +1896,22 @@ let modelsLoading = false;
 let modelsLoaded = false;
 
 function initModelLoader() {
-  if (typeof THREE === 'undefined' || !THREE.GLTFLoader) {
+  if (typeof T === 'undefined' || !T.GLTFLoader) {
     console.warn('[Option B] Three.js GLTFLoader is not available');
     return;
   }
   try {
-    gltfLoader = new THREE.GLTFLoader();
-    if (THREE.DRACOLoader) {
-      const draco = new THREE.DRACOLoader();
-      draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.4.3/');
+    gltfLoader = new T.GLTFLoader();
+    if (T.DRACOLoader) {
+      const draco = new T.DRACOLoader();
+      draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
       gltfLoader.setDRACOLoader(draco);
     }
+    if (T.MeshoptDecoder) {
+      gltfLoader.setMeshoptDecoder(T.MeshoptDecoder);
+    }
   } catch (err) {
-    console.warn('[Option B] Could not initialize DRACOLoader:', err);
+    console.warn('[Option B] Could not initialize DRACOLoader/MeshoptDecoder:', err);
   }
 
   if (!window.EMBEDDED_MODELS) {
@@ -1946,18 +1989,18 @@ function hasModelFor(it) {
 }
 
 function fitModelToDimensions(modelScene, targetW, targetD, targetH, rotY = 0) {
-  const pivot = new THREE.Group();
+  const pivot = new T.Group();
   if (rotY) modelScene.rotation.y = rotY;
   pivot.add(modelScene);
   pivot.updateMatrixWorld(true);
 
-  const box = new THREE.Box3().setFromObject(pivot);
-  const size = box.getSize(new THREE.Vector3());
-  const center = box.getCenter(new THREE.Vector3());
+  const box = new T.Box3().setFromObject(pivot);
+  const size = box.getSize(new T.Vector3());
+  const center = box.getCenter(new T.Vector3());
 
   pivot.position.set(-center.x, -box.min.y, -center.z);
 
-  const wrapper = new THREE.Group();
+  const wrapper = new T.Group();
   wrapper.add(pivot);
 
   const sx = targetW / (size.x || 1);
@@ -2329,6 +2372,7 @@ function getRoyalePaintTex(hex){
  ctx.putImageData(imgData,0,0);
 
  const t=new T.CanvasTexture(c);
+ t.colorSpace=T.SRGBColorSpace;
  t.wrapS=t.wrapT=T.RepeatWrapping;
  t.repeat.set(6,6);
  return royaleTexCache[hex]=t;
@@ -2753,7 +2797,54 @@ function buildItems(){
 }
 const getCSS=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function updateBg(){if(scene)scene.background=new T.Color(viewMode==='walk'?'#282623':(getCSS('--bg')||'#f6f4ef'));render3D();}
-function render3D(){if(renderer)renderer.render(scene,camera);}
+let statsVisible=false;
+let statsFrameCount=0, statsLastFpsTime=performance.now();
+let statsCurrentFps=60, statsLastFrameMs=0;
+let statsRafId=null;
+
+function recordStats(renderMs){
+ if(renderMs!=null&&renderMs>0)statsLastFrameMs=renderMs;
+ statsFrameCount++;
+ const now=performance.now();
+ if(now-statsLastFpsTime>=500){
+  statsCurrentFps=Math.round((statsFrameCount*1000)/(now-statsLastFpsTime));
+  statsFrameCount=0;
+  statsLastFpsTime=now;
+  const fpsEl=$('#statsFps');
+  if(fpsEl)fpsEl.textContent='FPS: '+statsCurrentFps;
+ }
+ const msEl=$('#statsMs');
+ if(msEl&&statsLastFrameMs!=null)msEl.textContent='Frame: '+statsLastFrameMs.toFixed(1)+' ms';
+}
+
+function statsOrbitLoop(){
+ if(!statsVisible||viewMode!=='orbit'){statsRafId=null;return;}
+ recordStats(statsLastFrameMs);
+ statsRafId=requestAnimationFrame(statsOrbitLoop);
+}
+
+function toggleStats(){
+ statsVisible=!statsVisible;
+ const ov=$('#statsOverlay');
+ if(ov)ov.style.display=statsVisible?'block':'none';
+ if(statsVisible){
+  statsLastFpsTime=performance.now();
+  statsFrameCount=0;
+  if(viewMode==='orbit'){
+   render3D();
+   if(!statsRafId)statsRafId=requestAnimationFrame(statsOrbitLoop);
+  }
+ }
+}
+
+function render3D(){
+ if(!renderer)return;
+ const t0=performance.now();
+ if(typeof composer!=='undefined'&&composer)composer.render();
+ else renderer.render(scene,camera);
+ const dt=performance.now()-t0;
+ if(statsVisible)recordStats(dt);
+}
 
 /* ---------- Walk POV & Navigation ---------- */
 let viewMode='orbit';
@@ -3118,6 +3209,7 @@ function initEnvMap(rend, scn){
   x.fillRect(0,118,512,10);
 
   const tex=new T.CanvasTexture(c);
+  tex.colorSpace=T.SRGBColorSpace;
   const envRT=pmrem.fromEquirectangular(tex);
   scn.environment=envRT.texture;
   tex.dispose();
@@ -3132,7 +3224,7 @@ function init3D(){
  const cv=$('#view');
  renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
- if(T.sRGBEncoding)renderer.outputEncoding=T.sRGBEncoding;
+ renderer.outputColorSpace=T.SRGBColorSpace;
  renderer.toneMapping=T.ACESFilmicToneMapping;
  renderer.toneMappingExposure=0.95;
  renderer.shadowMap.enabled=true;
@@ -3553,7 +3645,6 @@ try{
  }
  updateModelModeUI();
 }catch(e){}
-})();
 </script>
 </body>
 </html>
