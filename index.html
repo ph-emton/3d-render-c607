@@ -411,7 +411,6 @@ label.inline-select select{padding:4px 6px;font-size:12px}
   }
 }
 </script>
-<script src="assets/models/models_bundle.js"></script>
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -633,7 +632,7 @@ function defaults(){
  state.usePostProcessing = true;
  return SEED.items.map(fromExport);
 }
-let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true,usePostProcessing:true,qualityTier:'auto',renderScale:1.0};
+let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:false,usePostProcessing:true,qualityTier:'auto',renderScale:1.0};
 function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto',renderScale:state.renderScale||1.0}));}catch(e){}}
 function load(){
  try{
@@ -651,7 +650,7 @@ function load(){
    state.exposure=typeof s.exposure==='number'?s.exposure:0.95;
    state.envIntensity=typeof s.envIntensity==='number'?s.envIntensity:0.88;
    state.ceilingMode=s.ceilingMode||'auto';
-   state.use3dModels=s.use3dModels!==false;
+   state.use3dModels=s.use3dModels===true;
    state.usePostProcessing=s.usePostProcessing!==false;
    state.qualityTier=s.qualityTier||'auto';
    state.renderScale=typeof s.renderScale==='number'?s.renderScale:1.0;
@@ -2524,20 +2523,57 @@ let gltfLoader = null;
 let modelsLoading = false;
 let modelsLoaded = false;
 
-function initModelLoader() {
+function ensureModelsLoaded(onComplete) {
+  if (modelsLoaded) {
+    if (onComplete) onComplete();
+    return;
+  }
+  if (window.EMBEDDED_MODELS) {
+    initModelLoader(onComplete);
+    return;
+  }
+  // Dynamically load models_bundle.js only when requested
+  const b1 = $('#btnModelMode');
+  if (b1) b1.textContent = '⏳ Loading Models...';
+  const b2 = $('#walkModelToggle');
+  if (b2) b2.textContent = '⏳ Loading...';
+
+  const script = document.createElement('script');
+  script.src = 'assets/models/models_bundle.js';
+  script.onload = () => {
+    initModelLoader(() => {
+      updateModelModeUI();
+      if (onComplete) onComplete();
+    });
+  };
+  script.onerror = (err) => {
+    console.error('Failed to load assets/models/models_bundle.js', err);
+    state.use3dModels = false;
+    updateModelModeUI();
+  };
+  document.head.appendChild(script);
+}
+
+function initModelLoader(onComplete) {
+  if (modelsLoaded) {
+    if (onComplete) onComplete();
+    return;
+  }
   if (typeof T === 'undefined' || !T.GLTFLoader) {
     console.warn('[Option B] Three.js GLTFLoader is not available');
     return;
   }
   try {
-    gltfLoader = new T.GLTFLoader();
-    if (T.DRACOLoader) {
-      const draco = new T.DRACOLoader();
-      draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
-      gltfLoader.setDRACOLoader(draco);
-    }
-    if (T.MeshoptDecoder) {
-      gltfLoader.setMeshoptDecoder(T.MeshoptDecoder);
+    if (!gltfLoader) {
+      gltfLoader = new T.GLTFLoader();
+      if (T.DRACOLoader) {
+        const draco = new T.DRACOLoader();
+        draco.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.7/');
+        gltfLoader.setDRACOLoader(draco);
+      }
+      if (T.MeshoptDecoder) {
+        gltfLoader.setMeshoptDecoder(T.MeshoptDecoder);
+      }
     }
   } catch (err) {
     console.warn('[Option B] Could not initialize DRACOLoader/MeshoptDecoder:', err);
@@ -2564,7 +2600,8 @@ function initModelLoader() {
           modelsLoaded = true;
           modelsLoading = false;
           console.log(`[Option B] All ${total} 3D glTF models loaded and cached successfully!`);
-          if (state.use3dModels !== false) {
+          if (onComplete) onComplete();
+          else if (state.use3dModels) {
             buildItems();
             render3D();
           }
@@ -2575,7 +2612,8 @@ function initModelLoader() {
         if (loadedCount === total) {
           modelsLoaded = true;
           modelsLoading = false;
-          if (state.use3dModels !== false) {
+          if (onComplete) onComplete();
+          else if (state.use3dModels) {
             buildItems();
             render3D();
           }
@@ -2882,16 +2920,27 @@ function buildItem(it) {
 }
 
 function toggleModelMode() {
-  state.use3dModels = !state.use3dModels;
-  updateModelModeUI();
-  buildItems();
-  save();
-  if (renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
-  render3D();
+  if (!state.use3dModels) {
+    state.use3dModels = true;
+    updateModelModeUI();
+    ensureModelsLoaded(() => {
+      buildItems();
+      save();
+      if (renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
+      render3D();
+    });
+  } else {
+    state.use3dModels = false;
+    updateModelModeUI();
+    buildItems();
+    save();
+    if (renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
+    render3D();
+  }
 }
 
 function updateModelModeUI() {
-  const isOn = state.use3dModels !== false;
+  const isOn = !!state.use3dModels;
   const b1 = $('#btnModelMode');
   if (b1) {
     b1.className = isOn ? 'walk-btn on' : 'walk-btn';
@@ -4442,7 +4491,9 @@ function init3D(){
  buildWalls();
  buildCeilingAndLights();
  buildItems();
- initModelLoader();
+ if(state.use3dModels){
+  ensureModelsLoaded();
+ }
  initComposer();
  applyQualityTierSettings();
  syncQualityTierUI();
