@@ -172,7 +172,6 @@ label.inline-select select{padding:4px 6px;font-size:12px}
             <option value="open">🚪 Doors: Open (85°)</option>
           </select>
         </label>
-        <button id="btnSelectBasin" class="walk-btn" style="pointer-events:auto;font-size:12px;padding:4px 9px" title="Customize Hall Washbasin, Vanity &amp; Mirror">🪞 Washbasin</button>
         <label class="sub inline-select" style="gap:4px">Room:
           <select id="wallRoomSelect" title="Select room to paint or choose All Rooms" style="font-weight:500;padding:4px 6px">
             <option value="all">🎨 All Rooms (Global)</option>
@@ -1909,6 +1908,12 @@ function mergeGroupMeshesByMaterial(rootGroup) {
 
  rootGroup.traverse(child => {
   if (child === rootGroup) return;
+  if (child.userData && child.userData.noMerge) return;
+  let p = child.parent;
+  while(p && p !== rootGroup){
+   if (p.userData && p.userData.noMerge) return;
+   p = p.parent;
+  }
   if (child.isMesh) {
    if (Array.isArray(child.material)) {
     allMeshes.push(...splitBoxMeshFaces(child));
@@ -3443,53 +3448,58 @@ function buildStatic(){
    const chromeMat = mat('', 0, 'chrome');
    const mirrorMat = mat('', 0, 'mirror');
 
-   // 1. Finished wall cladding panel mounted against the wall at +fx.w/2 (x = 15.0)
-   B(g, 0.05, 5.0, fx.d + 0.1, fx.w/2 + 0.025, 2.5, 0, mat('#1c1e22', false, 'granite'));
+   // Front surface of wall in group g coordinates: (14.75 - 14.45) = +0.30
+   const wallX = 0.30;
+   const frontX = -0.55;
+   const vanityDepth = wallX - frontX; // 0.85
+   const vanityCenterX = (frontX + wallX) / 2; // -0.125
 
-   // 2. Wooden/finished vanity cabinet below counter
-   B(g, fx.w, 2.4, fx.d, 0, 1.2, 0, vanityMat);
+   // 1. Wooden/finished vanity cabinet below counter
+   B(g, vanityDepth, 2.4, fx.d, vanityCenterX, 1.2, 0, vanityMat);
    // Vanity drawer / shutter reveal line on front face (facing North -X)
-   B(g, 0.02, 0.03, fx.d * 0.95, -fx.w/2 - 0.01, 1.2, 0, mat('#1a1a1a'));
+   B(g, 0.02, 0.03, fx.d * 0.95, frontX - 0.01, 1.2, 0, mat('#1a1a1a'));
    // Sleek aluminum profile drawer pull on front face (facing North -X)
-   B(g, 0.04, 0.03, fx.d * 0.6, -fx.w/2 - 0.02, 1.8, 0, mat('#222224', true));
+   B(g, 0.04, 0.03, fx.d * 0.6, frontX - 0.02, 1.8, 0, mat('#222224', true));
 
-   // 3. Vanity countertop (Granite / Marble / Quartz)
-   B(g, fx.w + 0.08, 0.12, fx.d + 0.08, -0.02, 2.46, 0, counterMat);
+   // 2. Vanity countertop (Granite / Marble / Quartz)
+   B(g, vanityDepth + 0.04, 0.12, fx.d + 0.06, vanityCenterX - 0.02, 2.46, 0, counterMat);
 
-   // 4. Glossy ceramic washbasin vessel bowl placed towards front (-X, North)
-   const rBowl = Math.min(fx.d * 0.38, 0.52);
-   const bowlMesh = C(g, rBowl, rBowl * 0.85, 0.30, -0.06, 2.61, 0, bowlMat);
+   // 3. Glossy ceramic washbasin vessel bowl placed on countertop towards front (-X, North)
+   const rBowl = Math.min(fx.d * 0.38, 0.50);
+   const bowlCenter = vanityCenterX - 0.05;
+   const bowlMesh = C(g, rBowl, rBowl * 0.82, 0.34, bowlCenter, 2.69, 0, bowlMat);
    bowlMesh.userData = { noMerge: true };
    // Chrome pop-up drain
-   const drainMesh = C(g, 0.08, 0.08, 0.02, -0.06, 2.76, 0, chromeMat);
+   const drainMesh = C(g, 0.09, 0.09, 0.02, bowlCenter, 2.85, 0, chromeMat);
    drainMesh.userData = { noMerge: true };
 
-   // 5. Chrome single-lever mixer faucet at back (+X), spout pointing North (-X into bowl)
-   const faucetBody = C(g, 0.045, 0.045, 0.65, fx.w/2 - 0.22, 2.82, 0, chromeMat);
+   // 4. Chrome single-lever mixer faucet mounted on counter at back, spout pointing North (-X into bowl)
+   const faucetX = wallX - 0.16;
+   const faucetBody = C(g, 0.045, 0.045, 0.65, faucetX, 2.82, 0, chromeMat);
    faucetBody.userData = { noMerge: true };
-   B(g, 0.32, 0.05, 0.05, fx.w/2 - 0.36, 3.12, 0, chromeMat);
-   B(g, 0.12, 0.025, 0.04, fx.w/2 - 0.20, 3.18, 0, chromeMat);
+   B(g, 0.30, 0.05, 0.05, faucetX - 0.15, 3.12, 0, chromeMat);
+   B(g, 0.12, 0.025, 0.04, faucetX, 3.18, 0, chromeMat);
 
-   // 6. Circular LED vanity mirror mounted on wall (+fx.w/2) facing North (-X towards hall)
+   // 5. Circular LED vanity mirror mounted cleanly on wall face (+0.30) facing North (-X towards hall)
    const rMirror = Math.min(fx.d * 0.44, 0.68);
    if(state.basinMirrorBacklight !== false){
-    const glowGeo = new T.CylinderGeometry(rMirror + 0.06, rMirror + 0.06, 0.015, 36);
+    const glowGeo = new T.CylinderGeometry(rMirror + 0.08, rMirror + 0.08, 0.015, 36);
     const glowMesh = new T.Mesh(glowGeo, mat('#fff4df', 0, 'glow'));
-    glowMesh.position.set(fx.w/2 - 0.005, 4.25, 0);
+    glowMesh.position.set(wallX - 0.01, 4.35, 0);
     glowMesh.rotation.z = Math.PI / 2;
     glowMesh.userData = { noMerge: true };
     g.add(glowMesh);
    }
-   const rimGeo = new T.CylinderGeometry(rMirror + 0.015, rMirror + 0.015, 0.028, 36);
+   const rimGeo = new T.CylinderGeometry(rMirror + 0.02, rMirror + 0.02, 0.028, 36);
    const rimMesh = new T.Mesh(rimGeo, mat('#222428', true));
-   rimMesh.position.set(fx.w/2 - 0.018, 4.25, 0);
+   rimMesh.position.set(wallX - 0.025, 4.35, 0);
    rimMesh.rotation.z = Math.PI / 2;
    rimMesh.userData = { noMerge: true };
    g.add(rimMesh);
 
    const mirrorGeo = new T.CylinderGeometry(rMirror, rMirror, 0.025, 36);
    const mirrorMesh = new T.Mesh(mirrorGeo, mirrorMat);
-   mirrorMesh.position.set(fx.w/2 - 0.02, 4.25, 0);
+   mirrorMesh.position.set(wallX - 0.035, 4.35, 0);
    mirrorMesh.rotation.z = Math.PI / 2;
    mirrorMesh.castShadow = true;
    mirrorMesh.receiveShadow = true;
@@ -3586,11 +3596,11 @@ function buildWalls(){
     let hingeSide = 'start';
     let swingSign = 1;
 
-    // 1. Balcony to Bedroom door: y = 6.33, a=0.8, b=3.6
-    // opens inwards into bedroom (+Z), hinge on opposite side (x = 3.5)
+    // 1. Balcony in kids bedroom door: y = 6.33, a=0.8, b=3.6
+    // opens outwards into balcony (-Z), hinge on opposite side (x = 3.5)
     if(hz && Math.abs(W.y - 6.33) < 0.2 && Math.abs(o.a - 0.8) < 0.3){
      hingeSide = 'end';
-     swingSign = 1;
+     swingSign = -1;
     }
     // 2. Master bedroom / Brother's room door: y = 27.4, a=11.8, b=14.8
     // opens inwards into bedroom (+Z), hinge on same side (x = 11.9)
@@ -3610,6 +3620,12 @@ function buildWalls(){
      hingeSide = 'end';
      swingSign = 1;
     }
+    // 5. Hall bathroom door (Common toilet): x = 15, a=19.6, b=22.2
+    // opens inwards into bathroom (+X), hinge on start side (y = 19.7)
+    else if(!hz && Math.abs(W.x - 15) < 0.2 && Math.abs(o.a - 19.6) < 0.3){
+     hingeSide = 'start';
+     swingSign = 1;
+    }
     else if(hz){
      hingeSide = 'start';
      swingSign = 1;
@@ -3619,14 +3635,16 @@ function buildWalls(){
     }
 
     if(hz){
-     B(gWalls,0.18,o.zt,W.d+0.04,o.a+0.09,o.zt/2,W.y,jm);
-     B(gWalls,0.18,o.zt,W.d+0.04,o.b-0.09,o.zt/2,W.y,jm);
-     B(gWalls,o.b-o.a,0.18,W.d+0.04,(o.a+o.b)/2,o.zt-0.09,W.y,jm);
-     B(gWalls,o.b-o.a,0.03,W.d,(o.a+o.b)/2,0.015,W.y,mat('#726456',true));
+     const wallZ = W.y + W.d/2;
+     B(gWalls,0.18,o.zt,W.d+0.04,o.a+0.09,o.zt/2,wallZ,jm);
+     B(gWalls,0.18,o.zt,W.d+0.04,o.b-0.09,o.zt/2,wallZ,jm);
+     B(gWalls,o.b-o.a,0.18,W.d+0.04,(o.a+o.b)/2,o.zt-0.09,wallZ,jm);
+     B(gWalls,o.b-o.a,0.03,W.d,(o.a+o.b)/2,0.015,wallZ,mat('#726456',true));
 
      const dg = new T.Group();
+     dg.userData = { noMerge: true, isDoor: true };
      const pivotX = (hingeSide === 'end') ? (o.b - 0.10) : (o.a + 0.10);
-     dg.position.set(pivotX, 0, W.y);
+     dg.position.set(pivotX, 0, wallZ);
      dg.rotation.y = swingSign * doorAngle;
 
      const leafCenter = (hingeSide === 'end') ? (-doorW / 2) : (doorW / 2);
@@ -3639,14 +3657,16 @@ function buildWalls(){
      B(dg, 0.26, 0.04, 0.05, hx+leverOffset, 3.22, -doorThick/2-0.04, handleMat);
      gWalls.add(dg);
     }else{
-     B(gWalls,W.w+0.04,o.zt,0.18,W.x,o.zt/2,o.a+0.09,jm);
-     B(gWalls,W.w+0.04,o.zt,0.18,W.x,o.zt/2,o.b-0.09,jm);
-     B(gWalls,W.w+0.04,0.18,o.b-o.a,W.x,o.zt-0.09,(o.a+o.b)/2,jm);
-     B(gWalls,W.w,0.03,o.b-o.a,W.x,0.015,(o.a+o.b)/2,mat('#726456',true));
+     const wallX = W.x + W.w/2;
+     B(gWalls,W.w+0.04,o.zt,0.18,wallX,o.zt/2,o.a+0.09,jm);
+     B(gWalls,W.w+0.04,o.zt,0.18,wallX,o.zt/2,o.b-0.09,jm);
+     B(gWalls,W.w+0.04,0.18,o.b-o.a,wallX,o.zt-0.09,(o.a+o.b)/2,jm);
+     B(gWalls,W.w,0.03,o.b-o.a,wallX,0.015,(o.a+o.b)/2,mat('#726456',true));
 
      const dg = new T.Group();
+     dg.userData = { noMerge: true, isDoor: true };
      const pivotZ = (hingeSide === 'end') ? (o.b - 0.10) : (o.a + 0.10);
-     dg.position.set(W.x, 0, pivotZ);
+     dg.position.set(wallX, 0, pivotZ);
      dg.rotation.y = swingSign * doorAngle;
 
      const leafCenter = (hingeSide === 'end') ? (-doorW / 2) : (doorW / 2);
@@ -5434,31 +5454,6 @@ if($('#roomDoorSelect')){
 if($('#walkDoorSelect')){
  $('#walkDoorSelect').value=state.roomDoorState||'partial';
  $('#walkDoorSelect').addEventListener('change',e=>applyDoorState(e.target.value));
-}
-if($('#btnSelectBasin')){
- $('#btnSelectBasin').addEventListener('click',()=>{
-  select('fx_basin');
-  const insp = $('#insp');
-  if(insp) insp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-  if(viewMode === 'orbit' && controls && camera){
-   controls.target.set(14.45, 3.2, 23.7);
-   camera.position.set(9.5, 4.5, 23.7);
-   controls.update();
-   render3D();
-  }else if(viewMode === 'walk'){
-   player.x = 10.5;
-   player.z = 23.7;
-   player.yaw = -Math.PI / 2;
-   player.pitch = 0.05;
-   if(camera){
-    camera.position.set(player.x, walkEyeH, player.z);
-    camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
-   }
-   updateRoomBadge();
-   updatePlanAvatar();
-   render3D();
-  }
- });
 }
 
 const ioEl=$('#io');if(ioEl&&!ioEl.value)ioEl.value=exportText();
