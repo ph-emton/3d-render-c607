@@ -127,29 +127,36 @@ async function capture() {
     }
 
     // Benchmark FPS and frame time in walk mode
-    console.log('\n=== Benchmarking performance (Walk mode, 120 frames) ===');
+    console.log('\n=== Benchmarking performance (Walk mode) ===');
     await page.send('Page.navigate', { url: 'http://localhost:8080/?view=walk&spawn=hall&fullscreen=1' });
     await sleep(2500);
 
     const benchResult = await page.send('Runtime.evaluate', {
       expression: `new Promise(resolve => {
-        let frames = 0;
-        let totalTime = 0;
-        const start = performance.now();
-        function loop() {
-          frames++;
-          if (frames >= 120) {
-            const dur = performance.now() - start;
-            resolve({
-              fps: (frames * 1000) / dur,
-              avgFrameMs: dur / frames,
-              frames
-            });
-            return;
+        // Toggle on stats overlay to enable engine timing
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'p', code: 'KeyP' }));
+        setTimeout(() => {
+          let frames = 0;
+          const start = performance.now();
+          function loop() {
+            frames++;
+            if (frames >= 60) {
+              const dur = performance.now() - start;
+              const msEl = document.querySelector('#statsMs');
+              const fpsEl = document.querySelector('#statsFps');
+              resolve({
+                fps: (frames * 1000) / dur,
+                avgFrameMs: dur / frames,
+                engineFrameMs: msEl ? msEl.textContent : 'N/A',
+                engineFps: fpsEl ? fpsEl.textContent : 'N/A',
+                frames
+              });
+              return;
+            }
+            requestAnimationFrame(loop);
           }
           requestAnimationFrame(loop);
-        }
-        requestAnimationFrame(loop);
+        }, 1000);
       })`,
       awaitPromise: true,
       returnByValue: true
@@ -157,8 +164,10 @@ async function capture() {
 
     const bench = benchResult.result.value;
     console.log(`Performance Results:`);
-    console.log(`  FPS: ${bench.fps.toFixed(1)}`);
-    console.log(`  Avg Frame Time: ${bench.avgFrameMs.toFixed(2)} ms`);
+    console.log(`  Engine Render Time: ${bench.engineFrameMs}`);
+    console.log(`  Engine Measured FPS: ${bench.engineFps}`);
+    console.log(`  Compositor Loop FPS: ${bench.fps.toFixed(1)}`);
+    console.log(`  Compositor Avg Frame Interval: ${bench.avgFrameMs.toFixed(2)} ms`);
     console.log(`  Benchmarked over ${bench.frames} frames`);
 
     // Clean up

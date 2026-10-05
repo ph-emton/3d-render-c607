@@ -210,6 +210,7 @@ label.inline-select select{padding:4px 6px;font-size:12px}
           </select>
           <input type="color" id="customWallColor" value="#ede5d6" title="Pick custom Royale wall color" style="width:24px;height:24px;padding:0;border:1px solid rgba(0,0,0,0.2);border-radius:4px;cursor:pointer;vertical-align:middle;margin-left:2px">
           <button type="button" id="btnResetRoomColor" class="walk-btn" style="display:none;font-size:11px;padding:3px 7px;margin-left:2px" title="Reset this room to follow the global wall color">Reset Room</button>
+          <button type="button" id="btnWallMural" class="walk-btn" style="font-size:11px;padding:3px 7px;margin-left:2px" title="Upload custom wallpaper or mural image for any wall">🖼️ Wallpaper / Image</button>
         </label>
         <button id="btnCeil" title="Toggle 3D ceiling (Auto / On / Off)">Ceiling: auto</button>
         <div id="presets" style="display:flex;gap:6px;flex-wrap:wrap">
@@ -227,6 +228,41 @@ label.inline-select select{padding:4px 6px;font-size:12px}
         <div id="statsOverlay" style="display:none;position:absolute;top:12px;left:12px;z-index:30;background:rgba(18,18,22,0.88);color:#4fb3dc;border:1px solid rgba(79,179,220,0.35);border-radius:6px;padding:5px 9px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;pointer-events:none;backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,0.4)">
           <div id="statsFps" style="font-weight:600">FPS: --</div>
           <div id="statsMs" style="color:#d4d0c7">Frame: -- ms</div>
+          <div id="statsTone" style="color:#a0d0a0;font-size:10px;margin-top:2px">Tone: ACESFilmic | Exp: 0.95</div>
+          <div id="statsLights" style="color:#e0be80;font-size:10px">Lights: 10 downlights · 6 windows · HDRI</div>
+        </div>
+        <div id="wallMuralModal" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:45;background:rgba(22,22,26,0.95);color:#f0ece1;border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:16px 20px;width:340px;max-width:92vw;box-shadow:0 12px 36px rgba(0,0,0,0.6);backdrop-filter:blur(10px)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <h3 style="margin:0;font-size:14px;font-weight:700;color:#fff">🖼️ Custom Wall Wallpaper / Mural</h3>
+            <button type="button" id="btnCloseMuralModal" style="background:none;border:none;color:#aaa;font-size:18px;cursor:pointer;line-height:1">✕</button>
+          </div>
+          <label style="display:block;font-size:12px;margin-bottom:8px">Target Room:
+            <select id="muralTargetRoom" style="width:100%;margin-top:4px;padding:5px;background:#141418;color:#fff;border:1px solid #444;border-radius:4px">
+              <option value="Hall">Hall (Living Room)</option>
+              <option value="Brother's room">Brother's room</option>
+              <option value="Your room">Your room</option>
+              <option value="Kitchen">Kitchen</option>
+              <option value="Balcony">Balcony</option>
+              <option value="Common toilet">Common toilet</option>
+              <option value="Master toilet">Master toilet</option>
+            </select>
+          </label>
+          <label style="display:block;font-size:12px;margin-bottom:8px">Upload Image File (JPG / PNG / WebP):
+            <input type="file" id="muralFileInput" accept="image/*" style="width:100%;margin-top:4px;font-size:12px;color:#bbb">
+          </label>
+          <label style="display:block;font-size:12px;margin-bottom:8px">Or Image URL:
+            <input type="text" id="muralUrlInput" placeholder="https://..." style="width:100%;margin-top:4px;padding:5px;background:#141418;color:#fff;border:1px solid #444;border-radius:4px;font-size:12px">
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:12px;cursor:pointer">
+            <input type="checkbox" id="muralTileCheck" checked> Repeat / Tile pattern as wallpaper (uncheck for single mural)
+          </label>
+          <div id="muralPreviewWrap" style="display:none;margin-bottom:12px;text-align:center">
+            <img id="muralPreviewImg" style="max-height:80px;border-radius:4px;border:1px solid #555">
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button type="button" id="btnRemoveMural" class="walk-btn" style="background:#5a2323;color:#ffb0b0;border:1px solid #833;font-size:11px;padding:5px 9px">Remove Wallpaper</button>
+            <button type="button" id="btnApplyMural" class="walk-btn" style="background:#1b638a;color:#fff;border:1px solid #2d8fc4;font-size:11px;padding:5px 12px;font-weight:600">Apply Image</button>
+          </div>
         </div>
         <button id="btnFsFloating" class="walk-btn" title="Exit Fullscreen (Esc or F)" style="display:none;position:absolute;top:12px;right:12px;z-index:25">🗗 Exit Fullscreen</button>
         <div id="walkOverlay">
@@ -277,6 +313,7 @@ label.inline-select select{padding:4px 6px;font-size:12px}
               </select>
               <input type="color" id="walkCustomWallColor" value="#ede5d6" title="Pick custom Royale wall color" style="pointer-events:auto;width:24px;height:24px;padding:0;border:1px solid rgba(255,255,255,0.4);border-radius:4px;cursor:pointer;vertical-align:middle">
               <button type="button" id="walkResetRoomColor" class="walk-btn" style="display:none;font-size:11px;padding:3px 7px" title="Reset this room to follow the global wall color">Reset</button>
+              <button type="button" id="walkBtnWallMural" class="walk-btn" style="pointer-events:auto;font-size:11px;padding:3px 7px" title="Upload custom wallpaper or mural image for any wall">🖼️ Wallpaper</button>
             </div>
             <div style="display:flex;gap:6px;align-items:center">
               <button id="walkModelToggle" class="walk-btn on" title="Toggle between 3D glTF Models and Procedural Primitives">📦 3D Models: ON</button>
@@ -355,6 +392,7 @@ import { KTX2Loader } from 'three/addons/loaders/KTX2Loader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+import { RectAreaLightUniformsLib } from 'three/addons/lights/RectAreaLightUniformsLib.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
@@ -369,6 +407,7 @@ const T = {
   MeshoptDecoder,
   RoomEnvironment,
   RGBELoader,
+  RectAreaLightUniformsLib,
   EffectComposer,
   RenderPass,
   ShaderPass,
@@ -546,14 +585,18 @@ const CARP={openshelf:1,wardrobe:1,loft:1,kbase:1,kwall:1,crockery:1,puja:1,dres
 let uidN=1;const uid=()=>'i'+(Date.now().toString(36))+(uidN++);
 function make(k,x,y,rot,o){const t=LIB[k];return Object.assign({id:uid(),key:k,kind:t.kind,label:t.label,w:t.w,d:t.d,h:t.h,elev:t.elev,fin:t.fin,rot:rot||0},JSON.parse(JSON.stringify(t.extra||{})),o||{},{x:x,y:y});}
 const SEED={"plan":"C607 planner realistic v1","note":"Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.","ceiling_ft":10,"items":[{"label":"Brother's bed","kind":"bed","room":"Brother's room","x_in":208,"y_in":390,"w_in":61,"d_in":76,"h_in":18,"elev_in":0,"rot":90,"finish":"#dd5340","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":130,"y_in":372,"w_in":96,"d_in":23,"h_in":84,"elev_in":0,"rot":270,"finish":"#c13c1a","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Brother's room","x_in":130,"y_in":335,"w_in":133,"d_in":23,"h_in":30,"elev_in":90,"rot":270,"finish":"#e65f33","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Your bed","kind":"bed","room":"Your room","x_in":55,"y_in":144,"w_in":54,"d_in":81,"h_in":18,"elev_in":0,"rot":90,"finish":"oak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Your room","x_in":45,"y_in":82,"w_in":64,"d_in":24,"h_in":30,"elev_in":0,"rot":0,"finish":"#000000","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study chair","kind":"chair","room":"Your room","x_in":61,"y_in":106,"w_in":19,"d_in":19,"h_in":36,"elev_in":0,"rot":180,"finish":"charcoal","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe (sliding)","kind":"wardrobe","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":84,"elev_in":0,"rot":90,"finish":"#b21f1f","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":30,"elev_in":90,"rot":90,"finish":"#c22424","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, top run","kind":"kbase","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, side run","kind":"kbase","room":"Kitchen","x_in":216,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hob","kind":"hob","room":"Kitchen","x_in":185,"y_in":84,"w_in":30,"d_in":19,"h_in":1,"elev_in":34,"rot":0,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Sink","kind":"sink","room":"Kitchen","x_in":220,"y_in":115,"w_in":24,"d_in":17,"h_in":1,"elev_in":34,"rot":90,"finish":"#1d221c","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Water purifier","kind":"purifier","room":"Kitchen","x_in":234,"y_in":136,"w_in":15,"d_in":6,"h_in":19,"elev_in":53,"rot":90,"finish":"midnight","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":142,"y_in":82,"w_in":36,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Chimney","kind":"chimney","room":"Kitchen","x_in":182,"y_in":82,"w_in":36,"d_in":19,"h_in":19,"elev_in":60,"rot":0,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":218,"y_in":82,"w_in":22,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":22,"h_in":30,"elev_in":90,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":217,"y_in":105,"w_in":100,"d_in":23,"h_in":30,"elev_in":90,"rot":90,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone, corner","kind":"kbase","room":"Utility","x_in":246,"y_in":82,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"gigrey","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone + sink","kind":"kbase","room":"Utility","x_in":246,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":270,"finish":"gigrey","granite":true,"sinkTop":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Gas cylinder (under stone)","kind":"cylinder","room":"Utility","x_in":247,"y_in":84,"w_in":13,"d_in":13,"h_in":32,"elev_in":0,"rot":0,"finish":"terracotta","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Top-load washer (no stone above)","kind":"wm","room":"Utility","x_in":256,"y_in":177,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"gigrey","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wall box (west wall)","kind":"kwall","room":"Utility","x_in":252,"y_in":190,"w_in":36,"d_in":14,"h_in":24,"elev_in":54,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Fridge","kind":"fridge","room":"Kitchen","x_in":173,"y_in":178,"w_in":25,"d_in":27,"h_in":70,"elev_in":0,"rot":180,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Puja unit","kind":"puja","room":"Hall","x_in":44,"y_in":210,"w_in":32,"d_in":18,"h_in":78,"elev_in":0,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining, against north wall","kind":"dining","room":"Hall","x_in":0,"y_in":274,"w_in":48,"d_in":30,"h_in":30,"elev_in":0,"rot":270,"finish":"sage","wall":true,"seats":4,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Jhula","kind":"jhula","room":"Hall","x_in":78,"y_in":293,"w_in":42,"d_in":24,"h_in":120,"elev_in":0,"rot":0,"finish":"sage","swing":1.5,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mom's Murphy queen + sofa","kind":"murphy","room":"Hall","x_in":82,"y_in":376,"w_in":84,"d_in":42,"h_in":72,"elev_in":0,"rot":90,"finish":"sage","openD":5.4,"open":false,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wallpaper","kind":"wallpaper","room":"Hall","x_in":0,"y_in":354,"w_in":60,"d_in":1,"h_in":120,"elev_in":0,"rot":270,"finish":"wpB","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Floating TV box (UPS, router)","kind":"kwall","room":"Hall","x_in":0,"y_in":345,"w_in":82,"d_in":15,"h_in":24,"elev_in":7,"rot":270,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"TV 32in","kind":"tv","room":"Hall","x_in":0,"y_in":370,"w_in":32,"d_in":2,"h_in":21,"elev_in":46,"rot":270,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Kitchen","x_in":199,"y_in":186,"w_in":40,"d_in":18,"h_in":34,"elev_in":0,"rot":180,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Microwave","kind":"micro","room":"Hall","x_in":76,"y_in":213,"w_in":20,"d_in":15,"h_in":12,"elev_in":34,"rot":180,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mixer","kind":"mixer","room":"Kitchen","x_in":206,"y_in":193,"w_in":9,"d_in":9,"h_in":16,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Rice cooker","kind":"cooker","room":"Kitchen","x_in":222,"y_in":190,"w_in":12,"d_in":12,"h_in":12,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Kitchen","x_in":217,"y_in":192,"w_in":23,"d_in":12,"h_in":24,"elev_in":58,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":168,"y_in":449,"w_in":38,"d_in":20,"h_in":84,"elev_in":0,"rot":180,"finish":"obsidian","doors":"hinged","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Side table","kind":"wardrobe","room":"Brother's room","x_in":266,"y_in":451,"w_in":18,"d_in":18,"h_in":22,"elev_in":0,"rot":90,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Brother's room","x_in":260,"y_in":341,"w_in":49,"d_in":24,"h_in":30,"elev_in":0,"rot":90,"finish":"teak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":18,"h_in":29,"elev_in":0,"rot":0,"finish":"dusty_rose","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":12,"h_in":24,"elev_in":48,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"}],"wallColor":"teal","roomWallColors":{"Your room":"#3982d0","Brother's room":"#ea9739"}};
-function fromExport(i){return {id:uid(),key:'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:'oak',open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass'};}
+function fromExport(i){return {id:uid(),key:'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:'oak',open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass',wpImage:i.wpImage,wpTile:i.wpTile};}
 function defaults(){
  state.wallColor = SEED.wallColor || 'teal';
  state.roomWallColors = Object.assign({}, SEED.roomWallColors || {"Your room":"#3982d0","Brother's room":"#ea9739"});
+ state.roomWallImages = {};
+ state.toneMapping = 'ACESFilmic';
+ state.exposure = 0.95;
+ state.envIntensity = 0.88;
  return SEED.items.map(fromExport);
 }
-let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),ceilingMode:'auto',use3dModels:true};
-function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels}));}catch(e){}}
+let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true};
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels}));}catch(e){}}
 function load(){
  try{
   const raw=localStorage.getItem(STORE);
@@ -565,6 +608,10 @@ function load(){
    state.wallMode=s.wallMode||'full';
    state.wallColor=s.wallColor||'teal';
    state.roomWallColors=s.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"};
+   state.roomWallImages=s.roomWallImages||{};
+   state.toneMapping=s.toneMapping||'ACESFilmic';
+   state.exposure=typeof s.exposure==='number'?s.exposure:0.95;
+   state.envIntensity=typeof s.envIntensity==='number'?s.envIntensity:0.88;
    state.ceilingMode=s.ceilingMode||'auto';
    state.use3dModels=s.use3dModels!==false;
    return true;
@@ -581,11 +628,62 @@ const isOver=it=>it.elev>=4.5||it.kind==='chimney'||it.kind==='fan';
 const byId=id=>state.items.find(i=>i.id===id);
 function roomOf(x,y){for(const r of ROOMS){if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.d)return r.n;}return 'Other';}
 
+function getSplitPoints(W){
+ const hz=W.w>=W.d,a0=hz?W.x:W.y,a1=a0+(hz?W.w:W.d);
+ const pts=new Set();
+ for(const W2 of WALLS){
+  if(W2===W)continue;
+  const hz2=W2.w>=W2.d;
+  if(hz!==hz2){
+   if(hz){
+    if(W2.y<=W.y+W.d+0.1&&W2.y+W2.d>=W.y-0.1){
+     if(W2.x>a0+0.05&&W2.x<a1-0.05)pts.add(Math.round(W2.x*100)/100);
+     const xEnd=W2.x+W2.w;
+     if(xEnd>a0+0.05&&xEnd<a1-0.05)pts.add(Math.round(xEnd*100)/100);
+    }
+   }else{
+    if(W2.x<=W.x+W.w+0.1&&W2.x+W2.w>=W.x-0.1){
+     if(W2.y>a0+0.05&&W2.y<a1-0.05)pts.add(Math.round(W2.y*100)/100);
+     const yEnd=W2.y+W2.d;
+     if(yEnd>a0+0.05&&yEnd<a1-0.05)pts.add(Math.round(yEnd*100)/100);
+    }
+   }
+  }
+ }
+ for(const R of ROOMS){
+  if(hz){
+   if(Math.abs(R.y-(W.y+W.d))<0.25||Math.abs(R.y+R.d-W.y)<0.25){
+    if(R.x>a0+0.05&&R.x<a1-0.05)pts.add(Math.round(R.x*100)/100);
+    const rxEnd=R.x+R.w;
+    if(rxEnd>a0+0.05&&rxEnd<a1-0.05)pts.add(Math.round(rxEnd*100)/100);
+   }
+  }else{
+   if(Math.abs(R.x-(W.x+W.w))<0.25||Math.abs(R.x+R.w-W.x)<0.25){
+    if(R.y>a0+0.05&&R.y<a1-0.05)pts.add(Math.round(R.y*100)/100);
+    const ryEnd=R.y+R.d;
+    if(ryEnd>a0+0.05&&ryEnd<a1-0.05)pts.add(Math.round(ryEnd*100)/100);
+   }
+  }
+ }
+ return Array.from(pts).sort((a,b)=>a-b);
+}
+
 function wallPieces(Hc,low){
  const P=[],G=[];
  for(const W of WALLS){
   const hz=W.w>=W.d,wh=W.h?W.h:(low?3.5:Hc),a0=hz?W.x:W.y,a1=a0+(hz?W.w:W.d);
-  const mk=(a,b,z0,z1,win,arr)=>{if(b-a<0.001||z1-z0<0.001)return;(arr||P).push(hz?{x:a,y:W.y,w:b-a,h:W.d,z0:z0,z1:z1,win:win}:{x:W.x,y:a,w:W.w,h:b-a,z0:z0,z1:z1,win:win});};
+  const splits=getSplitPoints(W);
+  const mk=(a,b,z0,z1,win,arr)=>{
+   if(b-a<0.001||z1-z0<0.001)return;
+   const pts=[a];
+   for(const p of splits){if(p>a+0.05&&p<b-0.05)pts.push(p);}
+   pts.push(b);
+   for(let k=0;k<pts.length-1;k++){
+    const sa=pts[k],sb=pts[k+1];
+    if(sb-sa<0.001)continue;
+    (arr||P).push(hz?{x:sa,y:W.y,w:sb-sa,h:W.d,z0:z0,z1:z1,win:win}:{x:W.x,y:sa,w:W.w,h:sb-sa,z0:z0,z1:z1,win:win});
+   }
+  };
   const ops=(W.op||[]).slice().sort((p,q)=>p.a-q.a);let cur=a0;
   for(const o of ops){mk(cur,o.a,0,wh);if(o.zb>0)mk(o.a,o.b,0,Math.min(o.zb,wh),o.t==='win');if(o.zt<wh)mk(o.a,o.b,o.zt,wh);if(o.t==='win'&&wh>o.zb)mk(o.a,o.b,o.zb,Math.min(o.zt,wh),true,G);cur=o.b;}
   mk(cur,a1,0,wh);
@@ -886,6 +984,15 @@ function rotate(it,dir){const f=fp(it),cx=f.x+f.w/2,cy=f.y+f.h/2;it.rot=((it.rot
       '<select id="f-wp-accent" style="width:100%;margin-top:2px;height:28px">'+accentOpts+'</select>' +
      '</label>' +
     '</div>' +
+    '<div style="margin-top:8px;padding-top:8px;border-top:1px dashed rgba(0,0,0,0.15)">' +
+     '<h4 style="margin:0 0 4px;font-size:12px;font-weight:600">🖼️ Custom Image / Photo / Mural</h4>' +
+     '<input type="file" id="f-wp-file" accept="image/*" style="width:100%;font-size:11px;margin-bottom:4px">' +
+     '<input type="text" id="f-wp-url" placeholder="Or paste Image URL (https://...)" value="'+esc(it.wpImage||'')+'" style="width:100%;font-size:11px;padding:3px 6px;margin-bottom:4px">' +
+     '<div style="display:flex;justify-content:space-between;align-items:center">' +
+      '<label class="inline" style="font-size:11px"><input type="checkbox" id="f-wp-tile"'+(it.wpTile!==false?' checked':'')+'> Repeat as wallpaper pattern</label>' +
+      (it.wpImage ? '<button type="button" id="b-wp-clear" style="font-size:10px;padding:2px 6px;background:#f3dfdf;color:#922;border:1px solid #d88;border-radius:4px;cursor:pointer">Clear Image</button>' : '') +
+     '</div>' +
+    '</div>' +
    '</div>';
   }
   if(it.kind==='murphy')extra+='<label class="inline"><input type="checkbox" id="f-open"'+(it.open?' checked':'')+'> Show bed open</label>';
@@ -979,6 +1086,34 @@ function rotate(it,dir){const f=fp(it),cx=f.x+f.w/2,cy=f.y+f.h/2;it.rot=((it.rot
     }
   });
 
+  if($('#f-wp-file')) $('#f-wp-file').addEventListener('change', e => {
+    const file = e.target.files && e.target.files[0];
+    if(!file)return;
+    const r = new FileReader();
+    r.onload = ev => {
+      it.wpImage = ev.target.result;
+      it.wpStyle = 'custom_image';
+      schedule();
+      inspect();
+    };
+    r.readAsDataURL(file);
+  });
+  if($('#f-wp-url')) $('#f-wp-url').addEventListener('change', e => {
+    it.wpImage = e.target.value.trim();
+    if(it.wpImage) it.wpStyle = 'custom_image';
+    schedule();
+  });
+  if($('#f-wp-tile')) $('#f-wp-tile').addEventListener('change', e => {
+    it.wpTile = e.target.checked;
+    schedule();
+  });
+  if($('#b-wp-clear')) $('#b-wp-clear').addEventListener('click', () => {
+    delete it.wpImage;
+    it.wpStyle = 'fluted';
+    schedule();
+    inspect();
+  });
+
   $('#b-rl').onclick=()=>{rotate(it,-1);schedule();};$('#b-rr').onclick=()=>{rotate(it,1);schedule();};
   $('#b-dup').onclick=()=>{const c=JSON.parse(JSON.stringify(it));c.id=uid();c.x=r2(it.x+0.5);c.y=r2(it.y+0.5);state.items.push(c);select(c.id);};
   $('#b-del').onclick=()=>{state.items=state.items.filter(i=>i.id!==it.id);select(null);};
@@ -1009,10 +1144,24 @@ document.addEventListener('keydown',e=>{
   e.preventDefault();return;
  }
  if(k==='KeyP'||e.key==='p'||e.key==='P'){
-  if(typeof toggleStats==='function')toggleStats();
+  if(e.shiftKey){if(typeof cycleToneMapping==='function')cycleToneMapping();}
+  else{if(typeof toggleStats==='function')toggleStats();}
+  e.preventDefault();return;
+ }
+ if(e.key==='['||e.key==='{'){
+  if(typeof adjustExposure==='function')adjustExposure(-0.05);
+  e.preventDefault();return;
+ }
+ if(e.key===']'||e.key==='}'){
+  if(typeof adjustExposure==='function')adjustExposure(0.05);
   e.preventDefault();return;
  }
  if(e.key==='Escape'){
+  const mm=$('#wallMuralModal');
+  if(mm&&mm.style.display!=='none'){
+   if(typeof closeWallMuralModal==='function')closeWallMuralModal();
+   e.preventDefault();return;
+  }
   const wrap=$('#viewWrap');
   if(wrap&&wrap.classList.contains('is-fullscreen')){
    if(typeof toggleFullscreen==='function')toggleFullscreen();
@@ -1333,8 +1482,46 @@ function wpTex(hex){
  const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;return wpTexCache[hex]=t;
 }
 
+let wallImgCache={};
+
+function getRoomWallpaperMaterial(imgDataOrUrl, w, h, isTiled){
+ const url = (typeof imgDataOrUrl==='object'&&imgDataOrUrl.url) ? imgDataOrUrl.url : imgDataOrUrl;
+ const tile = (typeof imgDataOrUrl==='object'&&imgDataOrUrl.tile!=null) ? imgDataOrUrl.tile : (isTiled!==false);
+ const cacheKey = (typeof url==='string'?url.slice(0,80):'img')+'|'+Math.round((w||5)*10)+'|'+Math.round((h||10)*10)+'|'+(tile?'t':'m');
+ if(wallImgCache[cacheKey])return wallImgCache[cacheKey];
+ const tex = new T.TextureLoader().load(url, ()=>{
+  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+  render3D();
+ });
+ tex.colorSpace = T.SRGBColorSpace;
+ tex.wrapS = tex.wrapT = T.RepeatWrapping;
+ if(tile){
+  tex.repeat.set(Math.max(1, (w||5)/4), Math.max(1, (h||10)/4));
+ }else{
+  tex.repeat.set(1, 1);
+ }
+ const m = new T.MeshStandardMaterial({
+  map: tex,
+  roughness: 0.52,
+  metalness: 0.02,
+  bumpMap: getRoyalePaintBump(),
+  bumpScale: 0.002
+ });
+ return wallImgCache[cacheKey] = m;
+}
+
+function getWallFaceMaterial(roomName, hex, w, h){
+ if(roomName && state.roomWallImages && state.roomWallImages[roomName]){
+  return getRoomWallpaperMaterial(state.roomWallImages[roomName], w, h);
+ }
+ return getRoyalePaintMaterial(hex);
+}
+
 let wpMatCache={};
 function getWallpaperMaterial(it, w, h) {
+  if (it.wpImage) {
+    return getRoomWallpaperMaterial(it.wpImage, w, h, it.wpTile !== false);
+  }
   const style = it.wpStyle || 'fluted';
   const baseColor = it.wpColor || (FIN[it.fin] ? FIN[it.fin].hex : '#22252a');
   const accent = it.wpAccent || 'brass';
@@ -2558,11 +2745,13 @@ function buildWalls(){
   const cPlus=getWallColorForRoom(rPlus);
   const cMinus=getWallColorForRoom(rMinus);
   let wm;
-  if(cPlus.hex===cMinus.hex){
+  const wallW = hz ? p.w : p.h;
+  const hasImage = !!(state.roomWallImages && (state.roomWallImages[rPlus] || state.roomWallImages[rMinus]));
+  if(cPlus.hex===cMinus.hex && !hasImage){
    wm=getRoyalePaintMaterial(cPlus.hex);
   }else{
-   const mPlus=getRoyalePaintMaterial(cPlus.hex);
-   const mMinus=getRoyalePaintMaterial(cMinus.hex);
+   const mPlus=getWallFaceMaterial(rPlus, cPlus.hex, wallW, h);
+   const mMinus=getWallFaceMaterial(rMinus, cMinus.hex, wallW, h);
    const mEnd=getRoyalePaintMaterial(baseWc.hex);
    // BoxGeometry faces: 0: +X, 1: -X, 2: +Y, 3: -Y, 4: +Z, 5: -Z
    if(hz){
@@ -2664,61 +2853,83 @@ function buildCeilingAndLights(){
  disposeGroup(gLights);
  fanBlades=[];
 
- const ambLight=new T.AmbientLight(0xfff6ed,0.12);
+ const ambLight=new T.AmbientLight(0xfff6ed,0.09);
  gLights.add(ambLight);
 
- const hemiLight=new T.HemisphereLight(0xfff0e2,0x221c16,0.14);
+ const hemiLight=new T.HemisphereLight(0xfff0e2,0x221c16,0.12);
  gLights.add(hemiLight);
 
- const sun=new T.DirectionalLight(0xfffaee,0.45);
- sun.position.set(5.6,8.5,1.0);
- sun.target.position.set(5.6,1.0,18.0);
+ const sun=new T.DirectionalLight(0xfffaee,0.60);
+ sun.position.set(7.0,14.0,-2.0);
+ sun.target.position.set(10.0,0,20.0);
  sun.castShadow=true;
- sun.shadow.mapSize.width=1024;
- sun.shadow.mapSize.height=1024;
- sun.shadow.camera.near=0.5;
- sun.shadow.camera.far=42;
- sun.shadow.camera.left=-12;
- sun.shadow.camera.right=12;
- sun.shadow.camera.top=12;
- sun.shadow.camera.bottom=-12;
- sun.shadow.bias=-0.0004;
- sun.shadow.radius=2.6;
+ sun.shadow.mapSize.width=2048;
+ sun.shadow.mapSize.height=2048;
+ sun.shadow.camera.near=1.0;
+ sun.shadow.camera.far=55;
+ sun.shadow.camera.left=-16;
+ sun.shadow.camera.right=16;
+ sun.shadow.camera.top=16;
+ sun.shadow.camera.bottom=-16;
+ sun.shadow.bias=-0.0003;
+ sun.shadow.normalBias=0.025;
+ sun.shadow.radius=2.8;
  gLights.add(sun);
  gLights.add(sun.target);
 
+ // Window daylight emitters (RectAreaLight for realistic daylight wash into rooms)
+ for(const W of WALLS){
+  const hz=W.w>=W.d;
+  for(const o of (W.op||[])){
+   if(o.t==='win'){
+    const winW=Math.max(0.5, o.b-o.a);
+    const zb=o.zb!=null?o.zb:3, zt=o.zt!=null?o.zt:7;
+    const winH=Math.max(0.5, zt-zb);
+    const winY=(zb+zt)/2;
+    const rl=new T.RectAreaLight(0xf2f6fb, 1.85, winW, winH);
+    if(hz){
+     const entersPos=(W.y<20);
+     rl.position.set((o.a+o.b)/2, winY, W.y+(entersPos?0.35:-0.35));
+     if(!entersPos) rl.rotation.y=Math.PI;
+    }else{
+     const entersPos=(W.x<12);
+     rl.position.set(W.x+(entersPos?0.35:-0.35), winY, (o.a+o.b)/2);
+     rl.rotation.y=entersPos?Math.PI/2:-Math.PI/2;
+    }
+    gLights.add(rl);
+   }
+  }
+ }
+
  const ROOM_SPOTS=[
-  {n:'Hall Living Center',x:5.2,y:H-0.1,z:33.0,color:0xffeed2,int:0.85,dist:26,shadow:true,pen:0.75,beam:Math.PI/3.0},
-  {n:'Hall Living Accent',x:2.5,y:H-0.1,z:36.0,color:0xffeed2,int:0.55,dist:20,shadow:false,pen:0.8,beam:Math.PI/3.2},
-  {n:'Hall Dining Main',x:5.0,y:H-0.1,z:23.5,color:0xffeed2,int:0.80,dist:22,shadow:true,pen:0.7,beam:Math.PI/3.2},
-  {n:'Kitchen Task 1',x:15.5,y:H-0.1,z:10.5,color:0xfff6ec,int:0.75,dist:22,shadow:true,pen:0.7,beam:Math.PI/3.0},
-  {n:'Kitchen Task 2',x:18.5,y:H-0.1,z:13.5,color:0xfff6ec,int:0.60,dist:18,shadow:false,pen:0.8,beam:Math.PI/3.2},
-  {n:"Brother's Room Center",x:17.0,y:H-0.1,z:33.5,color:0xffeed2,int:0.80,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.0},
-  {n:"Brother's Bed Accent",x:17.5,y:H-0.1,z:37.0,color:0xffeed2,int:0.60,dist:18,shadow:false,pen:0.8,beam:Math.PI/3.2},
-  {n:"Your Room Center",x:5.5,y:H-0.1,z:12.0,color:0xffeed2,int:0.80,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.0},
-  {n:"Your Room Study Spot",x:4.0,y:H-0.1,z:8.5,color:0xffeed2,int:0.60,dist:18,shadow:false,pen:0.8,beam:Math.PI/3.2},
-  {n:'Balcony Light',x:5.6,y:H-0.1,z:3.2,color:0xfff0da,int:0.45,dist:16,shadow:false,pen:0.8,beam:Math.PI/3.0}
+  {n:'Hall Living Center',x:5.2,y:H-0.1,z:33.0,color:0xffeed2,int:1.45,dist:24,shadow:true,pen:0.8,beam:Math.PI/3.1},
+  {n:'Hall Living Accent',x:2.5,y:H-0.1,z:36.0,color:0xffeed2,int:0.85,dist:20,shadow:false,pen:0.85,beam:Math.PI/3.2},
+  {n:'Hall Dining Main',x:5.0,y:H-0.1,z:23.5,color:0xffeed2,int:1.35,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.2},
+  {n:'Kitchen Task 1',x:15.5,y:H-0.1,z:10.5,color:0xfff6ec,int:1.25,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.0},
+  {n:'Kitchen Task 2',x:18.5,y:H-0.1,z:13.5,color:0xfff6ec,int:0.85,dist:18,shadow:false,pen:0.85,beam:Math.PI/3.2},
+  {n:"Brother's Room Center",x:17.0,y:H-0.1,z:33.5,color:0xffeed2,int:1.35,dist:22,shadow:true,pen:0.8,beam:Math.PI/3.0},
+  {n:"Brother's Bed Accent",x:17.5,y:H-0.1,z:37.0,color:0xffeed2,int:0.85,dist:18,shadow:false,pen:0.85,beam:Math.PI/3.2},
+  {n:"Your Room Center",x:5.5,y:H-0.1,z:12.0,color:0xffeed2,int:1.35,dist:22,shadow:true,pen:0.8,beam:Math.PI/3.0},
+  {n:"Your Room Study Spot",x:4.0,y:H-0.1,z:8.5,color:0xffeed2,int:0.85,dist:18,shadow:false,pen:0.85,beam:Math.PI/3.2},
+  {n:'Balcony Light',x:5.6,y:H-0.1,z:3.2,color:0xfff0da,int:0.75,dist:16,shadow:false,pen:0.85,beam:Math.PI/3.0}
  ];
 
  for(const l of ROOM_SPOTS){
+  const sl=new T.SpotLight(l.color,l.int,l.dist,l.beam||Math.PI/3.2,l.pen||0.75,2.0);
+  sl.position.set(l.x,l.y,l.z);
+  sl.target.position.set(l.x,0,l.z);
   if(l.shadow){
-   const sl=new T.SpotLight(l.color,l.int,l.dist,l.beam||Math.PI/3.2,l.pen||0.7,1.8);
-   sl.position.set(l.x,l.y,l.z);
-   sl.target.position.set(l.x,0,l.z);
    sl.castShadow=true;
-   sl.shadow.mapSize.width=512;
-   sl.shadow.mapSize.height=512;
+   sl.shadow.mapSize.width=1024;
+   sl.shadow.mapSize.height=1024;
    sl.shadow.camera.near=0.5;
    sl.shadow.camera.far=24;
-   sl.shadow.bias=-0.0004;
-   sl.shadow.radius=2.2;
-   gLights.add(sl);
-   gLights.add(sl.target);
-  }else{
-   const pl=new T.PointLight(l.color,l.int,l.dist,2);
-   pl.position.set(l.x,l.y,l.z);
-   gLights.add(pl);
+   sl.shadow.bias=-0.0003;
+   sl.shadow.normalBias=0.02;
+   sl.shadow.radius=2.6;
   }
+  gLights.add(sl);
+  gLights.add(sl.target);
  }
 
  const ceilMat=mat('#f7f5f0',false);
@@ -2740,13 +2951,32 @@ function buildCeilingAndLights(){
  ];
  const dropH=0.32, borderW=1.15;
  const fasciaMat=mat('#fcfaf6',false);
+ const coveGlowMat=new T.MeshStandardMaterial({
+  color:0xfff4e2,
+  emissive:0xffb255,
+  emissiveIntensity:2.4,
+  roughness:0.35,
+  metalness:0.02
+ });
+
  for(const cv of COVE_ZONES){
+  // Gypsum drop perimeter fascia
   B(gCeilingSlab,cv.w,dropH,borderW,cv.x+cv.w/2,H-dropH/2,cv.z+borderW/2,fasciaMat);
   B(gCeilingSlab,cv.w,dropH,borderW,cv.x+cv.w/2,H-dropH/2,cv.z+cv.d-borderW/2,fasciaMat);
   B(gCeilingSlab,borderW,dropH,cv.d-borderW*2,cv.x+borderW/2,H-dropH/2,cv.z+cv.d/2,fasciaMat);
   B(gCeilingSlab,borderW,dropH,cv.d-borderW*2,cv.x+cv.w-borderW/2,H-dropH/2,cv.z+cv.d/2,fasciaMat);
-  B(gCeilingSlab,cv.w-borderW*2+0.1,0.03,0.05,cv.x+cv.w/2,H-dropH+0.03,cv.z+borderW+0.02,mat('#ffd899',0,'glow'));
-  B(gCeilingSlab,cv.w-borderW*2+0.1,0.03,0.05,cv.x+cv.w/2,H-dropH+0.03,cv.z+cv.d-borderW-0.02,mat('#ffd899',0,'glow'));
+
+  // Continuous 4-sided LED strip inside the cove recess
+  const stripW=cv.w-borderW*2, stripD=cv.d-borderW*2;
+  B(gCeilingSlab,stripW+0.1,0.03,0.05,cv.x+cv.w/2,H-dropH+0.03,cv.z+borderW+0.025,coveGlowMat);
+  B(gCeilingSlab,stripW+0.1,0.03,0.05,cv.x+cv.w/2,H-dropH+0.03,cv.z+cv.d-borderW-0.025,coveGlowMat);
+  B(gCeilingSlab,0.05,0.03,stripD+0.1,cv.x+borderW+0.025,H-dropH+0.03,cv.z+cv.d/2,coveGlowMat);
+  B(gCeilingSlab,0.05,0.03,stripD+0.1,cv.x+cv.w-borderW-0.025,H-dropH+0.03,cv.z+cv.d/2,coveGlowMat);
+
+  // Soft warm cove bounce fill light
+  const coveFill=new T.PointLight(0xffcaa0,0.38,Math.max(cv.w,cv.d)*1.1,2.0);
+  coveFill.position.set(cv.x+cv.w/2,H-dropH/2,cv.z+cv.d/2);
+  gLights.add(coveFill);
  }
  gCeiling.add(gCeilingSlab);
 
@@ -3182,40 +3412,68 @@ function preset(k){
 }
 
 let envMapGenerated=false;
+let envMapTexture=null;
+
 function initEnvMap(rend, scn){
- if(envMapGenerated||!rend||!scn||!T.PMREMGenerator)return;
+ if(!rend||!scn||!T.PMREMGenerator)return;
+ if(envMapTexture){
+  scn.environment=envMapTexture;
+  scn.environmentIntensity=state.envIntensity||0.88;
+  return;
+ }
+ const pmrem=new T.PMREMGenerator(rend);
+ pmrem.compileEquirectangularShader();
+
+ // Fast initial ambient fallback so view is never dark while HDR loads
  try{
-  const pmrem=new T.PMREMGenerator(rend);
-  pmrem.compileEquirectangularShader();
   const c=document.createElement('canvas');c.width=512;c.height=256;
   const x=c.getContext('2d');
-  // Upper hemisphere: warm architectural interior ceiling bounce
   const skyG=x.createLinearGradient(0,0,0,128);
-  skyG.addColorStop(0,'#faf6ed');
-  skyG.addColorStop(0.5,'#eee4d2');
-  skyG.addColorStop(1,'#ddd2be');
+  skyG.addColorStop(0,'#faf6ed');skyG.addColorStop(0.5,'#eee4d2');skyG.addColorStop(1,'#ddd2be');
   x.fillStyle=skyG;x.fillRect(0,0,512,128);
-  // Lower hemisphere: warm floor bounce
   const floorG=x.createLinearGradient(0,128,0,256);
-  floorG.addColorStop(0,'#a89c8a');
-  floorG.addColorStop(1,'#564c40');
+  floorG.addColorStop(0,'#a89c8a');floorG.addColorStop(1,'#564c40');
   x.fillStyle=floorG;x.fillRect(0,128,512,128);
-  // Soft ambient window / softbox panels on east and south
-  x.fillStyle='rgba(255,250,242,0.52)';
-  x.fillRect(60,20,110,85);
-  x.fillRect(330,25,100,80);
-  // Warm cove light strip
-  x.fillStyle='rgba(255,220,160,0.45)';
-  x.fillRect(0,118,512,10);
-
+  x.fillStyle='rgba(255,250,242,0.52)';x.fillRect(60,20,110,85);x.fillRect(330,25,100,80);
   const tex=new T.CanvasTexture(c);
   tex.colorSpace=T.SRGBColorSpace;
   const envRT=pmrem.fromEquirectangular(tex);
   scn.environment=envRT.texture;
+  scn.environmentIntensity=state.envIntensity||0.88;
   tex.dispose();
-  pmrem.dispose();
-  envMapGenerated=true;
- }catch(err){console.warn('initEnvMap error:',err);}
+ }catch(err){}
+
+ // Load real Poly Haven CC0 interior HDRI
+ if(T.RGBELoader){
+  new T.RGBELoader().load('assets/hdri/interior_warm_1k.hdr', function(hdrTex){
+   try{
+    const envRT=pmrem.fromEquirectangular(hdrTex);
+    envMapTexture=envRT.texture;
+    scn.environment=envMapTexture;
+    scn.environmentIntensity=state.envIntensity||0.88;
+    hdrTex.dispose();
+    pmrem.dispose();
+    envMapGenerated=true;
+    if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+    render3D();
+   }catch(err){console.warn('HDRI process error:',err);}
+  }, undefined, function(err){
+   console.warn('HDRI load failed, using RoomEnvironment fallback:', err);
+   try{
+    if(T.RoomEnvironment){
+     const roomEnv=new T.RoomEnvironment();
+     const envRT=pmrem.fromScene(roomEnv);
+     envMapTexture=envRT.texture;
+     scn.environment=envMapTexture;
+     scn.environmentIntensity=state.envIntensity||0.88;
+     pmrem.dispose();
+     envMapGenerated=true;
+     if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+     render3D();
+    }
+   }catch(e2){console.warn('RoomEnvironment fallback error:',e2);}
+  });
+ }
 }
 
 function init3D(){
@@ -3225,12 +3483,19 @@ function init3D(){
  renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
  renderer.outputColorSpace=T.SRGBColorSpace;
- renderer.toneMapping=T.ACESFilmicToneMapping;
- renderer.toneMappingExposure=0.95;
+ if(state.toneMapping==='AgX'&&T.AgXToneMapping) renderer.toneMapping=T.AgXToneMapping;
+ else if(state.toneMapping==='Neutral'&&T.NeutralToneMapping) renderer.toneMapping=T.NeutralToneMapping;
+ else renderer.toneMapping=T.ACESFilmicToneMapping;
+ renderer.toneMappingExposure=state.exposure||0.95;
+ if(typeof updateToneStats==='function')updateToneStats();
  renderer.shadowMap.enabled=true;
  renderer.shadowMap.type=T.PCFSoftShadowMap;
  renderer.shadowMap.autoUpdate=false;
  renderer.shadowMap.needsUpdate=true;
+
+ if(T.RectAreaLightUniformsLib&&typeof T.RectAreaLightUniformsLib.init==='function'){
+  T.RectAreaLightUniformsLib.init();
+ }
 
  scene=new T.Scene();
  initEnvMap(renderer, scene);
@@ -3412,7 +3677,7 @@ $('#btnReset').onclick=()=>{
 function exportText(){
  const L=state.items.map(it=>{
   const f=fp(it);
-  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,swing:it.swing,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent};
+  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,swing:it.swing,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent,wpImage:it.wpImage,wpTile:it.wpTile};
  });
  const out={
   plan:'C607 planner realistic v1',
@@ -3424,6 +3689,12 @@ function exportText(){
  if(state.roomWallColors&&Object.keys(state.roomWallColors).length>0){
   out.roomWallColors=Object.assign({},state.roomWallColors);
  }
+ if(state.roomWallImages&&Object.keys(state.roomWallImages).length>0){
+  out.roomWallImages=Object.assign({},state.roomWallImages);
+ }
+ if(state.toneMapping)out.toneMapping=state.toneMapping;
+ if(typeof state.exposure==='number')out.exposure=state.exposure;
+ if(typeof state.envIntensity==='number')out.envIntensity=state.envIntensity;
  return JSON.stringify(out);
 }
 
@@ -3440,9 +3711,24 @@ $('#btnLoad').onclick=()=>{
   if(o.ceiling_ft){H=o.ceiling_ft;$('#ceil').value=String(H);if(gCeiling)buildCeilingAndLights();}
   if(o.wallColor){state.wallColor=o.wallColor;}
   if(o.roomWallColors){state.roomWallColors=Object.assign({},o.roomWallColors);}
+  if(o.roomWallImages){state.roomWallImages=Object.assign({},o.roomWallImages);}
+  if(o.toneMapping&&renderer){
+   state.toneMapping=o.toneMapping;
+   const tmMap={ACESFilmic:THREE.ACESFilmicToneMapping,AgX:THREE.AgXToneMapping,Neutral:(THREE.NeutralToneMapping||THREE.ACESFilmicToneMapping)};
+   if(tmMap[state.toneMapping])renderer.toneMapping=tmMap[state.toneMapping];
+  }
+  if(typeof o.exposure==='number'&&renderer){
+   state.exposure=o.exposure;
+   renderer.toneMappingExposure=state.exposure;
+  }
+  if(typeof o.envIntensity==='number'&&scene){
+   state.envIntensity=o.envIntensity;
+   scene.environmentIntensity=state.envIntensity;
+  }
   if(gWalls)buildWalls();
   if(typeof updateBeamMaterial==='function')updateBeamMaterial();
   syncWallColorUI();
+  if(typeof updateToneStats==='function')updateToneStats();
   state.sel=null;renderInspector();schedule();$('#ioMsg').textContent='Layout loaded.';
  }catch(e){$('#ioMsg').textContent='That does not look like a layout from this planner.';}
 };
@@ -3600,6 +3886,195 @@ document.querySelectorAll('#fovChips .walk-chip').forEach(btn=>{
   if(!isNaN(f))setFov(f);
  });
 });
+function setToneMapping(mode){
+ if(!renderer)return;
+ const tmMap={
+  ACESFilmic: THREE.ACESFilmicToneMapping,
+  AgX: THREE.AgXToneMapping,
+  Neutral: (THREE.NeutralToneMapping || THREE.ACESFilmicToneMapping)
+ };
+ if(tmMap[mode]){
+  state.toneMapping=mode;
+  renderer.toneMapping=tmMap[mode];
+  updateToneStats();
+  render3D();
+  save();
+ }
+}
+
+function cycleToneMapping(){
+ const modes=['ACESFilmic','AgX','Neutral'];
+ const idx=modes.indexOf(state.toneMapping||'ACESFilmic');
+ const next=modes[(idx+1)%modes.length];
+ setToneMapping(next);
+}
+
+function adjustExposure(delta){
+ if(!renderer)return;
+ state.exposure=Math.max(0.1, Math.min(3.0, Math.round(((state.exposure||0.95)+delta)*100)/100));
+ renderer.toneMappingExposure=state.exposure;
+ updateToneStats();
+ render3D();
+ save();
+}
+
+function updateToneStats(){
+ const el=$('#statsTone');
+ if(el)el.textContent='Tone: '+(state.toneMapping||'ACESFilmic')+' | Exp: '+(state.exposure!=null?state.exposure.toFixed(2):'0.95')+' [Click to cycle]';
+}
+
+let pendingMuralDataUrl = null;
+
+function openWallMuralModal(suggestedRoom){
+ const modal = $('#wallMuralModal');
+ if(!modal) return;
+ const targetRoom = suggestedRoom || (viewMode==='walk' ? roomOf(player.x, player.z) : getSelectedRoomTarget());
+ const roomSel = $('#muralTargetRoom');
+ if(roomSel){
+  if(Array.from(roomSel.options).some(o=>o.value===targetRoom)){
+   roomSel.value = targetRoom;
+  } else {
+   roomSel.value = 'Hall';
+  }
+ }
+ pendingMuralDataUrl = null;
+ const fileInput = $('#muralFileInput');
+ if(fileInput) fileInput.value = '';
+ const urlInput = $('#muralUrlInput');
+ if(urlInput) urlInput.value = '';
+ syncMuralModalUI();
+ modal.style.display = 'block';
+}
+
+function closeWallMuralModal(){
+ const modal = $('#wallMuralModal');
+ if(modal) modal.style.display = 'none';
+ pendingMuralDataUrl = null;
+}
+
+function syncMuralModalUI(){
+ const roomSel = $('#muralTargetRoom');
+ const targetRoom = roomSel ? roomSel.value : 'Hall';
+ const currentSetting = state.roomWallImages && state.roomWallImages[targetRoom];
+ const previewWrap = $('#muralPreviewWrap');
+ const previewImg = $('#muralPreviewImg');
+ const removeBtn = $('#btnRemoveMural');
+ const tileCheck = $('#muralTileCheck');
+ const urlInput = $('#muralUrlInput');
+
+ const imgSrc = pendingMuralDataUrl || (urlInput && urlInput.value.trim()) || (currentSetting && currentSetting.url);
+ if(imgSrc){
+  if(previewImg) previewImg.src = imgSrc;
+  if(previewWrap) previewWrap.style.display = 'block';
+ } else {
+  if(previewWrap) previewWrap.style.display = 'none';
+ }
+
+ if(tileCheck){
+  if(currentSetting && currentSetting.tile != null){
+   tileCheck.checked = currentSetting.tile;
+  } else if(!currentSetting){
+   tileCheck.checked = true;
+  }
+ }
+
+ if(removeBtn){
+  removeBtn.style.display = currentSetting ? 'inline-block' : 'none';
+ }
+}
+
+function applyMuralToRoom(){
+ const roomSel = $('#muralTargetRoom');
+ const targetRoom = roomSel ? roomSel.value : 'Hall';
+ const urlInput = $('#muralUrlInput');
+ const tileCheck = $('#muralTileCheck');
+ const isTiled = tileCheck ? tileCheck.checked : true;
+ const currentSetting = state.roomWallImages && state.roomWallImages[targetRoom];
+
+ const imgSrc = pendingMuralDataUrl || (urlInput && urlInput.value.trim()) || (currentSetting && currentSetting.url);
+ if(!imgSrc){
+  alert('Please select an image file or enter an image URL.');
+  return;
+ }
+
+ if(!state.roomWallImages) state.roomWallImages = {};
+ state.roomWallImages[targetRoom] = {
+  url: imgSrc,
+  tile: isTiled
+ };
+
+ if(gWalls){
+  buildWalls();
+  if(typeof updateBeamMaterial==='function') updateBeamMaterial();
+  if(renderer&&renderer.shadowMap) renderer.shadowMap.needsUpdate=true;
+  render3D();
+ }
+ save();
+ closeWallMuralModal();
+}
+
+function removeMuralFromRoom(){
+ const roomSel = $('#muralTargetRoom');
+ const targetRoom = roomSel ? roomSel.value : 'Hall';
+ if(state.roomWallImages && state.roomWallImages[targetRoom]){
+  delete state.roomWallImages[targetRoom];
+  if(gWalls){
+   buildWalls();
+   if(typeof updateBeamMaterial==='function') updateBeamMaterial();
+   if(renderer&&renderer.shadowMap) renderer.shadowMap.needsUpdate=true;
+   render3D();
+  }
+  save();
+ }
+ closeWallMuralModal();
+}
+
+if($('#btnWallMural')){
+ $('#btnWallMural').addEventListener('click', ()=>openWallMuralModal(getSelectedRoomTarget()));
+}
+if($('#walkBtnWallMural')){
+ $('#walkBtnWallMural').addEventListener('click', ()=>openWallMuralModal(getWalkRoomTarget()));
+}
+if($('#btnCloseMuralModal')){
+ $('#btnCloseMuralModal').addEventListener('click', closeWallMuralModal);
+}
+if($('#muralTargetRoom')){
+ $('#muralTargetRoom').addEventListener('change', syncMuralModalUI);
+}
+if($('#muralFileInput')){
+ $('#muralFileInput').addEventListener('change', e=>{
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+   pendingMuralDataUrl = ev.target.result;
+   syncMuralModalUI();
+  };
+  reader.readAsDataURL(file);
+ });
+}
+if($('#muralUrlInput')){
+ $('#muralUrlInput').addEventListener('input', ()=>{
+  pendingMuralDataUrl = null;
+  syncMuralModalUI();
+ });
+}
+if($('#btnApplyMural')){
+ $('#btnApplyMural').addEventListener('click', applyMuralToRoom);
+}
+if($('#btnRemoveMural')){
+ $('#btnRemoveMural').addEventListener('click', removeMuralFromRoom);
+}
+
+if($('#statsTone')){
+ $('#statsTone').style.cursor = 'pointer';
+ $('#statsTone').title = 'Click to cycle Tone Mapping (ACESFilmic -> AgX -> Neutral)';
+ $('#statsTone').addEventListener('click', e=>{
+  e.stopPropagation();
+  cycleToneMapping();
+ });
+}
+
 updateFovBadge();
 syncHeightUI();
 renderInspector();renderPlan();renderScope();
