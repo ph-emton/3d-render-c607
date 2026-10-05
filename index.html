@@ -222,14 +222,23 @@ label.inline-select select{padding:4px 6px;font-size:12px}
         </div>
         <button id="wallBtn">Walls: full</button>
         <button id="btnPostFx" class="walk-btn on" title="Toggle Real-Time Ambient Occlusion (GTAO) and Soft Bloom (Hotkey: B)">✨ Post-FX: ON</button>
+        <select id="qualityTierSelect" class="walk-btn" style="pointer-events:auto;font-size:11.5px;padding:3px 7px;cursor:pointer" title="Rendering Quality Tier (Auto / Low / Medium / High / Ultra)">
+          <option value="auto">Tier: Auto</option>
+          <option value="low">Tier: Low</option>
+          <option value="medium">Tier: Medium</option>
+          <option value="high">Tier: High</option>
+          <option value="ultra">Tier: Ultra</option>
+        </select>
       </div>
       <div id="viewWrap">
         <canvas id="view"></canvas>
         <div id="reticle"></div>
-        <div id="statsOverlay" style="display:none;position:absolute;top:12px;left:12px;z-index:30;background:rgba(18,18,22,0.88);color:#4fb3dc;border:1px solid rgba(79,179,220,0.35);border-radius:6px;padding:5px 9px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px;pointer-events:none;backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,0.4)">
-          <div id="statsFps" style="font-weight:600">FPS: --</div>
-          <div id="statsMs" style="color:#d4d0c7">Frame: -- ms</div>
-          <div id="statsTone" style="color:#a0d0a0;font-size:10px;margin-top:2px">Tone: ACESFilmic | Exp: 0.95</div>
+        <div id="statsOverlay" style="display:none;position:absolute;top:12px;left:12px;z-index:30;background:rgba(18,18,22,0.88);color:#4fb3dc;border:1px solid rgba(79,179,220,0.35);border-radius:6px;padding:6px 10px;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,0.4);line-height:1.45">
+          <div style="display:flex;gap:10px"><span id="statsFps" style="font-weight:700;color:#64d2ff">FPS: --</span> <span id="statsMs" style="color:#e0ded8">Frame: -- ms</span></div>
+          <div id="statsRender" style="color:#b0ada5">Draws: -- · Tris: --</div>
+          <div id="statsMemory" style="color:#b0ada5">Textures: -- · Geoms: --</div>
+          <div id="statsTierRes" style="color:#a0d0a0">Tier: -- · Res: --</div>
+          <div id="statsTone" style="color:#80c090;font-size:10px">Tone: ACESFilmic | Exp: 0.95</div>
           <div id="statsLights" style="color:#e0be80;font-size:10px">Lights: 10 downlights · 6 windows · HDRI</div>
         </div>
         <div id="wallMuralModal" style="display:none;position:absolute;top:52px;left:50%;transform:translateX(-50%);z-index:45;background:rgba(22,22,26,0.95);color:#f0ece1;border:1px solid rgba(255,255,255,0.22);border-radius:10px;padding:16px 20px;width:340px;max-width:92vw;box-shadow:0 12px 36px rgba(0,0,0,0.6);backdrop-filter:blur(10px)">
@@ -317,6 +326,13 @@ label.inline-select select{padding:4px 6px;font-size:12px}
               <button type="button" id="walkBtnWallMural" class="walk-btn" style="pointer-events:auto;font-size:11px;padding:3px 7px" title="Upload custom wallpaper or mural image for any wall">🖼️ Wallpaper</button>
             </div>
             <div style="display:flex;gap:6px;align-items:center">
+              <select id="walkQualityTierSelect" class="walk-btn" style="pointer-events:auto;font-size:11.5px;padding:3px 7px;cursor:pointer;background:rgba(20,20,24,0.85);color:#fff" title="Rendering Quality Tier (Auto / Low / Medium / High / Ultra)">
+                <option value="auto">Tier: Auto</option>
+                <option value="low">Tier: Low</option>
+                <option value="medium">Tier: Medium</option>
+                <option value="high">Tier: High</option>
+                <option value="ultra">Tier: Ultra</option>
+              </select>
               <button id="walkPostFxToggle" class="walk-btn on" style="pointer-events:auto" title="Toggle Real-Time Ambient Occlusion (GTAO) and Soft Bloom (Hotkey: B)">✨ Post-FX: ON</button>
               <button id="walkModelToggle" class="walk-btn on" title="Toggle between 3D glTF Models and Procedural Primitives">📦 3D Models: ON</button>
               <button id="btnCollision" class="walk-btn" title="Toggle wall collision (or press C key)">Collisions: ON</button>
@@ -401,6 +417,7 @@ import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
 
 const T = {
   ...THREE,
@@ -417,7 +434,8 @@ const T = {
   ShaderPass,
   OutputPass,
   GTAOPass,
-  UnrealBloomPass
+  UnrealBloomPass,
+  FXAAShader
 };
 window.THREE = T;
 
@@ -602,8 +620,8 @@ function defaults(){
  state.usePostProcessing = true;
  return SEED.items.map(fromExport);
 }
-let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true,usePostProcessing:true};
-function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false}));}catch(e){}}
+let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true,usePostProcessing:true,qualityTier:'auto'};
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto'}));}catch(e){}}
 function load(){
  try{
   const raw=localStorage.getItem(STORE);
@@ -622,6 +640,7 @@ function load(){
    state.ceilingMode=s.ceilingMode||'auto';
    state.use3dModels=s.use3dModels!==false;
    state.usePostProcessing=s.usePostProcessing!==false;
+   state.qualityTier=s.qualityTier||'auto';
    return true;
   }
  }catch(e){}
@@ -3019,6 +3038,7 @@ function buildStatic(){
 
 function buildWalls(){
  disposeGroup(gWalls);
+ if(typeof invalidateObstacles==='function')invalidateObstacles();
  const wp=wallPieces(H,state.wallMode==='low');
  const baseWc=getWallColorInfo(state.wallColor);
  const gm=mat('',0,'glass');
@@ -3159,12 +3179,26 @@ function buildCeilingAndLights(){
  const hemiLight=new T.HemisphereLight(0xfff0e2,0x221c16,0.12);
  gLights.add(hemiLight);
 
+ const activeTier = (typeof getActiveQualityTier === 'function') ? getActiveQualityTier() : 'medium';
+ let sunShadowRes = 2048;
+ let maxSpotShadows = 5;
+ let spotShadowRes = 1024;
+ if(activeTier === 'low'){
+  sunShadowRes = 512;
+  maxSpotShadows = 0;
+  spotShadowRes = 256;
+ }else if(activeTier === 'medium'){
+  sunShadowRes = 1024;
+  maxSpotShadows = 1;
+  spotShadowRes = 512;
+ }
+
  const sun=new T.DirectionalLight(0xfffaee,0.60);
  sun.position.set(7.0,14.0,-2.0);
  sun.target.position.set(10.0,0,20.0);
  sun.castShadow=true;
- sun.shadow.mapSize.width=2048;
- sun.shadow.mapSize.height=2048;
+ sun.shadow.mapSize.width=sunShadowRes;
+ sun.shadow.mapSize.height=sunShadowRes;
  sun.shadow.camera.near=1.0;
  sun.shadow.camera.far=55;
  sun.shadow.camera.left=-16;
@@ -3214,19 +3248,23 @@ function buildCeilingAndLights(){
   {n:'Balcony Light',x:5.6,y:H-0.1,z:3.2,color:0xfff0da,int:0.75,dist:16,shadow:false,pen:0.85,beam:Math.PI/3.0}
  ];
 
+ let activeSpotShadows = 0;
  for(const l of ROOM_SPOTS){
   const sl=new T.SpotLight(l.color,l.int,l.dist,l.beam||Math.PI/3.2,l.pen||0.75,2.0);
   sl.position.set(l.x,l.y,l.z);
   sl.target.position.set(l.x,0,l.z);
-  if(l.shadow){
+  if(l.shadow && activeSpotShadows < maxSpotShadows){
    sl.castShadow=true;
-   sl.shadow.mapSize.width=1024;
-   sl.shadow.mapSize.height=1024;
+   sl.shadow.mapSize.width=spotShadowRes;
+   sl.shadow.mapSize.height=spotShadowRes;
    sl.shadow.camera.near=0.5;
    sl.shadow.camera.far=24;
    sl.shadow.bias=-0.0003;
    sl.shadow.normalBias=0.02;
-   sl.shadow.radius=2.6;
+   sl.shadow.radius=(activeTier==='low'||activeTier==='medium')?1.6:2.6;
+   activeSpotShadows++;
+  }else{
+   sl.castShadow=false;
   }
   gLights.add(sl);
   gLights.add(sl.target);
@@ -3319,6 +3357,7 @@ function syncCeilingVisibility(){
 }
 
 function buildItems(){
+ if(typeof invalidateObstacles==='function')invalidateObstacles();
  disposeGroup(gItems);for(const it of state.items)gItems.add(buildItem(it));
  if(selHelper){scene.remove(selHelper);selHelper.geometry.dispose();selHelper=null;}
  const sg=gItems.children.find(c=>c.userData.id===state.sel);
@@ -3332,16 +3371,40 @@ let statsFrameCount=0, statsLastFpsTime=performance.now();
 let statsCurrentFps=60, statsLastFrameMs=0;
 let statsRafId=null;
 
+let lastSceneCalls = 0, lastSceneTriangles = 0;
+
 function recordStats(renderMs){
  if(renderMs!=null&&renderMs>0)statsLastFrameMs=renderMs;
  statsFrameCount++;
  const now=performance.now();
- if(now-statsLastFpsTime>=500){
+ if(now-statsLastFpsTime>=400){
   statsCurrentFps=Math.round((statsFrameCount*1000)/(now-statsLastFpsTime));
   statsFrameCount=0;
   statsLastFpsTime=now;
   const fpsEl=$('#statsFps');
-  if(fpsEl)fpsEl.textContent='FPS: '+statsCurrentFps;
+  if(fpsEl){
+   fpsEl.textContent='FPS: '+statsCurrentFps;
+   fpsEl.style.color=statsCurrentFps>=48?'#64d2ff':(statsCurrentFps>=30?'#ffd166':'#ff6b6b');
+  }
+  if(renderer&&renderer.info){
+   const r=renderer.info.render;
+   const calls = lastSceneCalls || r.calls;
+   const tris = lastSceneTriangles || r.triangles;
+   const m=renderer.info.memory;
+   const rEl=$('#statsRender');
+   if(rEl)rEl.textContent='Draws: '+calls+' · Tris: '+(tris>999?(tris/1000).toFixed(1)+'k':tris);
+   const mEl=$('#statsMemory');
+   if(mEl)mEl.textContent='Textures: '+m.textures+' · Geoms: '+m.geometries;
+  }
+  const trEl=$('#statsTierRes');
+  if(trEl&&renderer){
+   const tier=(state&&state.qualityTier?state.qualityTier:'medium').toUpperCase();
+   const pr=renderer.getPixelRatio()||1;
+   const w=Math.round((renderer.domElement.clientWidth||1280)*pr);
+   const h=Math.round((renderer.domElement.clientHeight||800)*pr);
+   const sc=Math.round((window.__renderScale||1)*100);
+   trEl.textContent='Tier: '+tier+' · '+w+'x'+h+' ('+sc+'%)';
+  }
  }
  const msEl=$('#statsMs');
  if(msEl&&statsLastFrameMs!=null)msEl.textContent='Frame: '+statsLastFrameMs.toFixed(1)+' ms';
@@ -3360,6 +3423,14 @@ function toggleStats(){
  if(statsVisible){
   statsLastFpsTime=performance.now();
   statsFrameCount=0;
+  if(renderer&&renderer.info){
+   const r=renderer.info.render;
+   const m=renderer.info.memory;
+   const rEl=$('#statsRender');
+   if(rEl)rEl.textContent='Draws: '+r.calls+' · Tris: '+(r.triangles>999?(r.triangles/1000).toFixed(1)+'k':r.triangles);
+   const mEl=$('#statsMemory');
+   if(mEl)mEl.textContent='Textures: '+m.textures+' · Geoms: '+m.geometries;
+  }
   if(viewMode==='orbit'){
    render3D();
    if(!statsRafId)statsRafId=requestAnimationFrame(statsOrbitLoop);
@@ -3368,15 +3439,22 @@ function toggleStats(){
 }
 
 function render3D(){
- if(!renderer)return;
+ if(!renderer || document.hidden) return;
  const t0=performance.now();
- if(state.usePostProcessing!==false&&typeof composer!=='undefined'&&composer){
+ const activeTier = (typeof getActiveQualityTier==='function') ? getActiveQualityTier() : 'medium';
+
+ if(state.usePostProcessing!==false && activeTier!=='low' && typeof composer!=='undefined' && composer){
   composer.render();
  }else{
   renderer.render(scene,camera);
+  if(renderer && renderer.info){
+   lastSceneCalls = renderer.info.render.calls;
+   lastSceneTriangles = renderer.info.render.triangles;
+  }
  }
  const dt=performance.now()-t0;
  if(statsVisible)recordStats(dt);
+ if(viewMode==='walk' && typeof updateDynamicResolution==='function') updateDynamicResolution(dt);
 }
 
 /* ---------- Walk POV & Navigation ---------- */
@@ -3507,14 +3585,26 @@ function syncHeightUI(){
  });
 }
 
-function updatePlanAvatar(){
+let lastAvatarUpdate = 0;
+let lastAvatarX = -999, lastAvatarZ = -999, lastAvatarYaw = -999, lastAvatarFov = -999;
+
+function updatePlanAvatar(force = false){
  const g=$('#planAvatar');if(!g)return;
- if(viewMode!=='walk'){g.innerHTML='';return;}
- const px=player.x,py=player.z;
- const ang=Math.atan2(-Math.cos(player.yaw),-Math.sin(player.yaw));
- const curFov=((camera&&camera.fov)||walkFov||75)*Math.PI/180;
+ if(viewMode!=='walk'){if(g.innerHTML!=='')g.innerHTML='';return;}
+ const now=performance.now();
+ if(!force && now-lastAvatarUpdate<100)return; // throttle to 10 Hz
+ const px=player.x,py=player.z,pyaw=player.yaw;
+ const curFov=((camera&&camera.fov)||walkFov||75);
+ if(!force && Math.abs(px-lastAvatarX)<0.02 && Math.abs(py-lastAvatarZ)<0.02 && Math.abs(pyaw-lastAvatarYaw)<0.015 && Math.abs(curFov-lastAvatarFov)<0.5){
+  return;
+ }
+ lastAvatarUpdate=now;
+ lastAvatarX=px;lastAvatarZ=py;lastAvatarYaw=pyaw;lastAvatarFov=curFov;
+
+ const ang=Math.atan2(-Math.cos(pyaw),-Math.sin(pyaw));
+ const fovRad=curFov*Math.PI/180;
  const r=4.2;
- const a1=ang-curFov/2,a2=ang+curFov/2;
+ const a1=ang-fovRad/2,a2=ang+fovRad/2;
  const x1=px+r*Math.cos(a1),y1=py+r*Math.sin(a1);
  const x2=px+r*Math.cos(a2),y2=py+r*Math.sin(a2);
  let s='<path d="M '+r2(px)+' '+r2(py)+' L '+r2(x1)+' '+r2(y1)+' A '+r2(r)+' '+r2(r)+' 0 0 1 '+r2(x2)+' '+r2(y2)+' Z" fill="var(--accent)" fill-opacity="0.25" stroke="var(--accent)" stroke-width="0.04" stroke-opacity="0.6"/>';
@@ -3524,16 +3614,29 @@ function updatePlanAvatar(){
  g.innerHTML=s;
 }
 
-function updateRoomBadge(){
+let lastRoomBadge='';
+let lastRoomBadgeTime=0;
+function updateRoomBadge(force = false){
+ const now=performance.now();
+ if(!force && now-lastRoomBadgeTime<100)return; // throttle to 10 Hz
+ lastRoomBadgeTime=now;
  const b=$('#walkRoomBadge');if(!b)return;
  const currentRoom=roomOf(player.x,player.z);
+ if(currentRoom===lastRoomBadge && !force)return;
+ lastRoomBadge=currentRoom;
  b.textContent='📍 '+currentRoom;
  if($('#walkWallRoomSelect')&&$('#walkWallRoomSelect').value==='current'&&typeof syncWallColorUI==='function'){
   syncWallColorUI();
  }
 }
 
+let cachedObstacles=null;
+function invalidateObstacles(){
+ cachedObstacles=null;
+}
+
 function getObstacles(){
+ if(cachedObstacles)return cachedObstacles;
  const obs=[];
  const wp=wallPieces(H,false);
  for(const p of wp.P){
@@ -3548,6 +3651,7 @@ function getObstacles(){
    obs.push({x1:f.x,x2:f.x+f.w,z1:f.y,z2:f.y+f.h});
   }
  }
+ cachedObstacles=obs;
  return obs;
 }
 
@@ -3570,11 +3674,30 @@ function movePlayer(dx,dz){
  if(!collisionEnabled||!checkCollision(player.x,nz,r,obs)){player.z=nz;}
 }
 
+let pendingMouseX=0;
+let pendingMouseY=0;
+
 function walkLoop(now){
  if(viewMode!=='walk'){walkAnimId=null;return;}
+ if(document.hidden){
+  lastWalkTime=now;
+  walkAnimId=requestAnimationFrame(walkLoop);
+  return;
+ }
  if(!lastWalkTime)lastWalkTime=now;
  const dt=Math.min((now-lastWalkTime)/1000,0.1);
  lastWalkTime=now;
+
+ let mouseTurned=false;
+ if(pendingMouseX!==0||pendingMouseY!==0){
+  const sens=0.0022;
+  player.yaw-=pendingMouseX*sens;
+  player.pitch-=pendingMouseY*sens;
+  player.pitch=Math.max(-1.48,Math.min(1.48,player.pitch));
+  pendingMouseX=0;
+  pendingMouseY=0;
+  mouseTurned=true;
+ }
  
  let fwd=0,strafe=0;
  if(keysDown['ArrowUp']||keysDown['KeyW'])fwd+=1;
@@ -3604,8 +3727,13 @@ function walkLoop(now){
  
  const dx=player.vx*dt;
  const dz=player.vz*dt;
- if(Math.abs(dx)>0.0001||Math.abs(dz)>0.0001){
+ const movedPos=(Math.abs(dx)>0.0001||Math.abs(dz)>0.0001);
+ if(movedPos){
   movePlayer(dx,dz);
+ }
+
+ if(movedPos||mouseTurned){
+  if(typeof notifyCameraMotion==='function')notifyCameraMotion();
   updateRoomBadge();
   updatePlanAvatar();
  }
@@ -3630,8 +3758,8 @@ function setViewMode(m, spawnKey){
     camera.position.set(player.x,walkEyeH,player.z);
     camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
    }
-   updateRoomBadge();
-   updatePlanAvatar();
+   updateRoomBadge(true);
+   updatePlanAvatar(true);
    render3D();
   }
   return;
@@ -3653,15 +3781,16 @@ function setViewMode(m, spawnKey){
   const sp=WALK_SPAWNS[pk]||WALK_SPAWNS.hall;
   player.x=sp.x;player.z=sp.z;player.yaw=sp.yaw;player.pitch=sp.pitch;
   player.vx=0;player.vz=0;
+  pendingMouseX=0;pendingMouseY=0;
   if(camera){
    camera.position.set(player.x,walkEyeH,player.z);
    camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
   }
   $('#viewHint').textContent='Walk mode: Arrow keys or WASD to walk · Mouse to look · Mouse scroll to zoom / wide view · Q/E: Eye height · Shift: Sprint.';
-  updateRoomBadge();
+  updateRoomBadge(true);
   updateFovBadge();
   syncHeightUI();
-  updatePlanAvatar();
+  updatePlanAvatar(true);
   render3D();
   lastWalkTime=performance.now();
   if(!walkAnimId)walkAnimId=requestAnimationFrame(walkLoop);
@@ -3671,7 +3800,7 @@ function setViewMode(m, spawnKey){
   if(controls)controls.enabled=true;
   if(camera){camera.fov=50;camera.updateProjectionMatrix();}
   $('#viewHint').textContent='Drag to orbit, scroll or pinch to zoom, right-drag or two-finger drag to pan. Tap an item in 3D to select it.';
-  updatePlanAvatar();
+  updatePlanAvatar(true);
   const curP=document.querySelector('#presets button.on');
   preset(curP?curP.dataset.p:'overview');
  }
@@ -3685,17 +3814,23 @@ document.addEventListener('pointerlockchange',()=>{
   ins.innerHTML=isLocked?'<b>Mouse lock active</b> (Press <b>Esc</b> to unlock) · <b>Shift</b>: Sprint':'<b>Click view</b> to lock mouse (Esc to unlock) · <b>Shift</b>: Sprint · <b>Click 2D plan</b> to teleport';
  }
 });
-document.addEventListener('mousemove',e=>{
- if(viewMode==='walk'&&isLocked){
-  const sens=0.0022;
-  player.yaw-=e.movementX*sens;
-  player.pitch-=e.movementY*sens;
-  player.pitch=Math.max(-1.48,Math.min(1.48,player.pitch));
-  if(camera)camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
-  updatePlanAvatar();
-  render3D();
+
+function onMouseMove(e){
+ if(viewMode!=='walk'||!isLocked)return;
+ if(typeof e.getCoalescedEvents==='function'){
+  const coalesced=e.getCoalescedEvents();
+  if(coalesced&&coalesced.length>0){
+   for(let i=0;i<coalesced.length;i++){
+    pendingMouseX+=coalesced[i].movementX;
+    pendingMouseY+=coalesced[i].movementY;
+   }
+   return;
+  }
  }
-});
+ pendingMouseX+=(e.movementX||0);
+ pendingMouseY+=(e.movementY||0);
+}
+document.addEventListener('mousemove',onMouseMove);
 
 const PRESETS={
  overview:{p:[12,46,64],t:[12,0,21]},
@@ -3782,7 +3917,163 @@ function initEnvMap(rend, scn){
 let composer = null;
 let gtaoPass = null;
 let bloomPass = null;
+let fxaaPass = null;
 let outputPass = null;
+
+let currentRenderScale = 1.0;
+window.__renderScale = 1.0;
+let frameTimeHistory = [];
+let motionSettleTimer = null;
+let isCameraMoving = false;
+let lastCameraMoveTime = 0;
+
+function detectDeviceQualityTier(){
+ try {
+  const canvas = document.createElement('canvas');
+  const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+  let rendererStr = '';
+  if (gl) {
+   const dbg = gl.getExtension('WEBGL_debug_renderer_info');
+   if (dbg) rendererStr = gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) || '';
+  }
+  const rLow = rendererStr.toLowerCase();
+  const cores = navigator.hardwareConcurrency || 4;
+  const mem = navigator.deviceMemory || 4;
+
+  if (/rtx 40[89]0|rtx 3090|rx 7900|m2 ultra|m3 ultra|m4 ultra/i.test(rLow)) return 'ultra';
+  if (/rtx|radeon rx|geforce gtx 10[78]|m3 pro|m3 max|m4 pro|m4 max|m2 max/i.test(rLow)) return 'high';
+  if (/intel hd|intel uhd 620|mali-4|adreno 3|swiftshader|llvmpipe/i.test(rLow) || (mem <= 2 && cores <= 4)) return 'low';
+  return 'medium'; // Default for Apple Silicon M1/M2 Air, Intel Iris Xe, standard systems
+ } catch(e) {
+  return 'medium';
+ }
+}
+
+function getActiveQualityTier(){
+ if(state.qualityTier && state.qualityTier !== 'auto') return state.qualityTier;
+ if(!window.__detectedQualityTier) window.__detectedQualityTier = detectDeviceQualityTier();
+ return window.__detectedQualityTier;
+}
+
+function setQualityTier(tier, userInitiated = true){
+ state.qualityTier = tier || 'auto';
+ if(userInitiated) save();
+ syncQualityTierUI();
+ applyQualityTierSettings();
+ if(typeof buildCeilingAndLights === 'function' && gLights) {
+  buildCeilingAndLights();
+  if(renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
+ }
+ if(window.rs3D) window.rs3D();
+ render3D();
+}
+
+function syncQualityTierUI(){
+ const sel1 = $('#qualityTierSelect');
+ const sel2 = $('#walkQualityTierSelect');
+ const rawVal = state.qualityTier || 'auto';
+ const active = getActiveQualityTier();
+
+ if(sel1){
+  sel1.value = rawVal;
+  const autoOpt = sel1.querySelector('option[value="auto"]');
+  if(autoOpt) autoOpt.textContent = 'Tier: Auto (' + active.charAt(0).toUpperCase() + active.slice(1) + ')';
+ }
+ if(sel2){
+  sel2.value = rawVal;
+  const autoOpt = sel2.querySelector('option[value="auto"]');
+  if(autoOpt) autoOpt.textContent = 'Tier: Auto (' + active.charAt(0).toUpperCase() + active.slice(1) + ')';
+ }
+}
+
+function applyQualityTierSettings(){
+ const tier = getActiveQualityTier();
+ if(tier === 'low'){
+  state.usePostProcessing = false;
+  if(bloomPass) bloomPass.enabled = false;
+  if(gtaoPass) gtaoPass.enabled = false;
+  if(fxaaPass) fxaaPass.enabled = false;
+ }else if(tier === 'medium'){
+  state.usePostProcessing = true;
+  if(bloomPass) bloomPass.enabled = false;
+  if(fxaaPass) fxaaPass.enabled = true;
+  if(gtaoPass){
+   gtaoPass.enabled = false; // Fast Medium tier: FXAA only, GTAO off for smooth 60fps on M1 Air
+  }
+ }else if(tier === 'high'){
+  state.usePostProcessing = true;
+  if(bloomPass) bloomPass.enabled = true;
+  if(fxaaPass) fxaaPass.enabled = false;
+  if(gtaoPass){
+   gtaoPass.enabled = true;
+   if(renderer){
+    const pr = Math.min(window.devicePixelRatio || 1, 1.5);
+    const w = Math.round((renderer.domElement.clientWidth || 1280) * pr);
+    const h = Math.round((renderer.domElement.clientHeight || 800) * pr);
+    if(typeof gtaoPass.setSize === 'function') gtaoPass.setSize(w, h);
+   }
+  }
+ }else{ // ultra
+  state.usePostProcessing = true;
+  if(bloomPass) bloomPass.enabled = true;
+  if(fxaaPass) fxaaPass.enabled = false;
+  if(gtaoPass){
+   gtaoPass.enabled = true;
+   if(renderer){
+    const pr = Math.min(window.devicePixelRatio || 1, 2.0);
+    const w = Math.round((renderer.domElement.clientWidth || 1280) * pr);
+    const h = Math.round((renderer.domElement.clientHeight || 800) * pr);
+    if(typeof gtaoPass.setSize === 'function') gtaoPass.setSize(w, h);
+   }
+  }
+ }
+ syncPostFxUI();
+}
+
+function applyQualityTierPostEffects(){
+ applyQualityTierSettings();
+}
+
+function notifyCameraMotion(){
+ isCameraMoving = true;
+ lastCameraMoveTime = performance.now();
+ const tier = getActiveQualityTier();
+
+ if(tier === 'medium' || tier === 'low'){
+  if(gtaoPass && gtaoPass.enabled) gtaoPass.enabled = false;
+  if(bloomPass && bloomPass.enabled) bloomPass.enabled = false;
+ }else if(tier === 'high'){
+  if(bloomPass && bloomPass.enabled) bloomPass.enabled = false;
+ }
+
+ if(motionSettleTimer) clearTimeout(motionSettleTimer);
+ motionSettleTimer = setTimeout(() => {
+  isCameraMoving = false;
+  applyQualityTierPostEffects();
+  render3D();
+ }, 200);
+}
+
+function updateDynamicResolution(frameTimeMs){
+ if(viewMode !== 'walk') return;
+ frameTimeHistory.push(frameTimeMs);
+ if(frameTimeHistory.length > 20) frameTimeHistory.shift();
+ if(frameTimeHistory.length < 10) return;
+
+ const avg = frameTimeHistory.reduce((a, b) => a + b, 0) / frameTimeHistory.length;
+ const tier = getActiveQualityTier();
+ const minScale = (tier === 'low') ? 0.70 : 0.60;
+
+ if(avg > 18.0 && currentRenderScale > minScale){
+  currentRenderScale = Math.max(minScale, Math.round((currentRenderScale - 0.05) * 100) / 100);
+  window.__renderScale = currentRenderScale;
+  if(window.rs3D) window.rs3D();
+ }else if(avg < 14.5 && currentRenderScale < 1.0 && frameTimeHistory.length >= 20){
+  currentRenderScale = Math.min(1.0, Math.round((currentRenderScale + 0.05) * 100) / 100);
+  window.__renderScale = currentRenderScale;
+  if(window.rs3D) window.rs3D();
+ }
+}
 
 function initComposer(){
  if(!renderer || !scene || !camera) return;
@@ -3793,6 +4084,14 @@ function initComposer(){
   composer = new T.EffectComposer(renderer);
 
   const renderPass = new T.RenderPass(scene, camera);
+  const origRenderPass = renderPass.render.bind(renderPass);
+  renderPass.render = function(...args){
+   origRenderPass(...args);
+   if(renderer && renderer.info){
+    lastSceneCalls = renderer.info.render.calls;
+    lastSceneTriangles = renderer.info.render.triangles;
+   }
+  };
   composer.addPass(renderPass);
 
   // Ground Truth Ambient Occlusion (GTAO) for realistic contact shadows and depth
@@ -3828,6 +4127,14 @@ function initComposer(){
    composer.addPass(bloomPass);
   }
 
+  // Fast FXAA pass for Medium tier
+  if(T.FXAAShader){
+   fxaaPass = new T.ShaderPass(T.FXAAShader);
+   fxaaPass.material.uniforms['resolution'].value.set(1 / w, 1 / h);
+   fxaaPass.enabled = false;
+   composer.addPass(fxaaPass);
+  }
+
   // OutputPass handles ACES/AgX/Neutral tone mapping and sRGB color space output
   if(T.OutputPass){
    outputPass = new T.OutputPass();
@@ -3844,6 +4151,7 @@ function updateComposerSize(w, h){
  composer.setSize(w, h);
  if(gtaoPass && typeof gtaoPass.setSize === 'function') gtaoPass.setSize(w, h);
  if(bloomPass && bloomPass.resolution) bloomPass.resolution.set(w, h);
+ if(fxaaPass && fxaaPass.material && fxaaPass.material.uniforms['resolution']) fxaaPass.material.uniforms['resolution'].value.set(1 / w, 1 / h);
 }
 
 function setPostFx(enabled){
@@ -3873,7 +4181,8 @@ function syncPostFxUI(){
  }
  const st = $('#statsLights');
  if(st){
-  st.textContent = 'Lights: 10 downlights · 6 windows · HDRI | FX: ' + (on ? 'GTAO+Bloom' : 'Off');
+  const tier = getActiveQualityTier();
+  st.textContent = 'Lights: ' + (tier==='low'?'Sun only':(tier==='medium'?'Sun + 1 spot':'Sun + 5 spots')) + ' · HDRI | Tier: ' + tier.toUpperCase() + ' | FX: ' + (on ? (tier==='medium'?'FXAA':(tier==='low'?'Off':'GTAO+Bloom')) : 'Off');
  }
 }
 
@@ -3917,7 +4226,9 @@ function init3D(){
  scene.add(gStatic,gWalls,gCeiling,gItems,gLights);
 
  controls=new T.OrbitControls(camera,cv);
- controls.addEventListener('change',render3D);
+ controls.addEventListener('start', notifyCameraMotion);
+ controls.addEventListener('change', ()=>{ notifyCameraMotion(); render3D(); });
+ controls.addEventListener('end', notifyCameraMotion);
  controls.maxPolarAngle=Math.PI*0.495;
 
  updateBg();
@@ -3927,21 +4238,77 @@ function init3D(){
  buildItems();
  initModelLoader();
  initComposer();
+ applyQualityTierSettings();
+ syncQualityTierUI();
  syncPostFxUI();
 
  const wrap=$('#viewWrap');
  const rs=()=>{
   const w=wrap.clientWidth,h=wrap.clientHeight;
   if(!w||!h)return;
-  renderer.setSize(w,h,false);
-  camera.aspect=w/h;
+
+  const activeTier = getActiveQualityTier();
+  let maxDpr = 1.0;
+  let maxPixels = 1920 * 1080;
+  if(activeTier === 'low'){
+   maxDpr = 1.0;
+   maxPixels = 1280 * 800;
+  }else if(activeTier === 'medium'){
+   maxDpr = 1.0;
+   maxPixels = 1920 * 1080;
+  }else if(activeTier === 'high'){
+   maxDpr = 1.5;
+   maxPixels = 2560 * 1440;
+  }else{ // ultra
+   maxDpr = 2.0;
+   maxPixels = 3840 * 2160;
+  }
+
+  const effectiveDpr = Math.min(window.devicePixelRatio || 1, maxDpr);
+  renderer.setPixelRatio(effectiveDpr);
+
+  let targetW = w;
+  let targetH = h;
+  const totalPixels = targetW * targetH * effectiveDpr * effectiveDpr;
+  if(totalPixels > maxPixels){
+   const factor = Math.sqrt(maxPixels / totalPixels);
+   targetW = Math.round(targetW * factor);
+   targetH = Math.round(targetH * factor);
+  }
+
+  const scale = (viewMode === 'walk') ? (currentRenderScale || 1.0) : 1.0;
+  const renderW = Math.max(320, Math.round(targetW * scale));
+  const renderH = Math.max(200, Math.round(targetH * scale));
+
+  renderer.setSize(renderW, renderH, false);
+  camera.aspect = w / h;
   camera.updateProjectionMatrix();
-  if(typeof updateComposerSize==='function')updateComposerSize(w,h);
+
+  if(typeof updateComposerSize === 'function') updateComposerSize(renderW, renderH);
   render3D();
  };
  window.rs3D=rs;
  if(window.ResizeObserver)new ResizeObserver(rs).observe(wrap);else window.addEventListener('resize',rs);rs();
  preset('overview');
+
+ const qSel = $('#qualityTierSelect');
+ if(qSel) qSel.addEventListener('change', e => setQualityTier(e.target.value, true));
+ const wqSel = $('#walkQualityTierSelect');
+ if(wqSel) wqSel.addEventListener('change', e => setQualityTier(e.target.value, true));
+
+ document.addEventListener('visibilitychange', ()=>{
+  if(document.hidden){
+   if(statsRafId){ cancelAnimationFrame(statsRafId); statsRafId = null; }
+  }else{
+   lastWalkTime = performance.now();
+   if(viewMode === 'walk' && !walkAnimId){
+    walkAnimId = requestAnimationFrame(walkLoop);
+   }else if(viewMode === 'orbit'){
+    render3D();
+    if(statsVisible && !statsRafId) statsRafId = requestAnimationFrame(statsOrbitLoop);
+   }
+  }
+ });
 
  cv.addEventListener('wheel',e=>{
   if(viewMode==='walk'){
@@ -3964,13 +4331,8 @@ function init3D(){
    const dx=e.clientX-lookDrag.x,dy=e.clientY-lookDrag.y;
    if(Math.abs(dx)+Math.abs(dy)>3)lookDrag.moved=true;
    lookDrag.x=e.clientX;lookDrag.y=e.clientY;
-   const sens=0.0035;
-   player.yaw-=dx*sens;
-   player.pitch-=dy*sens;
-   player.pitch=Math.max(-1.48,Math.min(1.48,player.pitch));
-   if(camera)camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
-   updatePlanAvatar();
-   render3D();
+   pendingMouseX+=dx * 1.5;
+   pendingMouseY+=dy * 1.5;
   }
  });
  cv.addEventListener('pointerup',e=>{
@@ -4542,7 +4904,28 @@ try{
   onFullscreenChange();
  }
  updateModelModeUI();
-}catch(e){}
+}catch(e){console.warn('URL params error:', e);}
+window.__APP__ = {
+ get renderer(){ return renderer; },
+ get scene(){ return scene; },
+ get camera(){ return camera; },
+ get composer(){ return composer; },
+ get gtaoPass(){ return gtaoPass; },
+ get bloomPass(){ return bloomPass; },
+ get fxaaPass(){ return fxaaPass; },
+ get outputPass(){ return outputPass; },
+ get player(){ return player; },
+ get keysDown(){ return keysDown; },
+ get state(){ return state; },
+ render3D,
+ walkLoop,
+ movePlayer,
+ getObstacles,
+ setViewMode,
+ setQualityTier,
+ getActiveQualityTier,
+ invalidateObstacles
+};
 </script>
 </body>
 </html>
