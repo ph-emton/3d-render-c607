@@ -236,6 +236,21 @@ label.inline-select select{padding:4px 6px;font-size:12px}
         </div>
       </div>
       <div id="viewWrap">
+        <!-- Architectural 3D Loading Progress Overlay -->
+        <div id="loadingOverlay" style="position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;background:radial-gradient(ellipse at center, #1e2025 0%, #0f1013 100%);color:#f0ece1;transition:opacity 0.4s ease, visibility 0.4s ease;pointer-events:all">
+          <div style="display:flex;flex-direction:column;align-items:center;max-width:320px;width:85%;text-align:center">
+            <div style="font-size:26px;margin-bottom:12px;filter:drop-shadow(0 2px 10px rgba(212,175,55,0.4))">📐</div>
+            <div style="font-size:15px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#f5eedc;margin-bottom:4px">Interior Planner 3D</div>
+            <div id="loadingSubTitle" style="font-size:11px;color:#a8a092;margin-bottom:18px">Loading Realism Engine...</div>
+            <div style="width:100%;height:6px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;border:1px solid rgba(255,255,255,0.12);box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);margin-bottom:10px">
+              <div id="loadingProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg, #b8860b 0%, #e5c158 50%, #4fb3dc 100%);border-radius:3px;transition:width 0.15s ease"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;width:100%;font-size:10px;font-family:ui-monospace,Menlo,monospace;color:#8c857b">
+              <span id="loadingStatusText">Initializing WebGL...</span>
+              <span id="loadingPercentText">0%</span>
+            </div>
+          </div>
+        </div>
         <canvas id="view"></canvas>
         <div id="reticle"></div>
         <div id="statsOverlay" style="display:none;position:absolute;top:12px;left:12px;z-index:30;background:rgba(18,18,22,0.88);color:#4fb3dc;border:1px solid rgba(79,179,220,0.35);border-radius:6px;padding:6px 10px;font-family:ui-monospace,Menlo,monospace;font-size:11px;pointer-events:none;backdrop-filter:blur(6px);box-shadow:0 2px 8px rgba(0,0,0,0.4);line-height:1.45">
@@ -1284,88 +1299,35 @@ function updateBeamMaterial(){
 
 function shade(hex,f){const n=parseInt(hex.slice(1),16);const c=[n>>16,(n>>8)&255,n&255].map(v=>Math.max(0,Math.min(255,Math.round(v*f))));return '#'+c.map(v=>v.toString(16).padStart(2,'0')).join('');}
 
-/* Procedural canvas textures for realistic grain and tactile surfaces */
-function getWoodTex(baseHex,grainHex){
- const key='w_'+baseHex;if(texCache[key])return texCache[key];
- const c=document.createElement('canvas');c.width=256;c.height=512;
- const x=c.getContext('2d');
- x.fillStyle=baseHex;x.fillRect(0,0,256,512);
- const dark=grainHex||shade(baseHex,0.76),light=shade(baseHex,1.14);
- 
- // Subtle vertical tonal variation across planks
- const grad=x.createLinearGradient(0,0,256,0);
- grad.addColorStop(0,shade(baseHex,0.92));
- grad.addColorStop(0.32,shade(baseHex,1.05));
- grad.addColorStop(0.68,shade(baseHex,0.96));
- grad.addColorStop(1,shade(baseHex,1.03));
- x.fillStyle=grad;x.globalAlpha=0.35;x.fillRect(0,0,256,512);
- 
- // Flowing natural cathedral wood grain curves
- x.lineWidth=1.6;
- for(let i=0;i<38;i++){
-  x.beginPath();
-  const bx=Math.random()*256;
-  x.moveTo(bx,0);
-  const cx1=bx+(Math.random()*52-26);
-  const cx2=bx+(Math.random()*52-26);
-  const ex=bx+(Math.random()*26-13);
-  x.bezierCurveTo(cx1,160,cx2,340,ex,512);
-  x.strokeStyle=i%2===0?dark:light;
-  x.globalAlpha=0.14+Math.random()*0.22;
-  x.stroke();
- }
- 
- // Fine longitudinal vascular wood pores
- x.fillStyle=dark;
- for(let i=0;i<380;i++){
-  const px=Math.random()*256, py=Math.random()*512;
-  x.globalAlpha=0.12+Math.random()*0.18;
-  x.fillRect(px,py,1,4+Math.random()*8);
- }
- x.globalAlpha=1.0;
- 
+/* High-performance shared WebP 1K textures & procedural tactile maps */
+let sharedWoodTex = null;
+function getSharedWoodTex(){
+ if(sharedWoodTex) return sharedWoodTex;
  const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
- const t=new T.CanvasTexture(c);
- t.colorSpace=T.SRGBColorSpace;
- t.wrapS=t.wrapT=T.RepeatWrapping;
- t.anisotropy=maxAniso;
- return texCache[key]=t;
+ sharedWoodTex = new T.TextureLoader().load('assets/textures/wood_grain_1k.webp', ()=>{ if(renderer) render3D(); });
+ sharedWoodTex.colorSpace = T.SRGBColorSpace;
+ sharedWoodTex.wrapS = sharedWoodTex.wrapT = T.RepeatWrapping;
+ sharedWoodTex.repeat.set(1, 2);
+ sharedWoodTex.anisotropy = maxAniso;
+ return sharedWoodTex;
+}
+function getWoodTex(baseHex,grainHex){
+ return getSharedWoodTex();
 }
 
-function getFabricTex(baseHex){
- const key='f_'+baseHex;if(texCache[key])return texCache[key];
- const c=document.createElement('canvas');c.width=128;c.height=128;
- const x=c.getContext('2d');
- x.fillStyle=baseHex;x.fillRect(0,0,128,128);
- const d=shade(baseHex,0.84),l=shade(baseHex,1.16);
- 
- // Fine twill/bouclé weave micro-threads
- x.lineWidth=1;
- for(let i=0;i<128;i+=4){
-  x.strokeStyle=(i%8===0)?d:l;
-  x.globalAlpha=0.32;
-  x.beginPath();x.moveTo(i,0);x.lineTo(i,128);x.stroke();
-  x.beginPath();x.moveTo(0,i);x.lineTo(128,i);x.stroke();
- }
- // Interlaced tactile thread points
- for(let r=0;r<128;r+=4){
-  for(let col=0;col<128;col+=4){
-   if((r+col)%8===0){
-    x.fillStyle=l;x.globalAlpha=0.45;
-    x.fillRect(col,r,1.5,1.5);
-   }else if((r+col)%8===4){
-    x.fillStyle=d;x.globalAlpha=0.35;
-    x.fillRect(col,r,1.5,1.5);
-   }
-  }
- }
- x.globalAlpha=1.0;
+let sharedFabricTex = null;
+function getSharedFabricTex(){
+ if(sharedFabricTex) return sharedFabricTex;
  const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
- const t=new T.CanvasTexture(c);
- t.colorSpace=T.SRGBColorSpace;
- t.wrapS=t.wrapT=T.RepeatWrapping;
- t.anisotropy=maxAniso;
- return texCache[key]=t;
+ sharedFabricTex = new T.TextureLoader().load('assets/textures/fabric_weave_1k.webp', ()=>{ if(renderer) render3D(); });
+ sharedFabricTex.colorSpace = T.SRGBColorSpace;
+ sharedFabricTex.wrapS = sharedFabricTex.wrapT = T.RepeatWrapping;
+ sharedFabricTex.repeat.set(1.5, 1.5);
+ sharedFabricTex.anisotropy = maxAniso;
+ return sharedFabricTex;
+}
+function getFabricTex(baseHex){
+ return getSharedFabricTex();
 }
 
 let contactShadowTex=null;
@@ -1391,66 +1353,21 @@ let pTex=null;
 function initProceduralTextures(){
  if(pTex)return pTex;
  const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
+ const texLoader = new T.TextureLoader();
 
- // 1. Large-Format 2x4 (2ft x 4ft / 600x1200mm) Cream Vitrified Glazed Tiles (1024x1024)
- const c1=document.createElement('canvas');c1.width=c1.height=1024;const x1=c1.getContext('2d');
- x1.fillStyle='#f7f2e4';x1.fillRect(0,0,1024,1024);
+ // 1. Large-Format 2x4 Cream Vitrified Glazed Tiles (1K WebP GPU-decoded textures)
+ const tIn = texLoader.load('assets/textures/tiles_diffuse_1k.webp', ()=>{ if(renderer) render3D(); });
+ tIn.colorSpace = T.SRGBColorSpace;
+ tIn.wrapS = tIn.wrapT = T.RepeatWrapping;
+ tIn.anisotropy = maxAniso;
 
- for(let tile=0;tile<2;tile++){
-  const ox=tile*512;
-  for(let i=0;i<300;i++){
-   const alpha=0.08+Math.random()*0.16;
-   x1.fillStyle=Math.random()>0.55?'rgba(255,255,255,'+alpha+')':(Math.random()>0.5?'rgba(236,224,204,'+alpha+')':'rgba(222,208,186,'+(alpha*0.8)+')');
-   const sz=36+Math.random()*85;
-   x1.beginPath();
-   x1.ellipse(ox+Math.random()*512,Math.random()*1024,sz,sz*0.5,Math.random()*Math.PI,0,Math.PI*2);
-   x1.fill();
-  }
-  const nVeins=4+Math.floor(Math.random()*3);
-  for(let v=0;v<nVeins;v++){
-   x1.strokeStyle=v%2?'rgba(182,158,128,0.28)':'rgba(215,198,172,0.36)';
-   x1.lineWidth=1.5+Math.random()*2.0;
-   x1.beginPath();
-   let vy=Math.random()*1024;
-   x1.moveTo(ox,vy);
-   x1.bezierCurveTo(ox+120,vy+(Math.random()*160-80),ox+380,vy+(Math.random()*160-80),ox+512,vy+(Math.random()*160-80));
-   x1.stroke();
-  }
- }
+ const tInRough = texLoader.load('assets/textures/tiles_rough_1k.webp', ()=>{ if(renderer) render3D(); });
+ tInRough.wrapS = tInRough.wrapT = T.RepeatWrapping;
+ tInRough.anisotropy = maxAniso;
 
- // Grout lines: 2x4 tiles (each slab 512px wide x 1024px long = 2ft wide x 4ft long)
- // High-contrast, bold warm biscuit/sand epoxy grouting (#68543e) with deep joint relief
- x1.strokeStyle='#68543e';x1.lineWidth=14;
- x1.strokeRect(7,7,1010,1010);
- x1.beginPath();x1.moveTo(512,0);x1.lineTo(512,1024);x1.stroke();
-
- // Grout center shadow line for deep physical recess (#2c2216)
- x1.strokeStyle='#2c2216';x1.lineWidth=5;
- x1.strokeRect(7,7,1010,1010);
- x1.beginPath();x1.moveTo(512,0);x1.lineTo(512,1024);x1.stroke();
-
- // Factory-polished rectified chamfer edge highlights (crisp gleam framing every 2x4 slab)
- x1.strokeStyle='rgba(255,255,255,0.92)';x1.lineWidth=3.5;
- x1.strokeRect(15,15,482,994);
- x1.strokeRect(527,15,482,994);
-
- const tIn=new T.CanvasTexture(c1);tIn.colorSpace=T.SRGBColorSpace;tIn.wrapS=tIn.wrapT=T.RepeatWrapping;tIn.anisotropy=maxAniso;
-
- // Roughness Map: High-gloss polished porcelain (0.06), dry matte grout (0.98)
- const c1r=document.createElement('canvas');c1r.width=c1r.height=1024;const x1r=c1r.getContext('2d');
- x1r.fillStyle='#0e0e0e';x1r.fillRect(0,0,1024,1024);
- x1r.strokeStyle='#ffffff';x1r.lineWidth=18;
- x1r.strokeRect(9,9,1006,1006);
- x1r.beginPath();x1r.moveTo(512,0);x1r.lineTo(512,1024);x1r.stroke();
- const tInRough=new T.CanvasTexture(c1r);tInRough.wrapS=tInRough.wrapT=T.RepeatWrapping;tInRough.anisotropy=maxAniso;
-
- // Bump Map: Flat elevated porcelain face (#ffffff), deep sunken grout joint (#000000)
- const c1b=document.createElement('canvas');c1b.width=c1b.height=1024;const x1b=c1b.getContext('2d');
- x1b.fillStyle='#ffffff';x1b.fillRect(0,0,1024,1024);
- x1b.strokeStyle='#000000';x1b.lineWidth=16;
- x1b.strokeRect(8,8,1008,1008);
- x1b.beginPath();x1b.moveTo(512,0);x1b.lineTo(512,1024);x1b.stroke();
- const tInBump=new T.CanvasTexture(c1b);tInBump.wrapS=tInBump.wrapT=T.RepeatWrapping;tInBump.anisotropy=maxAniso;
+ const tInBump = texLoader.load('assets/textures/tiles_bump_1k.webp', ()=>{ if(renderer) render3D(); });
+ tInBump.wrapS = tInBump.wrapT = T.RepeatWrapping;
+ tInBump.anisotropy = maxAniso;
 
  // 2. Slate bathroom tile (128x128)
  const c2=document.createElement('canvas');c2.width=c2.height=128;const x2=c2.getContext('2d');
@@ -1562,7 +1479,7 @@ function mat(hex,metal,extra){
   });
  }
  else if(extra==='fabric'){
-  const t=getFabricTex(hex);t.repeat.set(1.5,1.5);
+  const t=getFabricTex(hex);
   const c=new T.Color(hex);
   m=new T.MeshPhysicalMaterial({
    map:t,
@@ -1576,9 +1493,10 @@ function mat(hex,metal,extra){
   });
  }
  else if(extra==='wood'){
-  const t=getWoodTex(hex);t.repeat.set(1,2);
+  const t=getWoodTex(hex);
   m=new T.MeshPhysicalMaterial({
    map:t,
+   color:hex,
    roughness:0.38,
    metalness:0.02,
    clearcoat:0.35,
@@ -1587,7 +1505,7 @@ function mat(hex,metal,extra){
   });
  }
  else if(extra==='bedding'){
-  const t=pTex?pTex.bed.clone():null;if(t){t.needsUpdate=true;t.repeat.set(2,2);}
+  const t=pTex?pTex.bed:null;
   m=new T.MeshPhysicalMaterial({
    map:t||undefined,
    color:'#f8f6f2',
@@ -3008,64 +2926,28 @@ function getWallColorForRoom(roomName){
  return getWallColorInfo(state.wallColor);
 }
 
-let royaleTexCache={};
-let royaleBumpMap=null;
-
+let sharedPaintBumpTex = null;
 function getRoyalePaintBump(){
- if(royaleBumpMap)return royaleBumpMap;
- const c=document.createElement('canvas');c.width=c.height=512;
- const ctx=c.getContext('2d');
- ctx.fillStyle='#808080';ctx.fillRect(0,0,512,512);
-
- // Micro-stipple airless roller spray dispersion
- const imgData=ctx.getImageData(0,0,512,512);
- const data=imgData.data;
- for(let i=0;i<data.length;i+=4){
-  const n=(Math.random()-0.5)*26;
-  const v=Math.max(0,Math.min(255,128+n));
-  data[i]=v;data[i+1]=v;data[i+2]=v;
- }
- ctx.putImageData(imgData,0,0);
-
- royaleBumpMap=new T.CanvasTexture(c);
- royaleBumpMap.wrapS=royaleBumpMap.wrapT=T.RepeatWrapping;
- royaleBumpMap.repeat.set(8,8);
- return royaleBumpMap;
+ if(sharedPaintBumpTex) return sharedPaintBumpTex;
+ const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
+ sharedPaintBumpTex = new T.TextureLoader().load('assets/textures/paint_stipple_1k.webp', ()=>{ if(renderer) render3D(); });
+ sharedPaintBumpTex.wrapS = sharedPaintBumpTex.wrapT = T.RepeatWrapping;
+ sharedPaintBumpTex.repeat.set(6, 6);
+ sharedPaintBumpTex.anisotropy = maxAniso;
+ return sharedPaintBumpTex;
 }
 
 function getRoyalePaintTex(hex){
- if(royaleTexCache[hex])return royaleTexCache[hex];
- const c=document.createElement('canvas');c.width=c.height=512;
- const ctx=c.getContext('2d');
- ctx.fillStyle=hex;ctx.fillRect(0,0,512,512);
-
- // Velvety micro-dispersion grain
- const imgData=ctx.getImageData(0,0,512,512);
- const data=imgData.data;
- for(let i=0;i<data.length;i+=4){
-  const delta=(Math.random()-0.5)*12;
-  data[i]=Math.max(0,Math.min(255,data[i]+delta));
-  data[i+1]=Math.max(0,Math.min(255,data[i+1]+delta));
-  data[i+2]=Math.max(0,Math.min(255,data[i+2]+delta));
- }
- ctx.putImageData(imgData,0,0);
-
- const t=new T.CanvasTexture(c);
- t.colorSpace=T.SRGBColorSpace;
- t.wrapS=t.wrapT=T.RepeatWrapping;
- t.repeat.set(6,6);
- return royaleTexCache[hex]=t;
+ return null;
 }
 
 const royalePaintMatCache={};
 function getRoyalePaintMaterial(hex){
  if(royalePaintMatCache[hex])return royalePaintMatCache[hex];
- const map=getRoyalePaintTex(hex);
  const bump=getRoyalePaintBump();
  const col=new T.Color(hex);
  return royalePaintMatCache[hex]=new T.MeshPhysicalMaterial({
   color:hex,
-  map:map,
   bumpMap:bump,
   bumpScale:0.0035, // Ultra-fine eggshell stipple
   roughness:0.58,   // Velvet low-sheen eggshell
@@ -4078,66 +3960,77 @@ function preset(k){
 
 let envMapGenerated=false;
 let envMapTexture=null;
+let hdriLoading=false;
+let isHdriLoaded=false;
 
-function initEnvMap(rend, scn){
+function applyFallbackEnvMap(rend, scn){
  if(!rend||!scn||!T.PMREMGenerator)return;
- if(envMapTexture){
-  scn.environment=envMapTexture;
-  scn.environmentIntensity=state.envIntensity||0.88;
-  return;
- }
- const pmrem=new T.PMREMGenerator(rend);
- pmrem.compileEquirectangularShader();
-
- // Fast initial ambient fallback so view is never dark while HDR loads
+ if(envMapTexture && isHdriLoaded)return;
  try{
-  const c=document.createElement('canvas');c.width=512;c.height=256;
+  const pmrem=new T.PMREMGenerator(rend);
+  pmrem.compileEquirectangularShader();
+  const c=document.createElement('canvas');c.width=256;c.height=128;
   const x=c.getContext('2d');
-  const skyG=x.createLinearGradient(0,0,0,128);
+  const skyG=x.createLinearGradient(0,0,0,64);
   skyG.addColorStop(0,'#faf6ed');skyG.addColorStop(0.5,'#eee4d2');skyG.addColorStop(1,'#ddd2be');
-  x.fillStyle=skyG;x.fillRect(0,0,512,128);
-  const floorG=x.createLinearGradient(0,128,0,256);
+  x.fillStyle=skyG;x.fillRect(0,0,256,64);
+  const floorG=x.createLinearGradient(0,64,0,128);
   floorG.addColorStop(0,'#a89c8a');floorG.addColorStop(1,'#564c40');
-  x.fillStyle=floorG;x.fillRect(0,128,512,128);
-  x.fillStyle='rgba(255,250,242,0.52)';x.fillRect(60,20,110,85);x.fillRect(330,25,100,80);
+  x.fillStyle=floorG;x.fillRect(0,64,256,64);
+  x.fillStyle='rgba(255,250,242,0.52)';x.fillRect(30,10,55,42);x.fillRect(165,12,50,40);
   const tex=new T.CanvasTexture(c);
   tex.colorSpace=T.SRGBColorSpace;
   const envRT=pmrem.fromEquirectangular(tex);
-  scn.environment=envRT.texture;
+  envMapTexture=envRT.texture;
+  scn.environment=envMapTexture;
   scn.environmentIntensity=state.envIntensity||0.88;
   tex.dispose();
- }catch(err){}
+  pmrem.dispose();
+  envMapGenerated=true;
+ }catch(err){console.warn('Fallback env error:',err);}
+}
 
- // Load real Poly Haven CC0 interior HDRI
- if(T.RGBELoader){
-  new T.RGBELoader().load('assets/hdri/interior_warm_1k.hdr', function(hdrTex){
-   try{
-    const envRT=pmrem.fromEquirectangular(hdrTex);
-    envMapTexture=envRT.texture;
-    scn.environment=envMapTexture;
-    scn.environmentIntensity=state.envIntensity||0.88;
-    hdrTex.dispose();
-    pmrem.dispose();
-    envMapGenerated=true;
-    if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
-    render3D();
-   }catch(err){console.warn('HDRI process error:',err);}
-  }, undefined, function(err){
-   console.warn('HDRI load failed, using RoomEnvironment fallback:', err);
-   try{
-    if(T.RoomEnvironment){
-     const roomEnv=new T.RoomEnvironment();
-     const envRT=pmrem.fromScene(roomEnv);
-     envMapTexture=envRT.texture;
-     scn.environment=envMapTexture;
-     scn.environmentIntensity=state.envIntensity||0.88;
-     pmrem.dispose();
-     envMapGenerated=true;
-     if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
-     render3D();
-    }
-   }catch(e2){console.warn('RoomEnvironment fallback error:',e2);}
-  });
+function loadHighResHdri(rend, scn){
+ if(!rend) rend = renderer;
+ if(!scn) scn = scene;
+ if(!rend || !scn || !T.RGBELoader || !T.PMREMGenerator) return;
+ if(isHdriLoaded || hdriLoading) return;
+ hdriLoading = true;
+
+ new T.RGBELoader().load('assets/hdri/interior_warm_1k.hdr', function(hdrTex){
+  try{
+   const pmrem = new T.PMREMGenerator(rend);
+   pmrem.compileEquirectangularShader();
+   const envRT = pmrem.fromEquirectangular(hdrTex);
+   if(envMapTexture && !isHdriLoaded){
+    envMapTexture.dispose();
+   }
+   envMapTexture = envRT.texture;
+   scn.environment = envMapTexture;
+   scn.environmentIntensity = state.envIntensity || 0.88;
+   hdrTex.dispose();
+   pmrem.dispose();
+   isHdriLoaded = true;
+   hdriLoading = false;
+   envMapGenerated = true;
+   if(renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
+   render3D();
+  }catch(err){
+   console.warn('HDRI process error:', err);
+   hdriLoading = false;
+  }
+ }, undefined, function(err){
+  console.warn('HDRI load failed, using fallback:', err);
+  hdriLoading = false;
+ });
+}
+
+function initEnvMap(rend, scn){
+ if(!rend||!scn)return;
+ applyFallbackEnvMap(rend, scn);
+ const tier = (typeof getActiveQualityTier === 'function') ? getActiveQualityTier() : 'medium';
+ if(tier === 'high' || tier === 'ultra'){
+  loadHighResHdri(rend, scn);
  }
 }
 
@@ -4212,6 +4105,10 @@ function setQualityTier(tier, userInitiated = true){
  syncQualityTierUI();
  updateStatsResolutionUI();
  applyQualityTierSettings();
+ const active = getActiveQualityTier();
+ if(active === 'high' || active === 'ultra'){
+  loadHighResHdri(renderer, scene);
+ }
  if(typeof buildCeilingAndLights === 'function' && gLights) {
   buildCeilingAndLights();
   if(renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
@@ -4441,9 +4338,27 @@ function syncPostFxUI(){
  }
 }
 
-function init3D(){
+function updateLoadingProgress(pct, status){
+ const overlay = document.getElementById('loadingOverlay');
+ const bar = document.getElementById('loadingProgressBar');
+ const txt = document.getElementById('loadingStatusText');
+ const pctTxt = document.getElementById('loadingPercentText');
+ if(bar) bar.style.width = Math.min(100, Math.max(0, pct)) + '%';
+ if(txt && status) txt.textContent = status;
+ if(pctTxt) pctTxt.textContent = Math.round(pct) + '%';
+ if(pct >= 100 && overlay){
+  setTimeout(()=>{
+   overlay.style.opacity = '0';
+   overlay.style.pointerEvents = 'none';
+   setTimeout(()=>{ overlay.style.display = 'none'; }, 400);
+  }, 160);
+ }
+}
+
+async function init3D(){
  if(!T||!T.OrbitControls){$('#viewMsg').textContent='3D view could not load. The 2D plan still works.';return;}
  $('#viewMsg').style.display='none';
+ updateLoadingProgress(15, 'Initializing WebGL Engine...');
  const cv=$('#view');
  renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
@@ -4487,9 +4402,17 @@ function init3D(){
  controls.maxPolarAngle=Math.PI*0.495;
 
  updateBg();
+ await new Promise(r => requestAnimationFrame(r));
+ updateLoadingProgress(35, 'Generating Vitrified Floors & Shell...');
  buildStatic();
+ await new Promise(r => requestAnimationFrame(r));
+ updateLoadingProgress(55, 'Erecting Walls & Asian Paints Finishes...');
  buildWalls();
+ await new Promise(r => requestAnimationFrame(r));
+ updateLoadingProgress(75, 'Configuring PBR Lighting & Shadows...');
  buildCeilingAndLights();
+ await new Promise(r => requestAnimationFrame(r));
+ updateLoadingProgress(90, 'Assembling Furniture & Decor...');
  buildItems();
  if(state.use3dModels){
   ensureModelsLoaded();
@@ -4577,6 +4500,7 @@ function init3D(){
  window.rs3D=rs;
  if(window.ResizeObserver)new ResizeObserver(rs).observe(wrap);else window.addEventListener('resize',rs);rs();
  preset('overview');
+ updateLoadingProgress(100, 'Ready');
 
  const qSel = $('#qualityTierSelect');
  if(qSel) qSel.addEventListener('change', e => setQualityTier(e.target.value, true));
@@ -5155,7 +5079,13 @@ if($('#walkPostFxToggle')){
 updateFovBadge();
 syncHeightUI();
 renderInspector();renderPlan();renderScope();
-try{init3D();}catch(e){
+try{
+ init3D().catch(e => {
+  console.error(e);
+  $('#viewMsg').style.display='flex';
+  $('#viewMsg').textContent='3D view could not start on this device. The 2D plan still works.';
+ });
+}catch(e){
  console.error(e);
  $('#viewMsg').style.display='flex';
  $('#viewMsg').textContent='3D view could not start on this device. The 2D plan still works.';
@@ -5211,6 +5141,8 @@ window.__APP__ = {
  get state(){ return state; },
  get drawCalls(){ return lastSceneCalls; },
  get triangles(){ return lastSceneTriangles; },
+ get isHdriLoaded(){ return isHdriLoaded; },
+ loadHighResHdri,
  render3D,
  walkLoop,
  movePlayer,
