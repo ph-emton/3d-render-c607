@@ -165,6 +165,14 @@ label.inline-select select{padding:4px 6px;font-size:12px}
         <button id="btnModelMode" class="walk-btn on" style="pointer-events:auto;font-size:12px;padding:4px 9px;border-color:var(--accent);color:var(--accent);font-weight:600" title="Toggle between 3D glTF models and procedural geometry">📦 3D Models: ON</button>
         <button id="btnFullscreen" class="walk-btn" style="pointer-events:auto;font-size:12px;padding:4px 9px" title="Toggle Fullscreen (or press F key)">⛶ Fullscreen</button>
         <span class="sp"></span>
+        <label class="sub inline-select" style="gap:4px">Doors:
+          <select id="roomDoorSelect" title="Control all room &amp; cabinet doors (Closed, Ajar, Open)" style="font-weight:500;padding:4px 6px">
+            <option value="partial" selected>🚪 Doors: Ajar (25°)</option>
+            <option value="closed">🚪 Doors: Closed (0°)</option>
+            <option value="open">🚪 Doors: Open (85°)</option>
+          </select>
+        </label>
+        <button id="btnSelectBasin" class="walk-btn" style="pointer-events:auto;font-size:12px;padding:4px 9px" title="Customize Hall Washbasin, Vanity &amp; Mirror">🪞 Washbasin</button>
         <label class="sub inline-select" style="gap:4px">Room:
           <select id="wallRoomSelect" title="Select room to paint or choose All Rooms" style="font-weight:500;padding:4px 6px">
             <option value="all">🎨 All Rooms (Global)</option>
@@ -301,6 +309,11 @@ label.inline-select select{padding:4px 6px;font-size:12px}
             <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
               <div class="walk-badge" id="walkRoomBadge">📍 Hall</div>
               <div class="walk-badge" id="walkFovBadge" style="cursor:pointer;pointer-events:auto" title="Click to cycle FOV (52° / 68° / 85° / 105° / 115°). Scroll wheel to fine-tune.">FOV: 52° · Natural</div>
+              <select id="walkDoorSelect" class="walk-btn" style="pointer-events:auto;background:rgba(20,20,24,0.85);color:#ffcc66;border:1px solid rgba(255,255,255,0.22);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600" title="Control all doors (Closed, Ajar, Open)">
+                <option value="partial" selected>🚪 Doors: Ajar</option>
+                <option value="closed">🚪 Doors: Closed</option>
+                <option value="open">🚪 Doors: Open</option>
+              </select>
               <select id="walkWallRoomSelect" class="walk-btn" style="pointer-events:auto;background:rgba(20,20,24,0.85);color:#64d2ff;border:1px solid rgba(255,255,255,0.22);padding:4px 8px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600" title="Select room to paint (Current Room or specific room)">
                 <option value="current">📍 Current Room</option>
                 <option value="all">🎨 All Rooms (Global)</option>
@@ -636,7 +649,7 @@ const CARP={openshelf:1,wardrobe:1,loft:1,kbase:1,kwall:1,crockery:1,puja:1,dres
 let uidN=1;const uid=()=>'i'+(Date.now().toString(36))+(uidN++);
 function make(k,x,y,rot,o){const t=LIB[k];return Object.assign({id:uid(),key:k,kind:t.kind,label:t.label,w:t.w,d:t.d,h:t.h,elev:t.elev,fin:t.fin,rot:rot||0},JSON.parse(JSON.stringify(t.extra||{})),o||{},{x:x,y:y});}
 const SEED={"plan":"C607 planner realistic v1","note":"Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.","ceiling_ft":10,"items":[{"label":"Brother's bed","kind":"bed","room":"Brother's room","x_in":208,"y_in":390,"w_in":61,"d_in":76,"h_in":18,"elev_in":0,"rot":90,"finish":"#dd5340","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":130,"y_in":372,"w_in":96,"d_in":23,"h_in":84,"elev_in":0,"rot":270,"finish":"#c13c1a","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Brother's room","x_in":130,"y_in":335,"w_in":133,"d_in":23,"h_in":30,"elev_in":90,"rot":270,"finish":"#e65f33","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Your bed","kind":"bed","room":"Your room","x_in":55,"y_in":144,"w_in":54,"d_in":81,"h_in":18,"elev_in":0,"rot":90,"finish":"oak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Your room","x_in":45,"y_in":82,"w_in":64,"d_in":24,"h_in":30,"elev_in":0,"rot":0,"finish":"#000000","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study chair","kind":"chair","room":"Your room","x_in":61,"y_in":106,"w_in":19,"d_in":19,"h_in":36,"elev_in":0,"rot":180,"finish":"charcoal","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe (sliding)","kind":"wardrobe","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":84,"elev_in":0,"rot":90,"finish":"#b21f1f","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":30,"elev_in":90,"rot":90,"finish":"#c22424","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, top run","kind":"kbase","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, side run","kind":"kbase","room":"Kitchen","x_in":216,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hob","kind":"hob","room":"Kitchen","x_in":185,"y_in":84,"w_in":30,"d_in":19,"h_in":1,"elev_in":34,"rot":0,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Sink","kind":"sink","room":"Kitchen","x_in":220,"y_in":115,"w_in":24,"d_in":17,"h_in":1,"elev_in":34,"rot":90,"finish":"#1d221c","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Water purifier","kind":"purifier","room":"Kitchen","x_in":234,"y_in":136,"w_in":15,"d_in":6,"h_in":19,"elev_in":53,"rot":90,"finish":"midnight","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":142,"y_in":82,"w_in":36,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Chimney","kind":"chimney","room":"Kitchen","x_in":182,"y_in":82,"w_in":36,"d_in":19,"h_in":19,"elev_in":60,"rot":0,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":218,"y_in":82,"w_in":22,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":22,"h_in":30,"elev_in":90,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":217,"y_in":105,"w_in":100,"d_in":23,"h_in":30,"elev_in":90,"rot":90,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone, corner","kind":"kbase","room":"Utility","x_in":246,"y_in":82,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"gigrey","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone + sink","kind":"kbase","room":"Utility","x_in":246,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":270,"finish":"gigrey","granite":true,"sinkTop":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Gas cylinder (under stone)","kind":"cylinder","room":"Utility","x_in":247,"y_in":84,"w_in":13,"d_in":13,"h_in":32,"elev_in":0,"rot":0,"finish":"terracotta","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Top-load washer (no stone above)","kind":"wm","room":"Utility","x_in":256,"y_in":177,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"gigrey","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wall box (west wall)","kind":"kwall","room":"Utility","x_in":252,"y_in":190,"w_in":36,"d_in":14,"h_in":24,"elev_in":54,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Fridge","kind":"fridge","room":"Kitchen","x_in":173,"y_in":178,"w_in":25,"d_in":27,"h_in":70,"elev_in":0,"rot":180,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Puja unit","kind":"puja","room":"Hall","x_in":44,"y_in":210,"w_in":32,"d_in":18,"h_in":78,"elev_in":0,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining, against north wall","kind":"dining","room":"Hall","x_in":0,"y_in":274,"w_in":48,"d_in":30,"h_in":30,"elev_in":0,"rot":270,"finish":"sage","wall":true,"seats":4,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Jhula","kind":"jhula","room":"Hall","x_in":78,"y_in":293,"w_in":42,"d_in":24,"h_in":120,"elev_in":0,"rot":0,"finish":"sage","swing":1.5,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mom's Murphy queen + sofa","kind":"murphy","room":"Hall","x_in":82,"y_in":376,"w_in":84,"d_in":42,"h_in":72,"elev_in":0,"rot":90,"finish":"sage","openD":5.4,"open":false,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wallpaper","kind":"wallpaper","room":"Hall","x_in":0,"y_in":354,"w_in":60,"d_in":1,"h_in":120,"elev_in":0,"rot":270,"finish":"wpB","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Floating TV box (UPS, router)","kind":"kwall","room":"Hall","x_in":0,"y_in":345,"w_in":82,"d_in":15,"h_in":24,"elev_in":7,"rot":270,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"TV 32in","kind":"tv","room":"Hall","x_in":0,"y_in":370,"w_in":32,"d_in":2,"h_in":21,"elev_in":46,"rot":270,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Kitchen","x_in":199,"y_in":186,"w_in":40,"d_in":18,"h_in":34,"elev_in":0,"rot":180,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Microwave","kind":"micro","room":"Hall","x_in":76,"y_in":213,"w_in":20,"d_in":15,"h_in":12,"elev_in":34,"rot":180,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mixer","kind":"mixer","room":"Kitchen","x_in":206,"y_in":193,"w_in":9,"d_in":9,"h_in":16,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Rice cooker","kind":"cooker","room":"Kitchen","x_in":222,"y_in":190,"w_in":12,"d_in":12,"h_in":12,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Kitchen","x_in":217,"y_in":192,"w_in":23,"d_in":12,"h_in":24,"elev_in":58,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":168,"y_in":449,"w_in":38,"d_in":20,"h_in":84,"elev_in":0,"rot":180,"finish":"obsidian","doors":"hinged","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Side table","kind":"wardrobe","room":"Brother's room","x_in":266,"y_in":451,"w_in":18,"d_in":18,"h_in":22,"elev_in":0,"rot":90,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Brother's room","x_in":260,"y_in":341,"w_in":49,"d_in":24,"h_in":30,"elev_in":0,"rot":90,"finish":"teak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":18,"h_in":29,"elev_in":0,"rot":0,"finish":"dusty_rose","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":12,"h_in":24,"elev_in":48,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"}],"wallColor":"teal","roomWallColors":{"Your room":"#3982d0","Brother's room":"#ea9739"}};
-function fromExport(i){return {id:uid(),key:'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:'oak',open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass',wpImage:i.wpImage,wpTile:i.wpTile};}
+function fromExport(i){return {id:uid(),key:'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:'oak',open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,doorState:i.doorState,glassProfile:i.glassProfile,shelfLights:i.shelfLights,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass',wpImage:i.wpImage,wpTile:i.wpTile};}
 function defaults(){
  state.wallColor = SEED.wallColor || 'teal';
  state.roomWallColors = Object.assign({}, SEED.roomWallColors || {"Your room":"#3982d0","Brother's room":"#ea9739"});
@@ -647,8 +660,8 @@ function defaults(){
  state.usePostProcessing = true;
  return SEED.items.map(fromExport);
 }
-let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:false,usePostProcessing:true,qualityTier:'auto',renderScale:1.0};
-function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto',renderScale:state.renderScale||1.0}));}catch(e){}}
+let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:false,usePostProcessing:true,qualityTier:'auto',renderScale:1.0,basinFinish:'walnut',basinCounter:'#151618',basinBowlColor:'#ffffff',basinMirrorBacklight:true,roomDoorState:'partial'};
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto',renderScale:state.renderScale||1.0,basinFinish:state.basinFinish,basinCounter:state.basinCounter,basinBowlColor:state.basinBowlColor,basinMirrorBacklight:state.basinMirrorBacklight!==false,roomDoorState:state.roomDoorState||'partial'}));}catch(e){}}
 function load(){
  try{
   const raw=localStorage.getItem(STORE);
@@ -669,6 +682,11 @@ function load(){
    state.usePostProcessing=s.usePostProcessing!==false;
    state.qualityTier=s.qualityTier||'auto';
    state.renderScale=typeof s.renderScale==='number'?s.renderScale:1.0;
+   state.basinFinish=s.basinFinish||'walnut';
+   state.basinCounter=s.basinCounter||'#151618';
+   state.basinBowlColor=s.basinBowlColor||'#ffffff';
+   state.basinMirrorBacklight=s.basinMirrorBacklight!==false;
+   state.roomDoorState=s.roomDoorState||'partial';
    return true;
   }
  }catch(e){}
@@ -841,7 +859,17 @@ function renderPlan(){
  for(const r of ROOMS){s+='<rect x="'+r.x+'" y="'+r.y+'" width="'+r.w+'" height="'+r.d+'" fill="'+(r.t==='wet'?'var(--floor-wet)':r.t==='out'?'var(--floor-out)':'var(--floor)')+'"/>';}
  for(const W of WALLS){const hz=W.w>=W.d;for(const o of (W.op||[]))if(o.t==='door')s+=hz?'<rect x="'+o.a+'" y="'+W.y+'" width="'+(o.b-o.a)+'" height="'+W.d+'" fill="var(--floor)"/>':'<rect x="'+W.x+'" y="'+o.a+'" width="'+W.w+'" height="'+(o.b-o.a)+'" fill="var(--floor)"/>';}
  for(const r of ROOMS){if(r.hide)continue;s+='<text x="'+(r.x+0.35)+'" y="'+(r.y+0.7)+'" font-size="0.5" fill="var(--muted)" style="pointer-events:none;font-weight:600">'+esc(r.n)+'</text><text x="'+(r.x+0.35)+'" y="'+(r.y+1.25)+'" font-size="0.4" fill="var(--muted)" style="pointer-events:none">'+fmt(r.w)+' × '+fmt(r.d)+'</text>';}
- for(const x of FIXTURES)s+='<rect x="'+x.x+'" y="'+x.y+'" width="'+x.w+'" height="'+x.d+'" rx="0.2" fill="#fff" fill-opacity=".7" stroke="var(--muted)" stroke-width="0.04"/><text x="'+(x.x+x.w/2)+'" y="'+(x.y+x.d/2)+'" font-size="0.3" text-anchor="middle" dominant-baseline="central" fill="#555" style="pointer-events:none">'+x.label+'</text>';
+ for(const x of FIXTURES){
+  const fid = 'fx_' + x.kind;
+  const isSel = state.sel === fid;
+  const stroke = isSel ? 'var(--accent)' : 'var(--muted)';
+  const sw = isSel ? 0.09 : 0.04;
+  const fill = isSel ? '#e3f2fd' : '#ffffff';
+  s += '<g data-id="'+fid+'" style="cursor:pointer" title="'+x.label+' (Click to customize vanity &amp; finishes)">';
+  s += '<rect x="'+x.x+'" y="'+x.y+'" width="'+x.w+'" height="'+x.d+'" rx="0.2" fill="'+fill+'" fill-opacity=".85" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+  s += '<text x="'+(x.x+x.w/2)+'" y="'+(x.y+x.d/2)+'" font-size="0.3" text-anchor="middle" dominant-baseline="central" fill="'+(isSel?'var(--accent)':'#555')+'" style="pointer-events:none;font-weight:'+(isSel?'bold':'normal')+'">'+x.label+'</text>';
+  s += '</g>';
+ }
  const floorI=state.items.filter(i=>!isOver(i)),overI=state.items.filter(isOver);
  const selI=state.items.find(i=>i.id===state.sel);
  for(const it of floorI)if(it!==selI)s+=itemSVG(it,bad);
@@ -921,7 +949,11 @@ svg.addEventListener('pointerdown',e=>{
   }
  }
  const g=e.target.closest('[data-id]');
- if(g){const it=byId(g.dataset.id);if(!it)return;select(it.id);const p=toPlan(e);drag={id:it.id,dx:p.x-it.x,dy:p.y-it.y,E:edgeSets(it),moved:false};}
+ if(g){
+  const gid=g.dataset.id;
+  if(gid&&gid.startsWith('fx_')){select(gid);return;}
+  const it=byId(gid);if(!it)return;select(it.id);const p=toPlan(e);drag={id:it.id,dx:p.x-it.x,dy:p.y-it.y,E:edgeSets(it),moved:false};
+ }
  else{pan={cx:e.clientX,cy:e.clientY,vx:vb.x,vy:vb.y,moved:false};}
  svg.setPointerCapture(e.pointerId);e.preventDefault();
 });
@@ -955,9 +987,162 @@ $('#zIn').onclick=()=>zoom(0.7);$('#zOut').onclick=()=>zoom(1/0.7);$('#zFit').on
 /* ---------- selection & inspector ---------- */
 function select(id){state.sel=id;renderInspector();schedule();}
 function rotate(it,dir){const f=fp(it),cx=f.x+f.w/2,cy=f.y+f.h/2;it.rot=((it.rot+dir*90)%360+360)%360;const g=fp(it);it.x=Math.round((cx-g.w/2)*12)/12;it.y=Math.round((cy-g.h/2)*12)/12;}
- function renderInspector(){
-  const el=$('#insp'),it=byId(state.sel);
-  if(!it){el.innerHTML='<h2>Selected item</h2><p class="empty">Tap an item on the plan or in 3D to edit its size, height, finish and rotation. Add new items from the library.</p>';return;}
+function rebuildBasin(){
+ if(gStatic){
+  buildStatic();
+  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+  render3D();
+ }
+ save();
+}
+
+function renderBasinInspector(el){
+ const curFin = state.basinFinish || 'walnut';
+ const curFinHex = FIN[curFin] ? FIN[curFin].hex : (curFin.startsWith('#') ? curFin : '#583921');
+ const curCounter = state.basinCounter || '#151618';
+ const curBowl = state.basinBowlColor || '#ffffff';
+ const mirrorGlow = state.basinMirrorBacklight !== false;
+
+ let finOptions = '';
+ const woodKeys = ['walnut','oak','teak','darkteak','rosewood','ash','wenge','ebony'];
+ finOptions += '<optgroup label="Luxury Woods & Veneers">';
+ for(const k of woodKeys){
+  if(FIN[k]) finOptions += '<option value="'+k+'"'+(k===curFin?' selected':'')+'>'+FIN[k].n+'</option>';
+ }
+ finOptions += '</optgroup>';
+ finOptions += '<optgroup label="Modern Cabinetry Colors">';
+ const solidPresets = [
+  ['#181a1d', 'Matte Obsidian Black'],
+  ['#1d242e', 'Midnight Charcoal Navy'],
+  ['#484f56', 'Slate Industrial Grey'],
+  ['#ffffff', 'Pure White Satin'],
+  ['#ece5d8', 'Warm Cashmere Cream'],
+  ['#4a5d4e', 'Nordic Sage Green'],
+  ['#8c5858', 'Vintage Dusty Rose']
+ ];
+ for(const [hex, label] of solidPresets){
+  finOptions += '<option value="'+hex+'"'+(curFin===hex?' selected':'')+'>'+label+'</option>';
+ }
+ finOptions += '</optgroup>';
+ finOptions += '<option value="custom">🎨 Custom Vanity Color...</option>';
+
+ const counterPresets = [
+  ['#151618', 'Black Pearl Granite (Glossy)'],
+  ['#f3eee4', 'Calacatta Gold White Marble'],
+  ['#3c3f43', 'Nero Marquina Dark Quartz'],
+  ['#e5dfd5', 'Beige Botticino Marble'],
+  ['#1a2a3a', 'Midnight Blue Quartz']
+ ];
+ let counterOptions = '';
+ for(const [hex, label] of counterPresets){
+  counterOptions += '<option value="'+hex+'"'+(curCounter===hex?' selected':'')+'>'+label+'</option>';
+ }
+ if(!counterPresets.some(p=>p[0].toLowerCase()===curCounter.toLowerCase())){
+  counterOptions += '<option value="'+curCounter+'" selected>🎨 Custom ('+curCounter.toUpperCase()+')</option>';
+ }
+ counterOptions += '<option value="custom">🎨 Choose Custom Swatch...</option>';
+
+ const bowlPresets = [
+  ['#ffffff', 'Vitreous China Gloss White'],
+  ['#1a1a1c', 'Matte Obsidian Black'],
+  ['#ece4d5', 'Warm Bisque Porcelain'],
+  ['#c49969', 'Brushed Champagne Gold']
+ ];
+ let bowlOptions = '';
+ for(const [hex, label] of bowlPresets){
+  bowlOptions += '<option value="'+hex+'"'+(curBowl===hex?' selected':'')+'>'+label+'</option>';
+ }
+ if(!bowlPresets.some(p=>p[0].toLowerCase()===curBowl.toLowerCase())){
+  bowlOptions += '<option value="'+curBowl+'" selected>🎨 Custom ('+curBowl.toUpperCase()+')</option>';
+ }
+ bowlOptions += '<option value="custom">🎨 Choose Custom Swatch...</option>';
+
+ el.innerHTML = '<h2>Hall Washbasin &amp; Mirror <span style="display:inline-block;margin-left:8px;font-size:11px;background:#e2f0fb;color:var(--accent);padding:2px 8px;border-radius:12px;font-weight:600">✨ Vanity Station</span></h2>' +
+  '<p class="hint" style="margin-bottom:12px">Positioned in the dining/hall passage with North-facing wall-mounted mirror, chrome mixer faucet, and customizable vanity cabinetry.</p>' +
+  '<div class="row" style="flex-direction:column;gap:10px">' +
+   '<label style="width:100%">Vanity Cabinet Finish &amp; Color' +
+    '<div style="display:flex;gap:6px;align-items:center;margin-top:3px">' +
+     '<select id="f-basin-fin" style="flex:1">'+finOptions+'</select>' +
+     '<input type="color" id="f-basin-fin-color" value="'+curFinHex+'" title="Pick custom cabinet color" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer">' +
+    '</div>' +
+   '</label>' +
+   '<label style="width:100%">Countertop Material' +
+    '<div style="display:flex;gap:6px;align-items:center;margin-top:3px">' +
+     '<select id="f-basin-counter" style="flex:1">'+counterOptions+'</select>' +
+     '<input type="color" id="f-basin-counter-color" value="'+curCounter+'" title="Pick custom countertop color" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer">' +
+    '</div>' +
+   '</label>' +
+   '<label style="width:100%">Washbasin Bowl Color' +
+    '<div style="display:flex;gap:6px;align-items:center;margin-top:3px">' +
+     '<select id="f-basin-bowl" style="flex:1">'+bowlOptions+'</select>' +
+     '<input type="color" id="f-basin-bowl-color" value="'+curBowl+'" title="Pick custom bowl color" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer">' +
+    '</div>' +
+   '</label>' +
+   '<label class="inline" style="margin-top:4px">' +
+    '<input type="checkbox" id="f-basin-backlight"'+(mirrorGlow?' checked':'')+'> 💡 LED Mirror Backlight Glow' +
+   '</label>' +
+  '</div>' +
+  '<div class="row" style="margin-top:14px"><button id="b-basin-reset">Reset to Default Walnut</button></div>';
+
+ $('#f-basin-fin').addEventListener('change', e=>{
+  const val = e.target.value;
+  if(val==='custom'){ $('#f-basin-fin-color').click(); return; }
+  state.basinFinish = val;
+  if(FIN[val]) $('#f-basin-fin-color').value = FIN[val].hex;
+  rebuildBasin();
+ });
+ $('#f-basin-fin-color').addEventListener('input', e=>{
+  state.basinFinish = e.target.value;
+  rebuildBasin();
+ });
+ $('#f-basin-counter').addEventListener('change', e=>{
+  const val = e.target.value;
+  if(val==='custom'){ $('#f-basin-counter-color').click(); return; }
+  state.basinCounter = val;
+  $('#f-basin-counter-color').value = val;
+  rebuildBasin();
+ });
+ $('#f-basin-counter-color').addEventListener('input', e=>{
+  state.basinCounter = e.target.value;
+  rebuildBasin();
+ });
+ $('#f-basin-bowl').addEventListener('change', e=>{
+  const val = e.target.value;
+  if(val==='custom'){ $('#f-basin-bowl-color').click(); return; }
+  state.basinBowlColor = val;
+  $('#f-basin-bowl-color').value = val;
+  rebuildBasin();
+ });
+ $('#f-basin-bowl-color').addEventListener('input', e=>{
+  state.basinBowlColor = e.target.value;
+  rebuildBasin();
+ });
+ $('#f-basin-backlight').addEventListener('change', e=>{
+  state.basinMirrorBacklight = e.target.checked;
+  rebuildBasin();
+ });
+ $('#b-basin-reset').addEventListener('click', ()=>{
+  state.basinFinish = 'walnut';
+  state.basinCounter = '#151618';
+  state.basinBowlColor = '#ffffff';
+  state.basinMirrorBacklight = true;
+  renderInspector();
+  rebuildBasin();
+ });
+}
+
+function renderInspector(){
+ const el=$('#insp');
+ if(state.sel==='fx_basin'||state.sel==='basin'){
+  renderBasinInspector(el);
+  return;
+ }
+ const it=byId(state.sel);
+ if(!it){
+  el.innerHTML='<h2>Selected item</h2><p class="empty">Tap an item on the plan or in 3D to edit its size, height, finish and rotation. <br><br><button id="btnInspectBasinInline" style="background:var(--accent);color:#fff;border:none;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:600">🪞 Customize Hall Washbasin</button></p>';
+  if($('#btnInspectBasinInline')) $('#btnInspectBasinInline').onclick=()=>select('fx_basin');
+  return;
+ }
   let fins='';
   if(it.kind==='wallpaper'){
    for(const k in FIN){if(FIN[k].wp)fins+='<option value="'+k+'"'+(k===it.fin?' selected':'')+'>'+FIN[k].n+'</option>';}
@@ -1053,6 +1238,18 @@ function rotate(it,dir){const f=fp(it),cx=f.x+f.w/2,cy=f.y+f.h/2;it.rot=((it.rot
   if(it.kind==='murphy')extra+='<label class="inline"><input type="checkbox" id="f-open"'+(it.open?' checked':'')+'> Show bed open</label>';
   if(it.kind==='dining'||it.kind==='dining_round')extra+='<label>Seats<select id="f-seats">'+[2,4,6].map(n=>'<option'+(n===(it.seats||4)?' selected':'')+'>'+n+'</option>').join('')+'</select></label>';
   if(it.kind==='wardrobe'&&it.doors)extra+='<label>Doors<select id="f-doors"><option value="hinged"'+(it.doors==='hinged'?' selected':'')+'>Hinged (open out)</option><option value="sliding"'+(it.doors==='sliding'?' selected':'')+'>Sliding</option></select></label>';
+  if(it.kind==='wardrobe'||it.kind==='crockery'||it.kind==='kwall'||it.kind==='openshelf'){
+   const curDoorState = it.doorState || state.roomDoorState || 'closed';
+   extra+='<label>Door Position<select id="f-door-state">' +
+    '<option value="closed"'+(curDoorState==='closed'?' selected':'')+'>🚪 Closed (0°)</option>' +
+    '<option value="partial"'+(curDoorState==='partial'?' selected':'')+'>🚪 Partially Open (25° Ajar)</option>' +
+    '<option value="open"'+(curDoorState==='open'?' selected':'')+'>🚪 Fully Open (85°)</option>' +
+   '</select></label>';
+  }
+  if(it.kind==='kwall'||it.kind==='crockery'||it.kind==='openshelf'){
+   extra+='<label class="inline"><input type="checkbox" id="f-glass-profile"'+(it.glassProfile!==false?' checked':'')+'> 🪟 Black Aluminum Profile + Glass</label>';
+   extra+='<label class="inline"><input type="checkbox" id="f-shelf-lights"'+(it.shelfLights!==false?' checked':'')+'> 💡 Warm Interior LED Lights</label>';
+  }
   if(it.kind==='dining')extra+='<label class="inline"><input type="checkbox" id="f-wall"'+(it.wall?' checked':'')+'> Back against wall</label>';
   if(it.kind==='jhula')extra+='<label>Swing each way (in)<input type="number" id="f-sw" min="0" step="1" value="'+Math.round((it.swing!=null?it.swing:1.5)*12)+'" style="width:90px"></label>';
   if(it.kind==='kbase')extra+='<label class="inline"><input type="checkbox" id="f-granite"'+(it.granite!==false?' checked':'')+'> Stone top</label>';
@@ -1093,6 +1290,9 @@ function rotate(it,dir){const f=fp(it),cx=f.x+f.w/2,cy=f.y+f.h/2;it.rot=((it.rot
   if($('#f-wall'))$('#f-wall').addEventListener('change',e=>{it.wall=e.target.checked;schedule();});
   if($('#f-sw'))$('#f-sw').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(isFinite(v)&&v>=0){it.swing=v/12;schedule();}});
   if($('#f-granite'))$('#f-granite').addEventListener('change',e=>{it.granite=e.target.checked;schedule();});
+  if($('#f-door-state'))$('#f-door-state').addEventListener('change',e=>{it.doorState=e.target.value;schedule();});
+  if($('#f-glass-profile'))$('#f-glass-profile').addEventListener('change',e=>{it.glassProfile=e.target.checked;schedule();});
+  if($('#f-shelf-lights'))$('#f-shelf-lights').addEventListener('change',e=>{it.shelfLights=e.target.checked;schedule();});
 
   // TV Wallpaper event listeners
   if($('#f-wp-style')) $('#f-wp-style').addEventListener('change', e => { it.wpStyle = e.target.value; schedule(); });
@@ -1794,21 +1994,75 @@ function mergeGroupMeshesByMaterial(rootGroup) {
  }
 }
 
-/* Fronts with distinct shutter seams, recessed plinth, and sleek profile handles */
+/* Fronts with distinct shutter seams, aluminum profile with glass, interior lights, and door opening states */
 function fronts(g,w,h,d,y0,m,mc,o){
  o=o||{};
  const plinthH=o.plinth!=null?o.plinth:0.25;
  if(plinthH>0)B(g,w-0.1,plinthH,d-0.15,0,y0+plinthH/2,-0.075,mat('#2c241c'));
  const fh=h-plinthH,fy0=y0+plinthH;
  B(g,w,fh,d-0.06,0,fy0+fh/2,-0.03,mc);
- const n=Math.max(1,Math.round(w/(o.sw||1.5))),sw=w/n,hm=mat('#222224',true);
- for(let i=0;i<n;i++){
-  const xc=-w/2+sw*(i+0.5);
-  B(g,sw-0.04,fh-0.04,0.06,xc,fy0+fh/2,d/2-0.03,o.glass?mat('',0,'glass'):m);
-  if(o.handle!==false){
-   const ex=i%2===0?xc+sw/2-0.16:xc-sw/2+0.16;
-   B(g,0.035,Math.min(1.2,fh*0.4),0.04,ex,fy0+(o.hy!=null?Math.min(o.hy,fh-0.5):fh*0.5),d/2+0.015,hm);
+
+ const isProfile = !!(o.profile || o.glass);
+ const hasLights = o.lights !== false && isProfile;
+
+ if(isProfile){
+  const numShelves = Math.max(1, Math.floor(fh / 1.1));
+  const shelfGlassMat = mat('', 0, 'glass');
+  const ledGlowMat = mat('#ffeed8', 0, 'glow');
+  for(let k=1; k<=numShelves; k++){
+   const sy = fy0 + (fh * k / (numShelves + 1));
+   B(g, w - 0.08, 0.03, d - 0.12, 0, sy, -0.02, shelfGlassMat);
+   if(hasLights){
+    B(g, w - 0.15, 0.02, 0.06, 0, sy - 0.02, 0.02, ledGlowMat);
+   }
   }
+  if(hasLights){
+   B(g, w - 0.15, 0.02, 0.06, 0, fy0 + fh - 0.03, 0.02, ledGlowMat);
+  }
+ }
+
+ const n=Math.max(1,Math.round(w/(o.sw||1.5))),sw=w/n;
+ const hm=mat('#222224',true);
+ const alumFrameMat=mat('#1c1e22',true);
+ const glassMat=mat('',0,'glass');
+
+ const doorState = o.doorState || state.roomDoorState || 'closed';
+ const doorAngle = doorState==='open' ? 1.45 : (doorState==='partial' ? 0.44 : 0);
+
+ for(let i=0;i<n;i++){
+  const isLeftHinged = (i % 2 === 0);
+  const hingeX = isLeftHinged ? (-w/2 + sw * i + 0.02) : (-w/2 + sw * (i + 1) - 0.02);
+  const rotSign = isLeftHinged ? -1 : 1;
+  const rotAngle = rotSign * doorAngle;
+
+  const dg = new T.Group();
+  dg.position.set(hingeX, fy0 + fh/2, d/2 - 0.03);
+  dg.rotation.y = rotAngle;
+
+  const relCenter = isLeftHinged ? (sw/2 - 0.02) : (-sw/2 + 0.02);
+
+  if(isProfile){
+   const fw = 0.04, ft = 0.05;
+   B(dg, sw - 0.04, fw, ft, relCenter, fh/2 - fw/2, 0, alumFrameMat);
+   B(dg, sw - 0.04, fw, ft, relCenter, -fh/2 + fw/2, 0, alumFrameMat);
+   B(dg, fw, fh - fw*2, ft, relCenter - sw/2 + fw/2 + 0.02, 0, 0, alumFrameMat);
+   B(dg, fw, fh - fw*2, ft, relCenter + sw/2 - fw/2 - 0.02, 0, 0, alumFrameMat);
+   B(dg, sw - fw*2 - 0.04, fh - fw*2 - 0.02, 0.02, relCenter, 0, 0, glassMat);
+
+   if(o.handle !== false){
+    const hx = isLeftHinged ? (relCenter + sw/2 - 0.04) : (relCenter - sw/2 + 0.04);
+    B(dg, 0.025, Math.min(1.4, fh * 0.5), 0.04, hx, 0, 0.035, hm);
+   }
+  }else{
+   B(dg, sw - 0.04, fh - 0.04, 0.06, relCenter, 0, 0, m);
+   if(o.handle !== false){
+    const hx = isLeftHinged ? (relCenter + sw/2 - 0.12) : (relCenter - sw/2 + 0.12);
+    const hy = o.hy != null ? (o.hy - fh/2) : 0;
+    B(dg, 0.035, Math.min(1.2, fh * 0.4), 0.04, hx, hy, 0.045, hm);
+   }
+  }
+
+  g.add(dg);
  }
 }
 
@@ -2125,23 +2379,42 @@ function buildProceduralItem(g,it){
   B(g,w-0.1,0.25,d-0.2,0,0.125,-0.1,mat('#2c241c'));
   B(g,w,h-0.25,d-0.2,0,0.25+(h-0.25)/2,-0.1,mc);
   const n=Math.max(2,Math.round(w/2.5)),pw=w/n;
+  const dState = it.doorState || state.roomDoorState || 'closed';
+  const slideOffset = dState==='open' ? (pw * 0.78) : (dState==='partial' ? (pw * 0.35) : 0);
   for(let i=0;i<n;i++){
-   B(g,pw+0.06,h-0.35,0.05,-w/2+pw*(i+0.5),0.25+(h-0.25)/2,d/2-(i%2?0.13:0.04),m);
-   B(g,0.035,h*0.7,0.04,-w/2+pw*(i+0.5)+(i%2?pw/2-0.12:-pw/2+0.12),0.25+(h-0.25)/2,d/2-(i%2?0.13:0.04)+0.02,mat('#222224',true));
+   const panelSlide = (i % 2 === 0) ? slideOffset : 0;
+   const px = -w/2 + pw * (i + 0.5) + panelSlide;
+   B(g,pw+0.06,h-0.35,0.05,px,0.25+(h-0.25)/2,d/2-(i%2?0.13:0.04),m);
+   B(g,0.035,h*0.7,0.04,px+(i%2?pw/2-0.12:-pw/2+0.12),0.25+(h-0.25)/2,d/2-(i%2?0.13:0.04)+0.02,mat('#222224',true));
   }
   B(g,w,0.08,0.22,0,h-0.04,d/2-0.11,mat('#44484d',true));
  }
- else if(K==='wardrobe')fronts(g,w,h,d,0,m,mc,{hy:3.6,plinth:0.25});
- else if(K==='loft')fronts(g,w,h,d,0,m,mc,{handle:false,plinth:0});
+ else if(K==='wardrobe')fronts(g,w,h,d,0,m,mc,{hy:3.6,plinth:0.25,doorState:it.doorState});
+ else if(K==='loft')fronts(g,w,h,d,0,m,mc,{handle:false,plinth:0,doorState:it.doorState});
  else if(K==='kwall'){
-  fronts(g,w,h,d,0,m,mc,{hy:0.3,plinth:0});
-  // Under-cabinet warm continuous LED strip
+  const useProfile = it.glassProfile !== false;
+  fronts(g,w,h,d,0,m,mc,{
+    hy:0.3,
+    plinth:0,
+    profile:useProfile,
+    glass:useProfile,
+    lights:it.shelfLights!==false,
+    doorState:it.doorState
+  });
   B(g,w-0.2,0.03,0.16,0,-0.015,0,mat('#ffeed8',0,'glow'));
  }
  else if(K==='crockery'){
-  fronts(g,w,3,d,0,m,mc,{hy:2.6,plinth:0.25});B(g,w,0.1,d,0,3.05,0,mc);
-  fronts(g,w,h-3.6,d*0.75,3.6,m,mc,{glass:true,handle:false,plinth:0});
+  fronts(g,w,3,d,0,m,mc,{hy:2.6,plinth:0.25,doorState:it.doorState});
+  B(g,w,0.1,d,0,3.05,0,mc);
+  fronts(g,w,h-3.6,d*0.75,3.6,m,mc,{
+    profile:true,
+    glass:true,
+    lights:it.shelfLights!==false,
+    doorState:it.doorState,
+    plinth:0
+  });
   B(g,w,0.6,d*0.75,0,3.3,-d*0.125,mc);
+  B(g,w-0.2,0.025,d*0.6,0,3.58,-d*0.125,mat('#ffeed8',0,'glow'));
  }
  else if(K==='dressing'){
   fronts(g,w,2.5,d,0,m,mc,{sw:2,hy:2.2,plinth:0.25});
@@ -2368,9 +2641,23 @@ function buildProceduralItem(g,it){
   C(g,0.07,0.07,0.045,-w*0.2,h-0.22,d/2+0.025,mat('',0,'steel'));
  }
  else if(K==='openshelf'){
-  for(const sx of [-1,1])B(g,0.06,h,d,sx*(w/2-0.03),h/2,0,m);
-  for(const y of [0.03,h/2,h-0.03])B(g,w,0.06,d,0,y,0,m);
-  B(g,w,h,0.03,0,h/2,-d/2+0.015,mF(it.fin,0.9));
+  const useProfile = it.glassProfile !== false;
+  if(useProfile){
+   fronts(g,w,h,d,0,m,mc,{
+     hy:h/2,
+     plinth:0,
+     profile:true,
+     glass:true,
+     lights:it.shelfLights!==false,
+     doorState:it.doorState
+   });
+   B(g,w-0.1,0.025,d*0.7,0,-0.015,0,mat('#ffeed8',0,'glow'));
+  }else{
+   for(const sx of [-1,1])B(g,0.06,h,d,sx*(w/2-0.03),h/2,0,m);
+   for(const y of [0.03,h/2,h-0.03])B(g,w,0.06,d,0,y,0,m);
+   B(g,w,h,0.03,0,h/2,-d/2+0.015,mF(it.fin,0.9));
+   B(g,w-0.12,0.02,d-0.1,0,h/2-0.03,0,mat('#ffeed8',0,'glow'));
+  }
  }
  else if(K==='micro'){
   B(g,w,h,d,0,h/2,0,m);
@@ -3138,17 +3425,37 @@ function buildStatic(){
    // Ceramic bowl rim / seat lid
    B(g, fx.w * 0.78, 0.08, fx.d * 0.78, 0, 1.34, 0.1, mat('#f8f9fa'));
   }else if(fx.kind === 'basin'){
-   // Wooden vanity cabinet below counter
-   B(g, fx.w, 2.4, fx.d, 0, 1.2, 0, mat('#4a3525', false, 'wood'));
-   // Black granite vanity counter
-   B(g, fx.w + 0.1, 0.12, fx.d + 0.1, 0, 2.46, 0, mat('#151618', false, 'granite'));
-   // Glossy ceramic washbasin inset
-   B(g, fx.w * 0.75, 0.25, fx.d * 0.65, 0, 2.58, 0, mat('#ffffff', false, 'granite'));
-   // Chrome single-lever mixer faucet
-   B(g, 0.08, 0.55, 0.08, 0, 2.8, -fx.d * 0.25, mat('', 0, 'chrome'));
-   B(g, 0.06, 0.06, 0.25, 0, 3.05, -fx.d * 0.14, mat('', 0, 'chrome'));
-   // Wall mirror
-   B(g, fx.w * 0.9, 2.2, 0.04, 0, 4.2, -fx.d/2 - 0.04, mat('', 0, 'mirror'));
+   const vanityMat = state.basinFinish ? (FIN[state.basinFinish] ? mF(state.basinFinish) : mat(state.basinFinish, false, 'solid')) : mat('#4a3525', false, 'wood');
+   const counterMat = mat(state.basinCounter || '#151618', false, 'granite');
+   const bowlMat = mat(state.basinBowlColor || '#ffffff', false, 'granite');
+   const chromeMat = mat('', 0, 'chrome');
+   const mirrorMat = mat('', 0, 'mirror');
+
+   // 1. Finished wall cladding panel behind basin against South wall (+fx.d/2)
+   B(g, fx.w + 0.1, 4.8, 0.05, 0, 2.4, fx.d/2 + 0.025, mat('#1c1e22', false, 'granite'));
+
+   // 2. Wooden/finished vanity cabinet below counter
+   B(g, fx.w, 2.4, fx.d, 0, 1.2, 0, vanityMat);
+   // Vanity drawer / shutter reveal line on front (facing North -Z)
+   B(g, fx.w * 0.95, 0.03, 0.02, 0, 1.2, -fx.d/2 - 0.01, mat('#1a1a1a'));
+   // Sleek aluminum profile drawer pull
+   B(g, fx.w * 0.6, 0.03, 0.04, 0, 1.8, -fx.d/2 - 0.02, mat('#222224', true));
+
+   // 3. Vanity countertop (Granite / Marble / Quartz)
+   B(g, fx.w + 0.1, 0.12, fx.d + 0.1, 0, 2.46, 0, counterMat);
+
+   // 4. Glossy ceramic washbasin inset / bowl placed towards front (-Z)
+   B(g, fx.w * 0.75, 0.25, fx.d * 0.58, 0, 2.58, -0.05, bowlMat);
+
+   // 5. Chrome single-lever mixer faucet (at back +Z, spout pointing forward towards North -Z)
+   B(g, 0.08, 0.55, 0.08, 0, 2.8, fx.d * 0.25, chromeMat);
+   B(g, 0.06, 0.06, 0.25, 0, 3.05, fx.d * 0.14, chromeMat);
+
+   // 6. Wall mirror mounted on the wall (+fx.d/2) facing North (-Z) towards hall
+   if(state.basinMirrorBacklight !== false){
+    B(g, fx.w * 0.94, 2.24, 0.04, 0, 4.2, fx.d/2 - 0.005, mat('#fff4df', 0, 'glow'));
+   }
+   B(g, fx.w * 0.9, 2.2, 0.03, 0, 4.2, fx.d/2 - 0.025, mirrorMat);
   }else{
    B(g,fx.w,fx.h,fx.d,0,fx.h/2,0,mat('#f7f7f5'));
   }
@@ -3234,38 +3541,43 @@ function buildWalls(){
     const doorW=(o.b-o.a)-0.20;
     const doorH=o.zt-0.12;
     const doorThick=0.10;
+    const roomDState = state.roomDoorState || 'partial';
+    const doorAngle = roomDState === 'closed' ? 0 : (roomDState === 'open' ? 1.48 : 0.44);
+
     if(hz){
      B(gWalls,0.18,o.zt,W.d+0.04,o.a+0.09,o.zt/2,W.y,jm);
      B(gWalls,0.18,o.zt,W.d+0.04,o.b-0.09,o.zt/2,W.y,jm);
      B(gWalls,o.b-o.a,0.18,W.d+0.04,(o.a+o.b)/2,o.zt-0.09,W.y,jm);
      B(gWalls,o.b-o.a,0.03,W.d,(o.a+o.b)/2,0.015,W.y,mat('#726456',true));
 
-     // Door leaf (slightly ajar into room)
-     const leafX=o.a+0.10+doorW/2;
-     const leafZ=W.y+0.07;
-     B(gWalls,doorW,doorH,doorThick,leafX,doorH/2,leafZ,doorMat);
+     const dg = new T.Group();
+     dg.position.set(o.a + 0.10, 0, W.y);
+     dg.rotation.y = doorAngle;
 
-     // Lever handle & backplate on both sides
-     const hx=o.b-0.30;
-     B(gWalls,0.08,0.36,doorThick+0.04,hx,3.2,leafZ,handleMat);
-     B(gWalls,0.26,0.04,0.05,hx-0.09,3.22,leafZ+(doorThick/2+0.05),handleMat);
-     B(gWalls,0.26,0.04,0.05,hx-0.09,3.22,leafZ-(doorThick/2+0.05),handleMat);
+     B(dg, doorW, doorH, doorThick, doorW/2, doorH/2, 0, doorMat);
+
+     const hx = doorW - 0.20;
+     B(dg, 0.08, 0.36, doorThick+0.04, hx, 3.2, 0, handleMat);
+     B(dg, 0.26, 0.04, 0.05, hx-0.09, 3.22, doorThick/2+0.04, handleMat);
+     B(dg, 0.26, 0.04, 0.05, hx-0.09, 3.22, -doorThick/2-0.04, handleMat);
+     gWalls.add(dg);
     }else{
      B(gWalls,W.w+0.04,o.zt,0.18,W.x,o.zt/2,o.a+0.09,jm);
      B(gWalls,W.w+0.04,o.zt,0.18,W.x,o.zt/2,o.b-0.09,jm);
      B(gWalls,W.w+0.04,0.18,o.b-o.a,W.x,o.zt-0.09,(o.a+o.b)/2,jm);
      B(gWalls,W.w,0.03,o.b-o.a,W.x,0.015,(o.a+o.b)/2,mat('#726456',true));
 
-     // Door leaf (slightly ajar into room)
-     const leafX=W.x+0.07;
-     const leafZ=o.a+0.10+doorW/2;
-     B(gWalls,doorThick,doorH,doorW,leafX,doorH/2,leafZ,doorMat);
+     const dg = new T.Group();
+     dg.position.set(W.x, 0, o.a + 0.10);
+     dg.rotation.y = -doorAngle;
 
-     // Lever handle & backplate on both sides
-     const hzPos=o.b-0.30;
-     B(gWalls,doorThick+0.04,0.36,0.08,leafX,3.2,hzPos,handleMat);
-     B(gWalls,0.05,0.04,0.26,leafX+(doorThick/2+0.05),3.22,hzPos-0.09,handleMat);
-     B(gWalls,0.05,0.04,0.26,leafX-(doorThick/2+0.05),3.22,hzPos-0.09,handleMat);
+     B(dg, doorThick, doorH, doorW, 0, doorH/2, doorW/2, doorMat);
+
+     const hzPos = doorW - 0.20;
+     B(dg, doorThick+0.04, 0.36, 0.08, 0, 3.2, hzPos, handleMat);
+     B(dg, 0.05, 0.04, 0.26, doorThick/2+0.04, 3.22, hzPos-0.09, handleMat);
+     B(dg, 0.05, 0.04, 0.26, -doorThick/2-0.04, 3.22, hzPos-0.09, handleMat);
+     gWalls.add(dg);
     }
    }
   }
@@ -4687,18 +4999,31 @@ async function init3D(){
   }
  });
  cv.addEventListener('pointerup',e=>{
+  function resolveHitId(hitList){
+   if(!hitList||!hitList.length) return null;
+   for(const h of hitList){
+    if(h.point && h.point.x >= 13.5 && h.point.x <= 15.3 && h.point.z >= 22.5 && h.point.z <= 24.8 && h.point.y <= 6.5){
+     return 'fx_basin';
+    }
+    let o = h.object;
+    while(o && !o.userData.id) o = o.parent;
+    if(o && o.userData.id) return o.userData.id;
+   }
+   return null;
+  }
   if(viewMode==='walk'){
    if(lookDrag&&!lookDrag.moved){
     if(!isLocked){try{cv.requestPointerLock();}catch(err){}}
     ray.setFromCamera({x:0,y:0},camera);
-    const hit=ray.intersectObjects(gItems.children,true)[0];
-    if(hit){let o=hit.object;while(o&&!o.userData.id)o=o.parent;if(o)select(o.userData.id);}else select(null);
+    const hits=ray.intersectObjects([...gItems.children, ...gStatic.children],true);
+    select(resolveHitId(hits));
    }
    lookDrag=null;return;
   }
   if(!down)return;const mv=Math.abs(e.clientX-down[0])+Math.abs(e.clientY-down[1]);down=null;if(mv>6)return;
   const r=cv.getBoundingClientRect();ray.setFromCamera({x:((e.clientX-r.left)/r.width)*2-1,y:-((e.clientY-r.top)/r.height)*2+1},camera);
-  const hit=ray.intersectObjects(gItems.children,true)[0];if(!hit){select(null);return;}let o=hit.object;while(o&&!o.userData.id)o=o.parent;if(o)select(o.userData.id);
+  const hits=ray.intersectObjects([...gItems.children, ...gStatic.children],true);
+  select(resolveHitId(hits));
  });
  try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{updateBg();renderPlan();});}catch(e){}
 }
@@ -4801,7 +5126,7 @@ $('#btnReset').onclick=()=>{
 function exportText(){
  const L=state.items.map(it=>{
   const f=fp(it);
-  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,swing:it.swing,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent,wpImage:it.wpImage,wpTile:it.wpTile};
+  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,swing:it.swing,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,doorState:it.doorState,glassProfile:it.glassProfile,shelfLights:it.shelfLights,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent,wpImage:it.wpImage,wpTile:it.wpTile};
  });
  const out={
   plan:'C607 planner realistic v1',
@@ -4820,6 +5145,11 @@ function exportText(){
  if(typeof state.exposure==='number')out.exposure=state.exposure;
  if(typeof state.envIntensity==='number')out.envIntensity=state.envIntensity;
  if(typeof state.usePostProcessing==='boolean')out.usePostProcessing=state.usePostProcessing;
+ if(state.basinFinish)out.basinFinish=state.basinFinish;
+ if(state.basinCounter)out.basinCounter=state.basinCounter;
+ if(state.basinBowlColor)out.basinBowlColor=state.basinBowlColor;
+ if(typeof state.basinMirrorBacklight==='boolean')out.basinMirrorBacklight=state.basinMirrorBacklight;
+ if(state.roomDoorState)out.roomDoorState=state.roomDoorState;
  return JSON.stringify(out);
 }
 
@@ -4854,7 +5184,17 @@ $('#btnLoad').onclick=()=>{
    state.envIntensity=o.envIntensity;
    scene.environmentIntensity=state.envIntensity;
   }
+  if(o.basinFinish)state.basinFinish=o.basinFinish;
+  if(o.basinCounter)state.basinCounter=o.basinCounter;
+  if(o.basinBowlColor)state.basinBowlColor=o.basinBowlColor;
+  if(typeof o.basinMirrorBacklight==='boolean')state.basinMirrorBacklight=o.basinMirrorBacklight;
+  if(o.roomDoorState){
+   state.roomDoorState=o.roomDoorState;
+   if($('#roomDoorSelect'))$('#roomDoorSelect').value=o.roomDoorState;
+   if($('#walkDoorSelect'))$('#walkDoorSelect').value=o.roomDoorState;
+  }
   if(gWalls)buildWalls();
+  if(gStatic)buildStatic();
   if(typeof updateBeamMaterial==='function')updateBeamMaterial();
   syncWallColorUI();
   if(typeof updateToneStats==='function')updateToneStats();
@@ -4995,6 +5335,32 @@ if($('#walkCustomWallColor')){
  $('#walkCustomWallColor').addEventListener('input',e=>applyWallColor(e.target.value,getWalkRoomTarget()));
 }
 syncWallColorUI();
+
+function applyDoorState(val){
+ state.roomDoorState=val;
+ if($('#roomDoorSelect'))$('#roomDoorSelect').value=val;
+ if($('#walkDoorSelect'))$('#walkDoorSelect').value=val;
+ if(gWalls)buildWalls();
+ if(gItems)buildItems();
+ if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
+ render3D();
+ save();
+}
+
+if($('#roomDoorSelect')){
+ $('#roomDoorSelect').value=state.roomDoorState||'partial';
+ $('#roomDoorSelect').addEventListener('change',e=>applyDoorState(e.target.value));
+}
+if($('#walkDoorSelect')){
+ $('#walkDoorSelect').value=state.roomDoorState||'partial';
+ $('#walkDoorSelect').addEventListener('change',e=>applyDoorState(e.target.value));
+}
+if($('#btnSelectBasin')){
+ $('#btnSelectBasin').addEventListener('click',()=>{
+  select('fx_basin');
+ });
+}
+
 const ioEl=$('#io');if(ioEl&&!ioEl.value)ioEl.value=exportText();
 if($('#walkHeightSlider')){
  $('#walkHeightSlider').addEventListener('input',e=>{
