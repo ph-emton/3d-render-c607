@@ -3220,6 +3220,77 @@ function buildWalls(){
    }
   }
  }
+
+ // 1. Window Curtains and Stainless Steel Rods
+ const rodMat = mat('', 0, 'steel');
+ const curtainMat = mat('#f0ece1', false, 'fabric');
+ for(const W of WALLS){
+  const hz = W.w >= W.d;
+  for(const o of (W.op||[])){
+   if(o.t === 'win'){
+    const winW = o.b - o.a;
+    const zb = o.zb != null ? o.zb : 3, zt = o.zt != null ? o.zt : 7;
+    const rodY = zt + 0.35;
+    const rodLen = winW + 1.2;
+    const curtainLen = rodY - zb + 0.1;
+    const entersPos = hz ? (W.y < 20) : (W.x < 12);
+    const offset = entersPos ? 0.28 : -0.28;
+
+    if(hz){
+     // Curtain Rod & Finials
+     B(gWalls, rodLen, 0.05, 0.05, (o.a+o.b)/2, rodY, W.y + offset, rodMat);
+     B(gWalls, 0.1, 0.1, 0.1, (o.a+o.b)/2 - rodLen/2, rodY, W.y + offset, rodMat);
+     B(gWalls, 0.1, 0.1, 0.1, (o.a+o.b)/2 + rodLen/2, rodY, W.y + offset, rodMat);
+
+     // Flanking Curtain Panels
+     const panelW = Math.min(0.7, winW * 0.28);
+     const p1X = o.a - 0.1;
+     const p2X = o.b + 0.1;
+     B(gWalls, panelW, curtainLen, 0.16, p1X, rodY - curtainLen/2, W.y + offset, curtainMat);
+     B(gWalls, panelW, curtainLen, 0.16, p2X, rodY - curtainLen/2, W.y + offset, curtainMat);
+     B(gWalls, panelW * 0.7, curtainLen, 0.06, p1X, rodY - curtainLen/2, W.y + offset + (entersPos ? 0.07 : -0.07), curtainMat);
+     B(gWalls, panelW * 0.7, curtainLen, 0.06, p2X, rodY - curtainLen/2, W.y + offset + (entersPos ? 0.07 : -0.07), curtainMat);
+    }else{
+     // Curtain Rod & Finials
+     B(gWalls, 0.05, 0.05, rodLen, W.x + offset, rodY, (o.a+o.b)/2, rodMat);
+     B(gWalls, 0.1, 0.1, 0.1, W.x + offset, rodY, (o.a+o.b)/2 - rodLen/2, rodMat);
+     B(gWalls, 0.1, 0.1, 0.1, W.x + offset, rodY, (o.a+o.b)/2 + rodLen/2, rodMat);
+
+     // Flanking Curtain Panels
+     const panelW = Math.min(0.7, winW * 0.28);
+     const p1Z = o.a - 0.1;
+     const p2Z = o.b + 0.1;
+     B(gWalls, 0.16, curtainLen, panelW, W.x + offset, rodY - curtainLen/2, p1Z, curtainMat);
+     B(gWalls, 0.16, curtainLen, panelW, W.x + offset, rodY - curtainLen/2, p2Z, curtainMat);
+     B(gWalls, 0.06, curtainLen, panelW * 0.7, W.x + offset + (entersPos ? 0.07 : -0.07), rodY - curtainLen/2, p1Z, curtainMat);
+     B(gWalls, 0.06, curtainLen, panelW * 0.7, W.x + offset + (entersPos ? 0.07 : -0.07), rodY - curtainLen/2, p2Z, curtainMat);
+    }
+   }
+  }
+ }
+
+ // 2. Balcony Stainless Steel & Safety Glass Railing
+ const railSteel = mat('', 0, 'steel');
+ const railGlass = mat('', 0, 'glass');
+ // Front perimeter railing (y = -0.25, x: 0 to 11.33)
+ B(gWalls, 11.33, 0.08, 0.10, 11.33/2, 3.5, -0.25, railSteel);
+ B(gWalls, 11.1, 2.6, 0.03, 11.33/2, 1.8, -0.25, railGlass);
+ for(let rx = 0.1; rx <= 11.3; rx += 2.8){
+  B(gWalls, 0.08, 3.5, 0.08, rx, 1.75, -0.25, railSteel);
+ }
+ // Left side balustrade (x = -0.25, y: 0 to 6.33)
+ B(gWalls, 0.10, 0.08, 6.33, -0.25, 3.5, 6.33/2, railSteel);
+ B(gWalls, 0.03, 2.6, 6.1, -0.25, 1.8, 6.33/2, railGlass);
+ for(let ry = 0.1; ry <= 6.3; ry += 3.1){
+  B(gWalls, 0.08, 3.5, 0.08, -0.25, 1.75, ry, railSteel);
+ }
+ // Right side balustrade (x = 11.33, y: 0 to 6.33)
+ B(gWalls, 0.10, 0.08, 6.33, 11.33, 3.5, 6.33/2, railSteel);
+ B(gWalls, 0.03, 2.6, 6.1, 11.33, 1.8, 6.33/2, railGlass);
+ for(let ry = 0.1; ry <= 6.3; ry += 3.1){
+  B(gWalls, 0.08, 3.5, 0.08, 11.33, 1.75, ry, railSteel);
+ }
+
  mergeGroupMeshesByMaterial(gWalls);
  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
 }
