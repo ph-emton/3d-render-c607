@@ -221,6 +221,7 @@ label.inline-select select{padding:4px 6px;font-size:12px}
           <button data-p="hall">Hall</button>
         </div>
         <button id="wallBtn">Walls: full</button>
+        <button id="btnPostFx" class="walk-btn on" title="Toggle Real-Time Ambient Occlusion (GTAO) and Soft Bloom (Hotkey: B)">✨ Post-FX: ON</button>
       </div>
       <div id="viewWrap">
         <canvas id="view"></canvas>
@@ -316,6 +317,7 @@ label.inline-select select{padding:4px 6px;font-size:12px}
               <button type="button" id="walkBtnWallMural" class="walk-btn" style="pointer-events:auto;font-size:11px;padding:3px 7px" title="Upload custom wallpaper or mural image for any wall">🖼️ Wallpaper</button>
             </div>
             <div style="display:flex;gap:6px;align-items:center">
+              <button id="walkPostFxToggle" class="walk-btn on" style="pointer-events:auto" title="Toggle Real-Time Ambient Occlusion (GTAO) and Soft Bloom (Hotkey: B)">✨ Post-FX: ON</button>
               <button id="walkModelToggle" class="walk-btn on" title="Toggle between 3D glTF Models and Procedural Primitives">📦 3D Models: ON</button>
               <button id="btnCollision" class="walk-btn" title="Toggle wall collision (or press C key)">Collisions: ON</button>
               <button id="btnWalkFullscreen" class="walk-btn" title="Toggle Fullscreen (or press F key)">⛶ Fullscreen</button>
@@ -397,6 +399,8 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 const T = {
   ...THREE,
@@ -411,7 +415,9 @@ const T = {
   EffectComposer,
   RenderPass,
   ShaderPass,
-  OutputPass
+  OutputPass,
+  GTAOPass,
+  UnrealBloomPass
 };
 window.THREE = T;
 
@@ -593,10 +599,11 @@ function defaults(){
  state.toneMapping = 'ACESFilmic';
  state.exposure = 0.95;
  state.envIntensity = 0.88;
+ state.usePostProcessing = true;
  return SEED.items.map(fromExport);
 }
-let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true};
-function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels}));}catch(e){}}
+let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true,usePostProcessing:true};
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false}));}catch(e){}}
 function load(){
  try{
   const raw=localStorage.getItem(STORE);
@@ -614,6 +621,7 @@ function load(){
    state.envIntensity=typeof s.envIntensity==='number'?s.envIntensity:0.88;
    state.ceilingMode=s.ceilingMode||'auto';
    state.use3dModels=s.use3dModels!==false;
+   state.usePostProcessing=s.usePostProcessing!==false;
    return true;
   }
  }catch(e){}
@@ -1146,6 +1154,10 @@ document.addEventListener('keydown',e=>{
  if(k==='KeyP'||e.key==='p'||e.key==='P'){
   if(e.shiftKey){if(typeof cycleToneMapping==='function')cycleToneMapping();}
   else{if(typeof toggleStats==='function')toggleStats();}
+  e.preventDefault();return;
+ }
+ if(k==='KeyB'||e.key==='b'||e.key==='B'){
+  if(typeof togglePostFx==='function')togglePostFx();
   e.preventDefault();return;
  }
  if(e.key==='['||e.key==='{'){
@@ -3070,8 +3082,11 @@ function toggleStats(){
 function render3D(){
  if(!renderer)return;
  const t0=performance.now();
- if(typeof composer!=='undefined'&&composer)composer.render();
- else renderer.render(scene,camera);
+ if(state.usePostProcessing!==false&&typeof composer!=='undefined'&&composer){
+  composer.render();
+ }else{
+  renderer.render(scene,camera);
+ }
  const dt=performance.now()-t0;
  if(statsVisible)recordStats(dt);
 }
@@ -3476,6 +3491,104 @@ function initEnvMap(rend, scn){
  }
 }
 
+let composer = null;
+let gtaoPass = null;
+let bloomPass = null;
+let outputPass = null;
+
+function initComposer(){
+ if(!renderer || !scene || !camera) return;
+ const w = renderer.domElement.clientWidth || 1280;
+ const h = renderer.domElement.clientHeight || 800;
+
+ try{
+  composer = new T.EffectComposer(renderer);
+
+  const renderPass = new T.RenderPass(scene, camera);
+  composer.addPass(renderPass);
+
+  // Ground Truth Ambient Occlusion (GTAO) for realistic contact shadows and depth
+  if(T.GTAOPass){
+   gtaoPass = new T.GTAOPass(scene, camera, w, h);
+   gtaoPass.output = 0; // Blended with scene color
+   gtaoPass.blendIntensity = 1.15;
+   gtaoPass.updateGtaoMaterial({
+    radius: 1.35,
+    distanceExponent: 1.0,
+    thickness: 1.0,
+    distanceFallOff: 1.0
+   });
+   if(typeof gtaoPass.updatePdMaterial === 'function'){
+    gtaoPass.updatePdMaterial({
+     lumaPhi: 10,
+     depthPhi: 2,
+     normalPhi: 3,
+     radius: 6
+    });
+   }
+   composer.addPass(gtaoPass);
+  }
+
+  // Soft architectural bloom for LED cove strips and warm ceiling light sources
+  if(T.UnrealBloomPass){
+   bloomPass = new T.UnrealBloomPass(
+    new T.Vector2(w, h),
+    0.28,  // bloom strength
+    0.45,  // bloom radius
+    0.88   // threshold (only bright emitters bloom)
+   );
+   composer.addPass(bloomPass);
+  }
+
+  // OutputPass handles ACES/AgX/Neutral tone mapping and sRGB color space output
+  if(T.OutputPass){
+   outputPass = new T.OutputPass();
+   composer.addPass(outputPass);
+  }
+ }catch(err){
+  console.warn('Post-processing composer initialization error:', err);
+  composer = null;
+ }
+}
+
+function updateComposerSize(w, h){
+ if(!composer) return;
+ composer.setSize(w, h);
+ if(gtaoPass && typeof gtaoPass.setSize === 'function') gtaoPass.setSize(w, h);
+ if(bloomPass && bloomPass.resolution) bloomPass.resolution.set(w, h);
+}
+
+function setPostFx(enabled){
+ state.usePostProcessing = !!enabled;
+ syncPostFxUI();
+ render3D();
+ save();
+}
+
+function togglePostFx(){
+ setPostFx(state.usePostProcessing === false);
+}
+
+function syncPostFxUI(){
+ const on = (state.usePostProcessing !== false);
+ const b1 = $('#btnPostFx');
+ if(b1){
+  b1.textContent = '✨ Post-FX: ' + (on ? 'ON' : 'OFF');
+  b1.classList.toggle('on', on);
+  b1.classList.toggle('warn', !on);
+ }
+ const b2 = $('#walkPostFxToggle');
+ if(b2){
+  b2.textContent = '✨ Post-FX: ' + (on ? 'ON' : 'OFF');
+  b2.classList.toggle('on', on);
+  b2.classList.toggle('warn', !on);
+ }
+ const st = $('#statsLights');
+ if(st){
+  st.textContent = 'Lights: 10 downlights · 6 windows · HDRI | FX: ' + (on ? 'GTAO+Bloom' : 'Off');
+ }
+}
+
 function init3D(){
  if(!T||!T.OrbitControls){$('#viewMsg').textContent='3D view could not load. The 2D plan still works.';return;}
  $('#viewMsg').style.display='none';
@@ -3525,9 +3638,19 @@ function init3D(){
  buildCeilingAndLights();
  buildItems();
  initModelLoader();
+ initComposer();
+ syncPostFxUI();
 
  const wrap=$('#viewWrap');
- const rs=()=>{const w=wrap.clientWidth,h=wrap.clientHeight;if(!w||!h)return;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();render3D();};
+ const rs=()=>{
+  const w=wrap.clientWidth,h=wrap.clientHeight;
+  if(!w||!h)return;
+  renderer.setSize(w,h,false);
+  camera.aspect=w/h;
+  camera.updateProjectionMatrix();
+  if(typeof updateComposerSize==='function')updateComposerSize(w,h);
+  render3D();
+ };
  window.rs3D=rs;
  if(window.ResizeObserver)new ResizeObserver(rs).observe(wrap);else window.addEventListener('resize',rs);rs();
  preset('overview');
@@ -3695,6 +3818,7 @@ function exportText(){
  if(state.toneMapping)out.toneMapping=state.toneMapping;
  if(typeof state.exposure==='number')out.exposure=state.exposure;
  if(typeof state.envIntensity==='number')out.envIntensity=state.envIntensity;
+ if(typeof state.usePostProcessing==='boolean')out.usePostProcessing=state.usePostProcessing;
  return JSON.stringify(out);
 }
 
@@ -3712,6 +3836,10 @@ $('#btnLoad').onclick=()=>{
   if(o.wallColor){state.wallColor=o.wallColor;}
   if(o.roomWallColors){state.roomWallColors=Object.assign({},o.roomWallColors);}
   if(o.roomWallImages){state.roomWallImages=Object.assign({},o.roomWallImages);}
+  if(typeof o.usePostProcessing==='boolean'){
+   state.usePostProcessing=o.usePostProcessing;
+   if(typeof syncPostFxUI==='function')syncPostFxUI();
+  }
   if(o.toneMapping&&renderer){
    state.toneMapping=o.toneMapping;
    const tmMap={ACESFilmic:THREE.ACESFilmicToneMapping,AgX:THREE.AgXToneMapping,Neutral:(THREE.NeutralToneMapping||THREE.ACESFilmicToneMapping)};
@@ -4073,6 +4201,13 @@ if($('#statsTone')){
   e.stopPropagation();
   cycleToneMapping();
  });
+}
+
+if($('#btnPostFx')){
+ $('#btnPostFx').addEventListener('click', togglePostFx);
+}
+if($('#walkPostFxToggle')){
+ $('#walkPostFxToggle').addEventListener('click', togglePostFx);
 }
 
 updateFovBadge();
