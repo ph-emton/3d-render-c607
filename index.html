@@ -1669,13 +1669,24 @@ function mat(hex,metal,extra){
  }
  else if(extra==='granite'){
   m=new T.MeshPhysicalMaterial({
-   color:'#111214',
+   color:hex||'#111214',
    roughness:0.12,
    metalness:0.10,
    clearcoat:0.88,
    clearcoatRoughness:0.06,
    ior:1.62,
    envMapIntensity:1.8
+  });
+ }
+ else if(extra==='ceramic'){
+  m=new T.MeshPhysicalMaterial({
+   color:hex||'#ffffff',
+   roughness:0.12,
+   metalness:0.02,
+   clearcoat:0.96,
+   clearcoatRoughness:0.03,
+   ior:1.55,
+   envMapIntensity:1.6
   });
  }
  else if(extra==='fabric'){
@@ -3425,37 +3436,65 @@ function buildStatic(){
    // Ceramic bowl rim / seat lid
    B(g, fx.w * 0.78, 0.08, fx.d * 0.78, 0, 1.34, 0.1, mat('#f8f9fa'));
   }else if(fx.kind === 'basin'){
+   g.userData = { id: 'fx_basin' };
    const vanityMat = state.basinFinish ? (FIN[state.basinFinish] ? mF(state.basinFinish) : mat(state.basinFinish, false, 'solid')) : mat('#4a3525', false, 'wood');
    const counterMat = mat(state.basinCounter || '#151618', false, 'granite');
-   const bowlMat = mat(state.basinBowlColor || '#ffffff', false, 'granite');
+   const bowlMat = mat(state.basinBowlColor || '#ffffff', false, 'ceramic');
    const chromeMat = mat('', 0, 'chrome');
    const mirrorMat = mat('', 0, 'mirror');
 
-   // 1. Finished wall cladding panel behind basin against South wall (+fx.d/2)
-   B(g, fx.w + 0.1, 4.8, 0.05, 0, 2.4, fx.d/2 + 0.025, mat('#1c1e22', false, 'granite'));
+   // 1. Finished wall cladding panel mounted against the wall at +fx.w/2 (x = 15.0)
+   B(g, 0.05, 5.0, fx.d + 0.1, fx.w/2 + 0.025, 2.5, 0, mat('#1c1e22', false, 'granite'));
 
    // 2. Wooden/finished vanity cabinet below counter
    B(g, fx.w, 2.4, fx.d, 0, 1.2, 0, vanityMat);
-   // Vanity drawer / shutter reveal line on front (facing North -Z)
-   B(g, fx.w * 0.95, 0.03, 0.02, 0, 1.2, -fx.d/2 - 0.01, mat('#1a1a1a'));
-   // Sleek aluminum profile drawer pull
-   B(g, fx.w * 0.6, 0.03, 0.04, 0, 1.8, -fx.d/2 - 0.02, mat('#222224', true));
+   // Vanity drawer / shutter reveal line on front face (facing North -X)
+   B(g, 0.02, 0.03, fx.d * 0.95, -fx.w/2 - 0.01, 1.2, 0, mat('#1a1a1a'));
+   // Sleek aluminum profile drawer pull on front face (facing North -X)
+   B(g, 0.04, 0.03, fx.d * 0.6, -fx.w/2 - 0.02, 1.8, 0, mat('#222224', true));
 
    // 3. Vanity countertop (Granite / Marble / Quartz)
-   B(g, fx.w + 0.1, 0.12, fx.d + 0.1, 0, 2.46, 0, counterMat);
+   B(g, fx.w + 0.08, 0.12, fx.d + 0.08, -0.02, 2.46, 0, counterMat);
 
-   // 4. Glossy ceramic washbasin inset / bowl placed towards front (-Z)
-   B(g, fx.w * 0.75, 0.25, fx.d * 0.58, 0, 2.58, -0.05, bowlMat);
+   // 4. Glossy ceramic washbasin vessel bowl placed towards front (-X, North)
+   const rBowl = Math.min(fx.d * 0.38, 0.52);
+   const bowlMesh = C(g, rBowl, rBowl * 0.85, 0.30, -0.06, 2.61, 0, bowlMat);
+   bowlMesh.userData = { noMerge: true };
+   // Chrome pop-up drain
+   const drainMesh = C(g, 0.08, 0.08, 0.02, -0.06, 2.76, 0, chromeMat);
+   drainMesh.userData = { noMerge: true };
 
-   // 5. Chrome single-lever mixer faucet (at back +Z, spout pointing forward towards North -Z)
-   B(g, 0.08, 0.55, 0.08, 0, 2.8, fx.d * 0.25, chromeMat);
-   B(g, 0.06, 0.06, 0.25, 0, 3.05, fx.d * 0.14, chromeMat);
+   // 5. Chrome single-lever mixer faucet at back (+X), spout pointing North (-X into bowl)
+   const faucetBody = C(g, 0.045, 0.045, 0.65, fx.w/2 - 0.22, 2.82, 0, chromeMat);
+   faucetBody.userData = { noMerge: true };
+   B(g, 0.32, 0.05, 0.05, fx.w/2 - 0.36, 3.12, 0, chromeMat);
+   B(g, 0.12, 0.025, 0.04, fx.w/2 - 0.20, 3.18, 0, chromeMat);
 
-   // 6. Wall mirror mounted on the wall (+fx.d/2) facing North (-Z) towards hall
+   // 6. Circular LED vanity mirror mounted on wall (+fx.w/2) facing North (-X towards hall)
+   const rMirror = Math.min(fx.d * 0.44, 0.68);
    if(state.basinMirrorBacklight !== false){
-    B(g, fx.w * 0.94, 2.24, 0.04, 0, 4.2, fx.d/2 - 0.005, mat('#fff4df', 0, 'glow'));
+    const glowGeo = new T.CylinderGeometry(rMirror + 0.06, rMirror + 0.06, 0.015, 36);
+    const glowMesh = new T.Mesh(glowGeo, mat('#fff4df', 0, 'glow'));
+    glowMesh.position.set(fx.w/2 - 0.005, 4.25, 0);
+    glowMesh.rotation.z = Math.PI / 2;
+    glowMesh.userData = { noMerge: true };
+    g.add(glowMesh);
    }
-   B(g, fx.w * 0.9, 2.2, 0.03, 0, 4.2, fx.d/2 - 0.025, mirrorMat);
+   const rimGeo = new T.CylinderGeometry(rMirror + 0.015, rMirror + 0.015, 0.028, 36);
+   const rimMesh = new T.Mesh(rimGeo, mat('#222428', true));
+   rimMesh.position.set(fx.w/2 - 0.018, 4.25, 0);
+   rimMesh.rotation.z = Math.PI / 2;
+   rimMesh.userData = { noMerge: true };
+   g.add(rimMesh);
+
+   const mirrorGeo = new T.CylinderGeometry(rMirror, rMirror, 0.025, 36);
+   const mirrorMesh = new T.Mesh(mirrorGeo, mirrorMat);
+   mirrorMesh.position.set(fx.w/2 - 0.02, 4.25, 0);
+   mirrorMesh.rotation.z = Math.PI / 2;
+   mirrorMesh.castShadow = true;
+   mirrorMesh.receiveShadow = true;
+   mirrorMesh.userData = { noMerge: true };
+   g.add(mirrorMesh);
   }else{
    B(g,fx.w,fx.h,fx.d,0,fx.h/2,0,mat('#f7f7f5'));
   }
@@ -3544,6 +3583,41 @@ function buildWalls(){
     const roomDState = state.roomDoorState || 'partial';
     const doorAngle = roomDState === 'closed' ? 0 : (roomDState === 'open' ? 1.48 : 0.44);
 
+    let hingeSide = 'start';
+    let swingSign = 1;
+
+    // 1. Balcony to Bedroom door: y = 6.33, a=0.8, b=3.6
+    // opens inwards into bedroom (+Z), hinge on opposite side (x = 3.5)
+    if(hz && Math.abs(W.y - 6.33) < 0.2 && Math.abs(o.a - 0.8) < 0.3){
+     hingeSide = 'end';
+     swingSign = 1;
+    }
+    // 2. Master bedroom / Brother's room door: y = 27.4, a=11.8, b=14.8
+    // opens inwards into bedroom (+Z), hinge on same side (x = 11.9)
+    else if(hz && Math.abs(W.y - 27.4) < 0.2 && Math.abs(o.a - 11.8) < 0.3){
+     hingeSide = 'start';
+     swingSign = -1;
+    }
+    // 3. Toilet in master bedroom door: y = 27.4, a=17.9, b=20.4
+    // opens inwards into toilet (-Z), hinge on other side (x = 20.3)
+    else if(hz && Math.abs(W.y - 27.4) < 0.2 && Math.abs(o.a - 17.9) < 0.3){
+     hingeSide = 'end';
+     swingSign = -1;
+    }
+    // 4. Kitchen to Utility door: x = 20, a=12.6, b=15.6
+    // opens inwards into utility (+X), hinge on opposite side (y = 15.5)
+    else if(!hz && Math.abs(W.x - 20) < 0.2 && Math.abs(o.a - 12.6) < 0.3){
+     hingeSide = 'end';
+     swingSign = 1;
+    }
+    else if(hz){
+     hingeSide = 'start';
+     swingSign = 1;
+    }else{
+     hingeSide = 'start';
+     swingSign = -1;
+    }
+
     if(hz){
      B(gWalls,0.18,o.zt,W.d+0.04,o.a+0.09,o.zt/2,W.y,jm);
      B(gWalls,0.18,o.zt,W.d+0.04,o.b-0.09,o.zt/2,W.y,jm);
@@ -3551,15 +3625,18 @@ function buildWalls(){
      B(gWalls,o.b-o.a,0.03,W.d,(o.a+o.b)/2,0.015,W.y,mat('#726456',true));
 
      const dg = new T.Group();
-     dg.position.set(o.a + 0.10, 0, W.y);
-     dg.rotation.y = doorAngle;
+     const pivotX = (hingeSide === 'end') ? (o.b - 0.10) : (o.a + 0.10);
+     dg.position.set(pivotX, 0, W.y);
+     dg.rotation.y = swingSign * doorAngle;
 
-     B(dg, doorW, doorH, doorThick, doorW/2, doorH/2, 0, doorMat);
+     const leafCenter = (hingeSide === 'end') ? (-doorW / 2) : (doorW / 2);
+     B(dg, doorW, doorH, doorThick, leafCenter, doorH/2, 0, doorMat);
 
-     const hx = doorW - 0.20;
+     const hx = (hingeSide === 'end') ? (-doorW + 0.20) : (doorW - 0.20);
+     const leverOffset = (hingeSide === 'end') ? 0.09 : -0.09;
      B(dg, 0.08, 0.36, doorThick+0.04, hx, 3.2, 0, handleMat);
-     B(dg, 0.26, 0.04, 0.05, hx-0.09, 3.22, doorThick/2+0.04, handleMat);
-     B(dg, 0.26, 0.04, 0.05, hx-0.09, 3.22, -doorThick/2-0.04, handleMat);
+     B(dg, 0.26, 0.04, 0.05, hx+leverOffset, 3.22, doorThick/2+0.04, handleMat);
+     B(dg, 0.26, 0.04, 0.05, hx+leverOffset, 3.22, -doorThick/2-0.04, handleMat);
      gWalls.add(dg);
     }else{
      B(gWalls,W.w+0.04,o.zt,0.18,W.x,o.zt/2,o.a+0.09,jm);
@@ -3568,15 +3645,18 @@ function buildWalls(){
      B(gWalls,W.w,0.03,o.b-o.a,W.x,0.015,(o.a+o.b)/2,mat('#726456',true));
 
      const dg = new T.Group();
-     dg.position.set(W.x, 0, o.a + 0.10);
-     dg.rotation.y = -doorAngle;
+     const pivotZ = (hingeSide === 'end') ? (o.b - 0.10) : (o.a + 0.10);
+     dg.position.set(W.x, 0, pivotZ);
+     dg.rotation.y = swingSign * doorAngle;
 
-     B(dg, doorThick, doorH, doorW, 0, doorH/2, doorW/2, doorMat);
+     const leafCenter = (hingeSide === 'end') ? (-doorW / 2) : (doorW / 2);
+     B(dg, doorThick, doorH, doorW, 0, doorH/2, leafCenter, doorMat);
 
-     const hzPos = doorW - 0.20;
+     const hzPos = (hingeSide === 'end') ? (-doorW + 0.20) : (doorW - 0.20);
+     const leverOffset = (hingeSide === 'end') ? 0.09 : -0.09;
      B(dg, doorThick+0.04, 0.36, 0.08, 0, 3.2, hzPos, handleMat);
-     B(dg, 0.05, 0.04, 0.26, doorThick/2+0.04, 3.22, hzPos-0.09, handleMat);
-     B(dg, 0.05, 0.04, 0.26, -doorThick/2-0.04, 3.22, hzPos-0.09, handleMat);
+     B(dg, 0.05, 0.04, 0.26, doorThick/2+0.04, 3.22, hzPos+leverOffset, handleMat);
+     B(dg, 0.05, 0.04, 0.26, -doorThick/2-0.04, 3.22, hzPos+leverOffset, handleMat);
      gWalls.add(dg);
     }
    }
@@ -5358,6 +5438,26 @@ if($('#walkDoorSelect')){
 if($('#btnSelectBasin')){
  $('#btnSelectBasin').addEventListener('click',()=>{
   select('fx_basin');
+  const insp = $('#insp');
+  if(insp) insp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  if(viewMode === 'orbit' && controls && camera){
+   controls.target.set(14.45, 3.2, 23.7);
+   camera.position.set(9.5, 4.5, 23.7);
+   controls.update();
+   render3D();
+  }else if(viewMode === 'walk'){
+   player.x = 10.5;
+   player.z = 23.7;
+   player.yaw = -Math.PI / 2;
+   player.pitch = 0.05;
+   if(camera){
+    camera.position.set(player.x, walkEyeH, player.z);
+    camera.rotation.set(player.pitch, player.yaw, 0, 'YXZ');
+   }
+   updateRoomBadge();
+   updatePlanAvatar();
+   render3D();
+  }
  });
 }
 
