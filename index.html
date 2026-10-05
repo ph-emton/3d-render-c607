@@ -1255,40 +1255,91 @@ function shade(hex,f){const n=parseInt(hex.slice(1),16);const c=[n>>16,(n>>8)&25
 /* Procedural canvas textures for realistic grain and tactile surfaces */
 function getWoodTex(baseHex,grainHex){
  const key='w_'+baseHex;if(texCache[key])return texCache[key];
- const c=document.createElement('canvas');c.width=128;c.height=256;
+ const c=document.createElement('canvas');c.width=256;c.height=512;
  const x=c.getContext('2d');
- x.fillStyle=baseHex;x.fillRect(0,0,128,256);
- const dark=grainHex||shade(baseHex,0.78),light=shade(baseHex,1.1);
- x.lineWidth=1.5;
- for(let i=0;i<26;i++){
-  x.beginPath();const bx=Math.random()*128;x.moveTo(bx,0);
-  x.bezierCurveTo(bx+Math.random()*24-12,80,bx+Math.random()*24-12,160,bx+Math.random()*16-8,256);
+ x.fillStyle=baseHex;x.fillRect(0,0,256,512);
+ const dark=grainHex||shade(baseHex,0.76),light=shade(baseHex,1.14);
+ 
+ // Subtle vertical tonal variation across planks
+ const grad=x.createLinearGradient(0,0,256,0);
+ grad.addColorStop(0,shade(baseHex,0.92));
+ grad.addColorStop(0.32,shade(baseHex,1.05));
+ grad.addColorStop(0.68,shade(baseHex,0.96));
+ grad.addColorStop(1,shade(baseHex,1.03));
+ x.fillStyle=grad;x.globalAlpha=0.35;x.fillRect(0,0,256,512);
+ 
+ // Flowing natural cathedral wood grain curves
+ x.lineWidth=1.6;
+ for(let i=0;i<38;i++){
+  x.beginPath();
+  const bx=Math.random()*256;
+  x.moveTo(bx,0);
+  const cx1=bx+(Math.random()*52-26);
+  const cx2=bx+(Math.random()*52-26);
+  const ex=bx+(Math.random()*26-13);
+  x.bezierCurveTo(cx1,160,cx2,340,ex,512);
   x.strokeStyle=i%2===0?dark:light;
-  x.globalAlpha=0.18+Math.random()*0.24;x.stroke();
+  x.globalAlpha=0.14+Math.random()*0.22;
+  x.stroke();
+ }
+ 
+ // Fine longitudinal vascular wood pores
+ x.fillStyle=dark;
+ for(let i=0;i<380;i++){
+  const px=Math.random()*256, py=Math.random()*512;
+  x.globalAlpha=0.12+Math.random()*0.18;
+  x.fillRect(px,py,1,4+Math.random()*8);
  }
  x.globalAlpha=1.0;
- const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
+ 
+ const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
+ const t=new T.CanvasTexture(c);
+ t.colorSpace=T.SRGBColorSpace;
+ t.wrapS=t.wrapT=T.RepeatWrapping;
+ t.anisotropy=maxAniso;
+ return texCache[key]=t;
 }
 
 function getFabricTex(baseHex){
  const key='f_'+baseHex;if(texCache[key])return texCache[key];
- const c=document.createElement('canvas');c.width=64;c.height=64;
+ const c=document.createElement('canvas');c.width=128;c.height=128;
  const x=c.getContext('2d');
- x.fillStyle=baseHex;x.fillRect(0,0,64,64);
- const d=shade(baseHex,0.86),l=shade(baseHex,1.12);
+ x.fillStyle=baseHex;x.fillRect(0,0,128,128);
+ const d=shade(baseHex,0.84),l=shade(baseHex,1.16);
+ 
+ // Fine twill/bouclé weave micro-threads
  x.lineWidth=1;
- for(let i=0;i<64;i+=4){
+ for(let i=0;i<128;i+=4){
   x.strokeStyle=(i%8===0)?d:l;
-  x.beginPath();x.moveTo(i,0);x.lineTo(i,64);x.stroke();
-  x.beginPath();x.moveTo(0,i);x.lineTo(64,i);x.stroke();
+  x.globalAlpha=0.32;
+  x.beginPath();x.moveTo(i,0);x.lineTo(i,128);x.stroke();
+  x.beginPath();x.moveTo(0,i);x.lineTo(128,i);x.stroke();
  }
- const t=new T.CanvasTexture(c);t.colorSpace=T.SRGBColorSpace;t.wrapS=t.wrapT=T.RepeatWrapping;return texCache[key]=t;
+ // Interlaced tactile thread points
+ for(let r=0;r<128;r+=4){
+  for(let col=0;col<128;col+=4){
+   if((r+col)%8===0){
+    x.fillStyle=l;x.globalAlpha=0.45;
+    x.fillRect(col,r,1.5,1.5);
+   }else if((r+col)%8===4){
+    x.fillStyle=d;x.globalAlpha=0.35;
+    x.fillRect(col,r,1.5,1.5);
+   }
+  }
+ }
+ x.globalAlpha=1.0;
+ const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
+ const t=new T.CanvasTexture(c);
+ t.colorSpace=T.SRGBColorSpace;
+ t.wrapS=t.wrapT=T.RepeatWrapping;
+ t.anisotropy=maxAniso;
+ return texCache[key]=t;
 }
 
 let contactShadowTex=null;
 function getContactShadowTex(){
  if(contactShadowTex)return contactShadowTex;
- const c=document.createElement('canvas');c.width=c.height=128;const x=c.getContext('2d');
+ const c=document.createElement('canvas');c.width=128;c.height=128;const x=c.getContext('2d');
  const g=x.createRadialGradient(64,64,12,64,64,64);
  g.addColorStop(0,'rgba(10,8,6,0.65)');
  g.addColorStop(0.35,'rgba(15,12,10,0.38)');
@@ -1306,6 +1357,8 @@ function addContactShadow(g,w,d,opacity){
 let pTex=null;
 function initProceduralTextures(){
  if(pTex)return pTex;
+ const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
+
  // 1. Large-Format 2x4 (2ft x 4ft / 600x1200mm) Cream Vitrified Glazed Tiles (1024x1024)
  const c1=document.createElement('canvas');c1.width=c1.height=1024;const x1=c1.getContext('2d');
  x1.fillStyle='#f7f2e4';x1.fillRect(0,0,1024,1024);
@@ -1348,7 +1401,6 @@ function initProceduralTextures(){
  x1.strokeRect(15,15,482,994);
  x1.strokeRect(527,15,482,994);
 
- const maxAniso = (renderer&&renderer.capabilities)?renderer.capabilities.getMaxAnisotropy():16;
  const tIn=new T.CanvasTexture(c1);tIn.colorSpace=T.SRGBColorSpace;tIn.wrapS=tIn.wrapT=T.RepeatWrapping;tIn.anisotropy=maxAniso;
 
  // Roughness Map: High-gloss polished porcelain (0.06), dry matte grout (0.98)
@@ -1372,21 +1424,33 @@ function initProceduralTextures(){
  x2.fillStyle='#3a3f44';x2.fillRect(0,0,128,128);
  for(let i=0;i<140;i++){x2.fillStyle=Math.random()>0.5?'rgba(80,88,96,0.25)':'rgba(35,40,44,0.3)';x2.fillRect(Math.random()*128,Math.random()*128,8+Math.random()*16,6+Math.random()*12);}
  x2.strokeStyle='#22262a';x2.lineWidth=3;x2.strokeRect(1,1,126,126);
- const tWet=new T.CanvasTexture(c2);tWet.colorSpace=T.SRGBColorSpace;tWet.wrapS=tWet.wrapT=T.RepeatWrapping;
+ const tWet=new T.CanvasTexture(c2);tWet.colorSpace=T.SRGBColorSpace;tWet.wrapS=tWet.wrapT=T.RepeatWrapping;tWet.anisotropy=maxAniso;
+
+ const c2b=document.createElement('canvas');c2b.width=c2b.height=128;const x2b=c2b.getContext('2d');
+ x2b.fillStyle='#e4e4e4';x2b.fillRect(0,0,128,128);
+ for(let i=0;i<60;i++){x2b.fillStyle=Math.random()>0.5?'#ffffff':'#cccccc';x2b.fillRect(Math.random()*128,Math.random()*128,6+Math.random()*12,4+Math.random()*8);}
+ x2b.strokeStyle='#000000';x2b.lineWidth=4;x2b.strokeRect(2,2,124,124);
+ const tWetBump=new T.CanvasTexture(c2b);tWetBump.wrapS=tWetBump.wrapT=T.RepeatWrapping;tWetBump.anisotropy=maxAniso;
 
  // 3. Balcony terracotta pavers (128x128)
  const c3=document.createElement('canvas');c3.width=c3.height=128;const x3=c3.getContext('2d');
  x3.fillStyle='#b8694a';x3.fillRect(0,0,128,128);
  for(let i=0;i<100;i++){x3.fillStyle=Math.random()>0.5?'rgba(220,135,100,0.2)':'rgba(140,65,40,0.25)';x3.fillRect(Math.random()*128,Math.random()*128,10+Math.random()*18,10+Math.random()*18);}
  x3.strokeStyle='#7c3f28';x3.lineWidth=3;x3.strokeRect(1,1,126,126);
- const tOut=new T.CanvasTexture(c3);tOut.colorSpace=T.SRGBColorSpace;tOut.wrapS=tOut.wrapT=T.RepeatWrapping;
+ const tOut=new T.CanvasTexture(c3);tOut.colorSpace=T.SRGBColorSpace;tOut.wrapS=tOut.wrapT=T.RepeatWrapping;tOut.anisotropy=maxAniso;
+
+ const c3b=document.createElement('canvas');c3b.width=c3b.height=128;const x3b=c3b.getContext('2d');
+ x3b.fillStyle='#d8d8d8';x3b.fillRect(0,0,128,128);
+ for(let i=0;i<80;i++){x3b.fillStyle=Math.random()>0.5?'#ffffff':'#aaaaaa';x3b.fillRect(Math.random()*128,Math.random()*128,4+Math.random()*8,4+Math.random()*8);}
+ x3b.strokeStyle='#000000';x3b.lineWidth=5;x3b.strokeRect(2,2,124,124);
+ const tOutBump=new T.CanvasTexture(c3b);tOutBump.wrapS=tOutBump.wrapT=T.RepeatWrapping;tOutBump.anisotropy=maxAniso;
 
  // 4. Quilted duvet texture (128x128)
  const c4=document.createElement('canvas');c4.width=c4.height=128;const x4=c4.getContext('2d');
  x4.fillStyle='#faf8f4';x4.fillRect(0,0,128,128);
  x4.strokeStyle='rgba(180,172,160,0.34)';x4.lineWidth=1.5;
  for(let i=-64;i<192;i+=32){x4.beginPath();x4.moveTo(i,0);x4.lineTo(i+128,128);x4.stroke();x4.beginPath();x4.moveTo(i+128,0);x4.lineTo(i,128);x4.stroke();}
- const tBed=new T.CanvasTexture(c4);tBed.colorSpace=T.SRGBColorSpace;tBed.wrapS=tBed.wrapT=T.RepeatWrapping;
+ const tBed=new T.CanvasTexture(c4);tBed.colorSpace=T.SRGBColorSpace;tBed.wrapS=tBed.wrapT=T.RepeatWrapping;tBed.anisotropy=maxAniso;
 
  // 5. Subway backsplash tile (128x128)
  const c5=document.createElement('canvas');c5.width=c5.height=128;const x5=c5.getContext('2d');
@@ -1396,7 +1460,7 @@ function initProceduralTextures(){
  x5.strokeRect(-32,32,64,32);x5.strokeRect(32,32,64,32);x5.strokeRect(96,32,64,32);
  x5.strokeRect(0,64,64,32);x5.strokeRect(64,64,64,32);
  x5.strokeRect(-32,96,64,32);x5.strokeRect(32,96,64,32);x5.strokeRect(96,96,64,32);
- const tSplash=new T.CanvasTexture(c5);tSplash.colorSpace=T.SRGBColorSpace;tSplash.wrapS=tSplash.wrapT=T.RepeatWrapping;
+ const tSplash=new T.CanvasTexture(c5);tSplash.colorSpace=T.SRGBColorSpace;tSplash.wrapS=tSplash.wrapT=T.RepeatWrapping;tSplash.anisotropy=maxAniso;
 
  // 6. Woven living room rug (256x256)
  const c6=document.createElement('canvas');c6.width=c6.height=256;const x6=c6.getContext('2d');
@@ -1404,23 +1468,184 @@ function initProceduralTextures(){
  x6.strokeStyle='rgba(120,112,98,0.22)';x6.lineWidth=1.5;
  for(let i=0;i<256;i+=16){x6.strokeRect(i,0,8,256);x6.strokeRect(0,i,256,8);}
  x6.strokeStyle='#988e7d';x6.lineWidth=4;x6.strokeRect(8,8,240,240);
- const tRug=new T.CanvasTexture(c6);tRug.colorSpace=T.SRGBColorSpace;tRug.wrapS=tRug.wrapT=T.RepeatWrapping;
+ const tRug=new T.CanvasTexture(c6);tRug.colorSpace=T.SRGBColorSpace;tRug.wrapS=tRug.wrapT=T.RepeatWrapping;tRug.anisotropy=maxAniso;
 
- return pTex={in:tIn,inRough:tInRough,inBump:tInBump,wet:tWet,out:tOut,bed:tBed,splash:tSplash,rug:tRug};
+ return pTex={in:tIn,inRough:tInRough,inBump:tInBump,wet:tWet,wetBump:tWetBump,out:tOut,outBump:tOutBump,bed:tBed,splash:tSplash,rug:tRug};
 }
 
 function mat(hex,metal,extra){
  const k=hex+'|'+(metal?1:0)+'|'+(extra||'');if(matCache[k])return matCache[k];let m;
- if(extra==='glass')m=new T.MeshStandardMaterial({color:'#cbe4f2',transparent:true,opacity:0.32,roughness:0.06,metalness:0.15,envMapIntensity:0.8});
- else if(extra==='glow')m=new T.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:1.2,roughness:0.9});
- else if(extra==='mirror')m=new T.MeshStandardMaterial({color:'#e4ebf0',roughness:0.03,metalness:0.95,envMapIntensity:1.8});
- else if(extra==='granite')m=new T.MeshStandardMaterial({color:'#121315',roughness:0.16,metalness:0.18,envMapIntensity:1.4});
- else if(extra==='fabric'){const t=getFabricTex(hex);t.repeat.set(1.5,1.5);m=new T.MeshStandardMaterial({map:t,roughness:0.92,metalness:0.02,envMapIntensity:0.2});}
- else if(extra==='wood'){const t=getWoodTex(hex);t.repeat.set(1,2);m=new T.MeshStandardMaterial({map:t,roughness:0.48,metalness:0.04,envMapIntensity:0.6});}
- else if(extra==='bedding'){const t=pTex?pTex.bed.clone():null;if(t){t.needsUpdate=true;t.repeat.set(2,2);}m=new T.MeshStandardMaterial({map:t||undefined,color:'#f8f6f2',roughness:0.88,envMapIntensity:0.2});}
- else if(extra==='brass')m=new T.MeshStandardMaterial({color:'#e0be53',roughness:0.18,metalness:0.92,envMapIntensity:1.8});
- else if(extra==='steel')m=new T.MeshStandardMaterial({color:'#c5cbd0',roughness:0.22,metalness:0.92,envMapIntensity:1.6});
- else m=new T.MeshStandardMaterial({color:hex,roughness:metal?0.32:0.65,metalness:metal?0.75:0.04,envMapIntensity:metal?1.3:0.4});
+ if(extra==='glass'){
+  m=new T.MeshPhysicalMaterial({
+   color:'#e2f0fb',
+   transparent:true,
+   opacity:0.28,
+   roughness:0.03,
+   metalness:0.04,
+   clearcoat:1.0,
+   clearcoatRoughness:0.02,
+   ior:1.52,
+   specularIntensity:1.0,
+   depthWrite:false,
+   envMapIntensity:1.8
+  });
+ }
+ else if(extra==='frosted_glass'){
+  m=new T.MeshPhysicalMaterial({
+   color:'#ebf4fa',
+   transparent:true,
+   opacity:0.72,
+   roughness:0.42,
+   metalness:0.02,
+   clearcoat:0.6,
+   clearcoatRoughness:0.3,
+   ior:1.48,
+   depthWrite:false,
+   envMapIntensity:1.1
+  });
+ }
+ else if(extra==='glow'){
+  m=new T.MeshStandardMaterial({color:hex,emissive:hex,emissiveIntensity:1.25,roughness:0.9});
+ }
+ else if(extra==='mirror'){
+  m=new T.MeshPhysicalMaterial({
+   color:'#f0f5fa',
+   roughness:0.015,
+   metalness:0.98,
+   clearcoat:1.0,
+   clearcoatRoughness:0.01,
+   envMapIntensity:2.6
+  });
+ }
+ else if(extra==='granite'){
+  m=new T.MeshPhysicalMaterial({
+   color:'#111214',
+   roughness:0.12,
+   metalness:0.10,
+   clearcoat:0.88,
+   clearcoatRoughness:0.06,
+   ior:1.62,
+   envMapIntensity:1.8
+  });
+ }
+ else if(extra==='fabric'){
+  const t=getFabricTex(hex);t.repeat.set(1.5,1.5);
+  const c=new T.Color(hex);
+  m=new T.MeshPhysicalMaterial({
+   map:t,
+   color:hex,
+   roughness:0.88,
+   metalness:0.01,
+   sheen:0.65,
+   sheenRoughness:0.48,
+   sheenColor:c.clone().lerp(new T.Color('#ffffff'), 0.32),
+   envMapIntensity:0.3
+  });
+ }
+ else if(extra==='wood'){
+  const t=getWoodTex(hex);t.repeat.set(1,2);
+  m=new T.MeshPhysicalMaterial({
+   map:t,
+   roughness:0.38,
+   metalness:0.02,
+   clearcoat:0.35,
+   clearcoatRoughness:0.24,
+   envMapIntensity:0.75
+  });
+ }
+ else if(extra==='bedding'){
+  const t=pTex?pTex.bed.clone():null;if(t){t.needsUpdate=true;t.repeat.set(2,2);}
+  m=new T.MeshPhysicalMaterial({
+   map:t||undefined,
+   color:'#f8f6f2',
+   roughness:0.86,
+   metalness:0.01,
+   sheen:0.50,
+   sheenRoughness:0.55,
+   sheenColor:new T.Color('#ffffff'),
+   envMapIntensity:0.25
+  });
+ }
+ else if(extra==='brass'){
+  m=new T.MeshPhysicalMaterial({
+   color:hex||'#d4af37',
+   roughness:0.16,
+   metalness:0.94,
+   clearcoat:0.12,
+   clearcoatRoughness:0.15,
+   envMapIntensity:2.0
+  });
+ }
+ else if(extra==='rosegold'){
+  m=new T.MeshPhysicalMaterial({
+   color:hex||'#b76e79',
+   roughness:0.16,
+   metalness:0.94,
+   clearcoat:0.15,
+   clearcoatRoughness:0.14,
+   envMapIntensity:2.0
+  });
+ }
+ else if(extra==='champagne_gold'){
+  m=new T.MeshPhysicalMaterial({
+   color:hex||'#cfb583',
+   roughness:0.18,
+   metalness:0.92,
+   clearcoat:0.12,
+   clearcoatRoughness:0.16,
+   envMapIntensity:1.9
+  });
+ }
+ else if(extra==='copper'){
+  m=new T.MeshPhysicalMaterial({
+   color:hex||'#a66e4e',
+   roughness:0.20,
+   metalness:0.92,
+   clearcoat:0.10,
+   clearcoatRoughness:0.18,
+   envMapIntensity:1.8
+  });
+ }
+ else if(extra==='steel'){
+  m=new T.MeshPhysicalMaterial({
+   color:hex||'#bec3c8',
+   roughness:0.18,
+   metalness:0.94,
+   clearcoat:0.12,
+   clearcoatRoughness:0.15,
+   envMapIntensity:1.8
+  });
+ }
+ else if(extra==='chrome'){
+  m=new T.MeshPhysicalMaterial({
+   color:hex||'#e2e6eb',
+   roughness:0.08,
+   metalness:0.98,
+   clearcoat:0.35,
+   clearcoatRoughness:0.05,
+   envMapIntensity:2.2
+  });
+ }
+ else if(metal){
+  m=new T.MeshPhysicalMaterial({
+   color:hex,
+   roughness:0.28,
+   metalness:0.88,
+   clearcoat:0.10,
+   clearcoatRoughness:0.20,
+   envMapIntensity:1.4
+  });
+ }
+ else {
+  m=new T.MeshPhysicalMaterial({
+   color:hex,
+   roughness:0.60,
+   metalness:0.02,
+   clearcoat:0.15,
+   clearcoatRoughness:0.30,
+   envMapIntensity:0.45
+  });
+ }
  return matCache[k]=m;
 }
 
@@ -1432,7 +1657,14 @@ const mF=(fin,f,extra)=>{
  if(!ex){
   if(F.type==='wood'||F.wood) ex='wood';
   else if(F.type==='fabric'||F.fabric) ex='fabric';
-  else if(F.type==='metal'||F.metal) ex=(F.brass||F.gold||fin==='brass'||fin==='champagne_gold'||fin==='rosegold')?'brass':'steel';
+  else if(F.type==='metal'||F.metal){
+   if(fin==='rosegold') ex='rosegold';
+   else if(fin==='copper') ex='copper';
+   else if(fin==='chrome') ex='chrome';
+   else if(fin==='champagne_gold') ex='champagne_gold';
+   else if(F.brass||F.gold||fin==='brass') ex='brass';
+   else ex='steel';
+  }
  }
  return mat(col, !!(F.metal||F.type==='metal'), ex);
 };
@@ -1512,12 +1744,15 @@ function getRoomWallpaperMaterial(imgDataOrUrl, w, h, isTiled){
  }else{
   tex.repeat.set(1, 1);
  }
- const m = new T.MeshStandardMaterial({
+ const m = new T.MeshPhysicalMaterial({
   map: tex,
   roughness: 0.52,
   metalness: 0.02,
+  sheen: 0.20,
+  sheenRoughness: 0.45,
   bumpMap: getRoyalePaintBump(),
-  bumpScale: 0.002
+  bumpScale: 0.002,
+  envMapIntensity: 0.55
  });
  return wallImgCache[cacheKey] = m;
 }
@@ -1758,13 +1993,17 @@ function getWallpaperMaterial(it, w, h) {
     bumpTex.repeat.set(Math.max(1, rw), Math.max(1, rh));
   }
 
-  const mat = new T.MeshStandardMaterial({
+  const mat = new T.MeshPhysicalMaterial({
     map: tex,
     bumpMap: bumpTex || undefined,
     bumpScale: bumpScale,
     roughness: roughness,
     metalness: metalness,
-    envMapIntensity: 0.6
+    clearcoat: (style==='marble'||style==='geo_brass')?0.45:0.15,
+    clearcoatRoughness: (style==='marble')?0.08:0.25,
+    sheen: (style==='fluted'||style==='linen')?0.35:0.12,
+    sheenRoughness: 0.5,
+    envMapIntensity: 0.75
   });
 
   return wpMatCache[cacheKey] = mat;
@@ -1997,7 +2236,7 @@ function buildProceduralItem(g,it){
 
   // Architectural framing trim in selected accent metal (brass, rose gold, black, chrome)
   const accentHex = (it.wpAccent === 'rosegold') ? '#b76e79' : ((it.wpAccent === 'black') ? '#141416' : ((it.wpAccent === 'chrome') ? '#c5cbd0' : '#d4af37'));
-  const frameMat = new T.MeshStandardMaterial({ color: accentHex, roughness: 0.2, metalness: 0.9 });
+  const frameMat = new T.MeshPhysicalMaterial({ color: accentHex, roughness: 0.16, metalness: 0.94, clearcoat: 0.15, clearcoatRoughness: 0.14, envMapIntensity: 1.8 });
   // Top & bottom trim
   B(g, w + 0.04, 0.03, 0.05, 0, h - 0.015, -d/2 + 0.025, frameMat);
   B(g, w + 0.04, 0.03, 0.05, 0, 0.015, -d/2 + 0.025, frameMat);
@@ -2580,13 +2819,17 @@ function getRoyalePaintTex(hex){
 function getRoyalePaintMaterial(hex){
  const map=getRoyalePaintTex(hex);
  const bump=getRoyalePaintBump();
- return new T.MeshStandardMaterial({
+ const col=new T.Color(hex);
+ return new T.MeshPhysicalMaterial({
   color:hex,
   map:map,
   bumpMap:bump,
   bumpScale:0.0035, // Ultra-fine eggshell stipple
   roughness:0.58,   // Velvet low-sheen eggshell
   metalness:0.01,
+  sheen:0.25,       // Asian Paints Royale Luxury Emulsion signature velvet sheen
+  sheenRoughness:0.45,
+  sheenColor:col.clone().lerp(new T.Color('#ffffff'), 0.25),
   envMapIntensity:0.45
  });
 }
@@ -2603,20 +2846,54 @@ function buildStatic(){
   const ox=((r.x%4.0)+4.0)%4.0/4.0;
   const oy=((-(r.y+r.d)%4.0)+4.0)%4.0/4.0;
   t.offset.set(ox,oy);
-  const matParams={
-   map:t,
-   roughness:isWet?0.72:(isOut?0.82:0.08),
-   metalness:isWet?0.06:0.03,
-   envMapIntensity:isWet?0.6:(isOut?0.4:2.2)
-  };
-  if(!isWet&&!isOut){
+  
+  let matParams;
+  if(isWet){
+   matParams={
+    map:t,
+    roughness:0.74,
+    metalness:0.02,
+    clearcoat:0.06,
+    clearcoatRoughness:0.45,
+    bumpScale:0.018,
+    envMapIntensity:0.55
+   };
+   if(tex.wetBump){
+    const wb=tex.wetBump.clone();wb.needsUpdate=true;wb.repeat.set(tw,td);wb.offset.set(ox,oy);
+    matParams.bumpMap=wb;
+   }
+  }else if(isOut){
+   matParams={
+    map:t,
+    roughness:0.86,
+    metalness:0.01,
+    clearcoat:0.0,
+    bumpScale:0.024,
+    envMapIntensity:0.4
+   };
+   if(tex.outBump){
+    const ob=tex.outBump.clone();ob.needsUpdate=true;ob.repeat.set(tw,td);ob.offset.set(ox,oy);
+    matParams.bumpMap=ob;
+   }
+  }else{
    const tr=tex.inRough.clone();tr.needsUpdate=true;tr.repeat.set(tw,td);tr.offset.set(ox,oy);
    const tb=tex.inBump.clone();tb.needsUpdate=true;tb.repeat.set(tw,td);tb.offset.set(ox,oy);
-   matParams.roughnessMap=tr;
-   matParams.bumpMap=tb;
-   matParams.bumpScale=0.032;
+   matParams={
+    map:t,
+    roughness:0.08,
+    roughnessMap:tr,
+    bumpMap:tb,
+    bumpScale:0.032,
+    metalness:0.02,
+    clearcoat:0.88,
+    clearcoatRoughness:0.08,
+    ior:1.52,
+    specularIntensity:1.0,
+    specularColor:new T.Color('#ffffff'),
+    envMapIntensity:2.2
+   };
   }
-  const me=new T.Mesh(new T.PlaneGeometry(r.w,r.d),new T.MeshStandardMaterial(matParams));
+  const me=new T.Mesh(new T.PlaneGeometry(r.w,r.d),new T.MeshPhysicalMaterial(matParams));
   me.rotation.x=-Math.PI/2;me.position.set(r.x+r.w/2,0,r.y+r.d/2);
   me.receiveShadow=true;
   gStatic.add(me);
@@ -2665,7 +2942,7 @@ function buildStatic(){
   gStatic.add(reveal);
 
   // Structural anchor eye-bolts on beam underside for the Jhula at x=6.5
-  const anchorMat=new T.MeshStandardMaterial({color:'#d4af37',roughness:0.18,metalness:0.92});
+  const anchorMat=new T.MeshPhysicalMaterial({color:'#d4af37',roughness:0.16,metalness:0.94,clearcoat:0.15,clearcoatRoughness:0.15,envMapIntensity:1.9});
   for(const ax of [5.6, 7.4]){
    const ring=new T.Mesh(new T.TorusGeometry(0.08,0.02,8,16),anchorMat);
    ring.rotation.x=Math.PI/2;
@@ -2680,17 +2957,20 @@ function buildStatic(){
   // Positioned at z=27.09 ft (ahead of the beam on dining side)
   const curtainZ = beamZ - beamD/2 - 0.12;
   const curtainH = H - 0.15;
-  const curtainMat = new T.MeshStandardMaterial({
-   color: '#ede8df',
-   roughness: 0.94,
-   metalness: 0.02,
-   side: T.DoubleSide,
+  const curtainMat = new T.MeshPhysicalMaterial({
+   color: '#f3efe6',
+   roughness: 0.88,
+   metalness: 0.01,
+   sheen: 0.75,
+   sheenRoughness: 0.50,
+   sheenColor: new T.Color('#ffffff'),
    transparent: true,
-   opacity: 0.88
+   opacity: 0.88,
+   side: T.DoubleSide
   });
 
   // Ceiling track on dining side ahead of beam
-  const trackMat = new T.MeshStandardMaterial({color:'#d4af37',roughness:0.2,metalness:0.9});
+  const trackMat = new T.MeshPhysicalMaterial({color:'#d4af37',roughness:0.16,metalness:0.94,clearcoat:0.15,clearcoatRoughness:0.15,envMapIntensity:1.9});
   const track = new T.Mesh(new T.CylinderGeometry(0.025,0.025,beamW,8),trackMat);
   track.rotation.z = Math.PI/2;
   track.position.set(beamX, H - 0.03, curtainZ);
@@ -2743,7 +3023,15 @@ function buildWalls(){
  const baseWc=getWallColorInfo(state.wallColor);
  const gm=mat('',0,'glass');
  const skirtH=0.35;
- const skirtM=new T.MeshStandardMaterial({color:'#eedec8',roughness:0.18,metalness:0.04,envMapIntensity:1.6});
+ const skirtM=new T.MeshPhysicalMaterial({
+  color:'#eedec8',
+  roughness:0.12,
+  metalness:0.02,
+  clearcoat:0.82,
+  clearcoatRoughness:0.08,
+  ior:1.52,
+  envMapIntensity:1.8
+ });
  const caulkM=mat('#483c2e');
  for(const p of wp.P){
   const h=p.z1-p.z0;

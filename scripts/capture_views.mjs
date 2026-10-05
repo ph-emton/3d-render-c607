@@ -59,6 +59,9 @@ async function capture() {
   const chrome = spawn(chromePath, [
     '--headless=new',
     '--use-gl=angle',
+    '--use-angle=metal',
+    '--enable-gpu-rasterization',
+    '--ignore-gpu-blocklist',
     '--enable-webgl',
     '--remote-debugging-port=9222',
     '--window-size=1280,800',
