@@ -229,6 +229,11 @@ label.inline-select select{padding:4px 6px;font-size:12px}
           <option value="high">Tier: High</option>
           <option value="ultra">Tier: Ultra</option>
         </select>
+        <div id="renderScaleWrap" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#d8d6cf;background:rgba(20,20,24,0.65);padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.18)" title="Render Scale (0.5x to 2.0x supersampling)">
+          <span>Scale:</span>
+          <input type="range" id="renderScaleSlider" min="0.5" max="2.0" step="0.05" value="1.0" style="width:65px;cursor:pointer;vertical-align:middle">
+          <span id="renderScaleLabel" style="min-width:32px;text-align:right">100%</span>
+        </div>
       </div>
       <div id="viewWrap">
         <canvas id="view"></canvas>
@@ -237,7 +242,8 @@ label.inline-select select{padding:4px 6px;font-size:12px}
           <div style="display:flex;gap:10px"><span id="statsFps" style="font-weight:700;color:#64d2ff">FPS: --</span> <span id="statsMs" style="color:#e0ded8">Frame: -- ms</span></div>
           <div id="statsRender" style="color:#b0ada5">Draws: -- · Tris: --</div>
           <div id="statsMemory" style="color:#b0ada5">Textures: -- · Geoms: --</div>
-          <div id="statsTierRes" style="color:#a0d0a0">Tier: -- · Res: --</div>
+          <div id="statsTierRes" style="color:#a0d0a0">Tier: -- · Scale: --</div>
+          <div id="statsResDetails" style="color:#80d0d0;font-size:10px">CSS: -- · DPR: -- · Buffer: --</div>
           <div id="statsTone" style="color:#80c090;font-size:10px">Tone: ACESFilmic | Exp: 0.95</div>
           <div id="statsLights" style="color:#e0be80;font-size:10px">Lights: 10 downlights · 6 windows · HDRI</div>
         </div>
@@ -333,6 +339,11 @@ label.inline-select select{padding:4px 6px;font-size:12px}
                 <option value="high">Tier: High</option>
                 <option value="ultra">Tier: Ultra</option>
               </select>
+              <div id="walkRenderScaleWrap" style="pointer-events:auto;display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#fff;background:rgba(20,20,24,0.85);padding:2px 6px;border-radius:4px;border:1px solid rgba(255,255,255,0.2)" title="Render Scale (0.5x to 2.0x supersampling)">
+                <span>Scale:</span>
+                <input type="range" id="walkRenderScaleSlider" min="0.5" max="2.0" step="0.05" value="1.0" style="width:60px;cursor:pointer;vertical-align:middle">
+                <span id="walkRenderScaleLabel" style="min-width:32px;text-align:right">100%</span>
+              </div>
               <button id="walkPostFxToggle" class="walk-btn on" style="pointer-events:auto" title="Toggle Real-Time Ambient Occlusion (GTAO) and Soft Bloom (Hotkey: B)">✨ Post-FX: ON</button>
               <button id="walkModelToggle" class="walk-btn on" title="Toggle between 3D glTF Models and Procedural Primitives">📦 3D Models: ON</button>
               <button id="btnCollision" class="walk-btn" title="Toggle wall collision (or press C key)">Collisions: ON</button>
@@ -620,8 +631,8 @@ function defaults(){
  state.usePostProcessing = true;
  return SEED.items.map(fromExport);
 }
-let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true,usePostProcessing:true,qualityTier:'auto'};
-function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto'}));}catch(e){}}
+let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:true,usePostProcessing:true,qualityTier:'auto',renderScale:1.0};
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto',renderScale:state.renderScale||1.0}));}catch(e){}}
 function load(){
  try{
   const raw=localStorage.getItem(STORE);
@@ -641,6 +652,7 @@ function load(){
    state.use3dModels=s.use3dModels!==false;
    state.usePostProcessing=s.usePostProcessing!==false;
    state.qualityTier=s.qualityTier||'auto';
+   state.renderScale=typeof s.renderScale==='number'?s.renderScale:1.0;
    return true;
   }
  }catch(e){}
@@ -3191,6 +3203,10 @@ function buildCeilingAndLights(){
   sunShadowRes = 1024;
   maxSpotShadows = 1;
   spotShadowRes = 512;
+ }else if(activeTier === 'ultra'){
+  sunShadowRes = 4096;
+  maxSpotShadows = 10;
+  spotShadowRes = 1024;
  }
 
  const sun=new T.DirectionalLight(0xfffaee,0.60);
@@ -3396,18 +3412,26 @@ function recordStats(renderMs){
    const mEl=$('#statsMemory');
    if(mEl)mEl.textContent='Textures: '+m.textures+' · Geoms: '+m.geometries;
   }
-  const trEl=$('#statsTierRes');
-  if(trEl&&renderer){
-   const tier=(state&&state.qualityTier?state.qualityTier:'medium').toUpperCase();
-   const pr=renderer.getPixelRatio()||1;
-   const w=Math.round((renderer.domElement.clientWidth||1280)*pr);
-   const h=Math.round((renderer.domElement.clientHeight||800)*pr);
-   const sc=Math.round((window.__renderScale||1)*100);
-   trEl.textContent='Tier: '+tier+' · '+w+'x'+h+' ('+sc+'%)';
-  }
+  updateStatsResolutionUI();
  }
  const msEl=$('#statsMs');
  if(msEl&&statsLastFrameMs!=null)msEl.textContent='Frame: '+statsLastFrameMs.toFixed(1)+' ms';
+}
+
+function updateStatsResolutionUI(){
+ const trEl=$('#statsTierRes');
+ const rdEl=$('#statsResDetails');
+ if(renderer){
+  const tier=(state&&state.qualityTier?state.qualityTier:'medium').toUpperCase();
+  const pr=renderer.getPixelRatio()||1;
+  const cssW=renderer.domElement.clientWidth||1280;
+  const cssH=renderer.domElement.clientHeight||800;
+  const bufW=renderer.domElement.width||Math.round(cssW*pr);
+  const bufH=renderer.domElement.height||Math.round(cssH*pr);
+  const sc=Math.round((window.__renderScale||state.renderScale||1)*100);
+  if(trEl) trEl.textContent='Tier: '+tier+' · Scale: '+sc+'%';
+  if(rdEl) rdEl.textContent='CSS: '+cssW+'x'+cssH+' · DPR: '+pr.toFixed(2)+' · Buffer: '+bufW+'x'+bufH;
+ }
 }
 
 function statsOrbitLoop(){
@@ -3423,6 +3447,7 @@ function toggleStats(){
  if(statsVisible){
   statsLastFpsTime=performance.now();
   statsFrameCount=0;
+  updateStatsResolutionUI();
   if(renderer&&renderer.info){
    const r=renderer.info.render;
    const m=renderer.info.memory;
@@ -3940,13 +3965,37 @@ function detectDeviceQualityTier(){
   const cores = navigator.hardwareConcurrency || 4;
   const mem = navigator.deviceMemory || 4;
 
-  if (/rtx 40[89]0|rtx 3090|rx 7900|m2 ultra|m3 ultra|m4 ultra/i.test(rLow)) return 'ultra';
-  if (/rtx|radeon rx|geforce gtx 10[78]|m3 pro|m3 max|m4 pro|m4 max|m2 max/i.test(rLow)) return 'high';
+  // NEVER auto-select Ultra (Ultra is strictly manual opt-in)
+  if (/rtx|radeon rx|geforce gtx 10[78]|m2 pro|m2 max|m3|m4/i.test(rLow)) return 'high';
   if (/intel hd|intel uhd 620|mali-4|adreno 3|swiftshader|llvmpipe/i.test(rLow) || (mem <= 2 && cores <= 4)) return 'low';
   return 'medium'; // Default for Apple Silicon M1/M2 Air, Intel Iris Xe, standard systems
  } catch(e) {
   return 'medium';
  }
+}
+
+function setRenderScale(scale, userInitiated = true){
+ const val = Math.max(0.5, Math.min(2.0, parseFloat(scale) || 1.0));
+ state.renderScale = Math.round(val * 100) / 100;
+ currentRenderScale = state.renderScale;
+ window.__renderScale = currentRenderScale;
+ if(userInitiated) save();
+ syncRenderScaleUI();
+ if(window.rs3D) window.rs3D();
+ render3D();
+}
+
+function syncRenderScaleUI(){
+ const sc = Math.round((currentRenderScale || state.renderScale || 1.0) * 100);
+ const s1 = $('#renderScaleSlider');
+ const l1 = $('#renderScaleLabel');
+ const s2 = $('#walkRenderScaleSlider');
+ const l2 = $('#walkRenderScaleLabel');
+ if(s1) s1.value = (currentRenderScale || state.renderScale || 1.0);
+ if(l1) l1.textContent = sc + '%';
+ if(s2) s2.value = (currentRenderScale || state.renderScale || 1.0);
+ if(l2) l2.textContent = sc + '%';
+ updateStatsResolutionUI();
 }
 
 function getActiveQualityTier(){
@@ -3959,6 +4008,7 @@ function setQualityTier(tier, userInitiated = true){
  state.qualityTier = tier || 'auto';
  if(userInitiated) save();
  syncQualityTierUI();
+ updateStatsResolutionUI();
  applyQualityTierSettings();
  if(typeof buildCeilingAndLights === 'function' && gLights) {
   buildCeilingAndLights();
@@ -3984,6 +4034,7 @@ function syncQualityTierUI(){
   const autoOpt = sel2.querySelector('option[value="auto"]');
   if(autoOpt) autoOpt.textContent = 'Tier: Auto (' + active.charAt(0).toUpperCase() + active.slice(1) + ')';
  }
+ syncRenderScaleUI();
 }
 
 function applyQualityTierSettings(){
@@ -4013,14 +4064,14 @@ function applyQualityTierSettings(){
     if(typeof gtaoPass.setSize === 'function') gtaoPass.setSize(w, h);
    }
   }
- }else{ // ultra
+ }else{ // ultra: full native resolution, full-res GTAO and bloom, no clamps
   state.usePostProcessing = true;
   if(bloomPass) bloomPass.enabled = true;
   if(fxaaPass) fxaaPass.enabled = false;
   if(gtaoPass){
    gtaoPass.enabled = true;
    if(renderer){
-    const pr = Math.min(window.devicePixelRatio || 1, 2.0);
+    const pr = renderer.getPixelRatio() || 1;
     const w = Math.round((renderer.domElement.clientWidth || 1280) * pr);
     const h = Math.round((renderer.domElement.clientHeight || 800) * pr);
     if(typeof gtaoPass.setSize === 'function') gtaoPass.setSize(w, h);
@@ -4056,12 +4107,14 @@ function notifyCameraMotion(){
 
 function updateDynamicResolution(frameTimeMs){
  if(viewMode !== 'walk') return;
+ const tier = getActiveQualityTier();
+ if(tier === 'ultra') return; // no dynamic resolution on Ultra
+
  frameTimeHistory.push(frameTimeMs);
  if(frameTimeHistory.length > 20) frameTimeHistory.shift();
  if(frameTimeHistory.length < 10) return;
 
  const avg = frameTimeHistory.reduce((a, b) => a + b, 0) / frameTimeHistory.length;
- const tier = getActiveQualityTier();
  const minScale = (tier === 'low') ? 0.70 : 0.60;
 
  if(avg > 18.0 && currentRenderScale > minScale){
@@ -4248,43 +4301,73 @@ function init3D(){
   if(!w||!h)return;
 
   const activeTier = getActiveQualityTier();
-  let maxDpr = 1.0;
-  let maxPixels = 1920 * 1080;
-  if(activeTier === 'low'){
-   maxDpr = 1.0;
-   maxPixels = 1280 * 800;
-  }else if(activeTier === 'medium'){
-   maxDpr = 1.0;
-   maxPixels = 1920 * 1080;
+  let effectiveDpr;
+  if(activeTier === 'ultra'){
+   // Ultra = no artificial limits: native devicePixelRatio
+   effectiveDpr = window.devicePixelRatio || 1;
   }else if(activeTier === 'high'){
-   maxDpr = 1.5;
-   maxPixels = 2560 * 1440;
-  }else{ // ultra
-   maxDpr = 2.0;
-   maxPixels = 3840 * 2160;
+   effectiveDpr = Math.min(window.devicePixelRatio || 1, 1.5);
+  }else{
+   effectiveDpr = 1.0;
   }
-
-  const effectiveDpr = Math.min(window.devicePixelRatio || 1, maxDpr);
   renderer.setPixelRatio(effectiveDpr);
 
   let targetW = w;
   let targetH = h;
-  const totalPixels = targetW * targetH * effectiveDpr * effectiveDpr;
-  if(totalPixels > maxPixels){
-   const factor = Math.sqrt(maxPixels / totalPixels);
-   targetW = Math.round(targetW * factor);
-   targetH = Math.round(targetH * factor);
+  if(activeTier === 'low'){
+   const maxPixels = 1280 * 800;
+   const totalPixels = targetW * targetH * effectiveDpr * effectiveDpr;
+   if(totalPixels > maxPixels){
+    const factor = Math.sqrt(maxPixels / totalPixels);
+    targetW = Math.round(targetW * factor);
+    targetH = Math.round(targetH * factor);
+   }
+  }else if(activeTier === 'medium'){
+   const maxPixels = 1920 * 1080;
+   const totalPixels = targetW * targetH * effectiveDpr * effectiveDpr;
+   if(totalPixels > maxPixels){
+    const factor = Math.sqrt(maxPixels / totalPixels);
+    targetW = Math.round(targetW * factor);
+    targetH = Math.round(targetH * factor);
+   }
+  }else if(activeTier === 'high'){
+   const maxPixels = 2560 * 1440;
+   const totalPixels = targetW * targetH * effectiveDpr * effectiveDpr;
+   if(totalPixels > maxPixels){
+    const factor = Math.sqrt(maxPixels / totalPixels);
+    targetW = Math.round(targetW * factor);
+    targetH = Math.round(targetH * factor);
+   }
   }
+  // Ultra has NO artificial maxPixels clamping!
 
-  const scale = (viewMode === 'walk') ? (currentRenderScale || 1.0) : 1.0;
-  const renderW = Math.max(320, Math.round(targetW * scale));
-  const renderH = Math.max(200, Math.round(targetH * scale));
+  const scale = (typeof currentRenderScale === 'number') ? currentRenderScale : (state.renderScale || 1.0);
+  let renderW = Math.max(320, Math.round(targetW * scale));
+  let renderH = Math.max(200, Math.round(targetH * scale));
+
+  // Only keep safety clamps (max texture/renderbuffer size)
+  try {
+   const gl = renderer.getContext();
+   if(gl){
+    const maxRb = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 8192;
+    const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 8192;
+    const maxGlDim = Math.min(maxRb, maxTex);
+    const bufW = renderW * effectiveDpr;
+    const bufH = renderH * effectiveDpr;
+    if(bufW > maxGlDim || bufH > maxGlDim){
+     const clampFactor = Math.min(maxGlDim / bufW, maxGlDim / bufH);
+     renderW = Math.max(320, Math.floor(renderW * clampFactor));
+     renderH = Math.max(200, Math.floor(renderH * clampFactor));
+    }
+   }
+  } catch(e){}
 
   renderer.setSize(renderW, renderH, false);
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
 
   if(typeof updateComposerSize === 'function') updateComposerSize(renderW, renderH);
+  if(typeof updateStatsResolutionUI === 'function') updateStatsResolutionUI();
   render3D();
  };
  window.rs3D=rs;
@@ -4295,6 +4378,11 @@ function init3D(){
  if(qSel) qSel.addEventListener('change', e => setQualityTier(e.target.value, true));
  const wqSel = $('#walkQualityTierSelect');
  if(wqSel) wqSel.addEventListener('change', e => setQualityTier(e.target.value, true));
+
+ const sSlider = $('#renderScaleSlider');
+ if(sSlider) sSlider.addEventListener('input', e => setRenderScale(e.target.value, true));
+ const wsSlider = $('#walkRenderScaleSlider');
+ if(wsSlider) wsSlider.addEventListener('input', e => setRenderScale(e.target.value, true));
 
  document.addEventListener('visibilitychange', ()=>{
   if(document.hidden){
@@ -4923,6 +5011,7 @@ window.__APP__ = {
  getObstacles,
  setViewMode,
  setQualityTier,
+ setRenderScale,
  getActiveQualityTier,
  invalidateObstacles
 };
