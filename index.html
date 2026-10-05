@@ -429,6 +429,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { GTAOPass } from 'three/addons/postprocessing/GTAOPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { FXAAShader } from 'three/addons/shaders/FXAAShader.js';
+import * as BufferGeometryUtils from 'three/addons/utils/BufferGeometryUtils.js';
 
 const T = {
   ...THREE,
@@ -446,7 +447,8 @@ const T = {
   OutputPass,
   GTAOPass,
   UnrealBloomPass,
-  FXAAShader
+  FXAAShader,
+  BufferGeometryUtils
 };
 window.THREE = T;
 
@@ -1382,6 +1384,7 @@ function getContactShadowTex(){
 }
 function addContactShadow(g,w,d,opacity){
  const me=new T.Mesh(new T.PlaneGeometry(w+0.35,d+0.35),new T.MeshBasicMaterial({map:getContactShadowTex(),transparent:true,opacity:opacity||0.45,depthWrite:false}));
+ me.userData.noMerge = true;
  me.rotation.x=-Math.PI/2;me.position.set(0,0.003,0);g.add(me);
 }
 
@@ -1715,6 +1718,163 @@ function C(g,rt,rb,h,x,y,z,m){
  me.receiveShadow=true;
  g.add(me);
  return me;
+}
+
+function splitBoxMeshFaces(mesh) {
+ const mats = mesh.material;
+ if (!Array.isArray(mats)) return [mesh];
+
+ const geo = mesh.geometry;
+ const pos = geo.attributes.position;
+ const norm = geo.attributes.normal;
+ const uv = geo.attributes.uv;
+ const idx = geo.index;
+ if (!pos || !idx) return [mesh];
+
+ const faceMeshes = [];
+ for (let f = 0; f < 6; f++) {
+  const mat = mats[f];
+  if (!mat) continue;
+  const start = f * 6;
+  const faceGeo = new T.BufferGeometry();
+  const fIndices = [];
+  const fPositions = [];
+  const fNormals = [];
+  const fUvs = [];
+
+  for (let i = 0; i < 6; i++) {
+   const vi = idx.getX(start + i);
+   fPositions.push(pos.getX(vi), pos.getY(vi), pos.getZ(vi));
+   if (norm) fNormals.push(norm.getX(vi), norm.getY(vi), norm.getZ(vi));
+   if (uv) fUvs.push(uv.getX(vi), uv.getY(vi));
+   fIndices.push(i);
+  }
+
+  faceGeo.setAttribute('position', new T.Float32BufferAttribute(fPositions, 3));
+  if (norm) faceGeo.setAttribute('normal', new T.Float32BufferAttribute(fNormals, 3));
+  if (uv) faceGeo.setAttribute('uv', new T.Float32BufferAttribute(fUvs, 2));
+  faceGeo.setIndex(fIndices);
+
+  const fMesh = new T.Mesh(faceGeo, mat);
+  fMesh.castShadow = mesh.castShadow;
+  fMesh.receiveShadow = mesh.receiveShadow;
+  fMesh.position.copy(mesh.position);
+  fMesh.rotation.copy(mesh.rotation);
+  fMesh.scale.copy(mesh.scale);
+  faceMeshes.push(fMesh);
+ }
+ return faceMeshes;
+}
+
+function mergeGroupMeshesByMaterial(rootGroup) {
+ if (!rootGroup) return;
+ const BGU = T.BufferGeometryUtils;
+ if (!BGU || !BGU.mergeGeometries) return;
+
+ rootGroup.updateMatrixWorld(true);
+ const rootInv = new T.Matrix4().copy(rootGroup.matrixWorld).invert();
+
+ const materialBuckets = new Map();
+ const unmergedMeshes = [];
+ const meshesToRemove = [];
+ const allMeshes = [];
+
+ rootGroup.traverse(child => {
+  if (child === rootGroup) return;
+  if (child.isMesh) {
+   if (Array.isArray(child.material)) {
+    allMeshes.push(...splitBoxMeshFaces(child));
+    meshesToRemove.push(child);
+   } else {
+    allMeshes.push(child);
+    meshesToRemove.push(child);
+   }
+  }
+ });
+
+ for (const child of allMeshes) {
+  if (child.userData && child.userData.noMerge) {
+   unmergedMeshes.push(child);
+   continue;
+  }
+  const mat = child.material;
+  if (!mat) {
+   unmergedMeshes.push(child);
+   continue;
+  }
+
+  const matKey = mat.type + '|' + (mat.color ? mat.color.getHexString() : '') + '|' + (mat.map ? mat.map.id : '0') + '|' + (mat.bumpMap ? mat.bumpMap.id : '0') + '|' + (mat.roughnessMap ? mat.roughnessMap.id : '0') + '|' + (mat.transparent ? '1' : '0') + '|' + (mat.opacity != null ? mat.opacity : '1') + '|' + (mat.roughness != null ? mat.roughness : '0') + '|' + (mat.metalness != null ? mat.metalness : '0') + '|' + (mat.clearcoat != null ? mat.clearcoat : '0');
+
+  if (!materialBuckets.has(matKey)) {
+   materialBuckets.set(matKey, {
+    material: mat,
+    geometries: [],
+    castShadow: false,
+    receiveShadow: false
+   });
+  }
+  const bucket = materialBuckets.get(matKey);
+  if (child.castShadow) bucket.castShadow = true;
+  if (child.receiveShadow) bucket.receiveShadow = true;
+
+  child.updateMatrixWorld(true);
+  const relMatrix = child.matrixWorld.clone().premultiply(rootInv);
+  const g = child.geometry.clone();
+  g.applyMatrix4(relMatrix);
+
+  if (!g.attributes.normal) g.computeVertexNormals();
+  if (!g.attributes.uv) {
+   const count = g.attributes.position.count;
+   g.setAttribute('uv', new T.BufferAttribute(new Float32Array(count * 2), 2));
+  }
+  for (const attrName in g.attributes) {
+   if (attrName !== 'position' && attrName !== 'normal' && attrName !== 'uv') {
+    g.deleteAttribute(attrName);
+   }
+  }
+  if (!g.index) {
+   const count = g.attributes.position.count;
+   const indices = new Uint32Array(count);
+   for (let i = 0; i < count; i++) indices[i] = i;
+   g.setIndex(new T.BufferAttribute(indices, 1));
+  }
+
+  bucket.geometries.push(g);
+ }
+
+ for (const m of meshesToRemove) {
+  if (m.parent) m.parent.remove(m);
+  if (m.geometry) m.geometry.dispose();
+ }
+
+ for (const bucket of materialBuckets.values()) {
+  if (bucket.geometries.length === 0) continue;
+  let mergedGeo;
+  if (bucket.geometries.length === 1) {
+   mergedGeo = bucket.geometries[0];
+  } else {
+   mergedGeo = BGU.mergeGeometries(bucket.geometries, false);
+   for (const g of bucket.geometries) g.dispose();
+  }
+  if (mergedGeo) {
+   const mm = new T.Mesh(mergedGeo, bucket.material);
+   mm.castShadow = bucket.castShadow;
+   mm.receiveShadow = bucket.receiveShadow;
+   rootGroup.add(mm);
+  }
+ }
+
+ for (const m of unmergedMeshes) rootGroup.add(m);
+
+ const emptyGroups = [];
+ rootGroup.traverse(child => {
+  if (child !== rootGroup && child.isGroup && child.children.length === 0) {
+   emptyGroups.push(child);
+  }
+ });
+ for (const grp of emptyGroups) {
+  if (grp.parent) grp.parent.remove(grp);
+ }
 }
 
 /* Fronts with distinct shutter seams, recessed plinth, and sleek profile handles */
@@ -2717,6 +2877,7 @@ function buildItem(it) {
 
   // 2. Procedural Option A Fallback
   buildProceduralItem(g, it);
+  mergeGroupMeshesByMaterial(g);
   return g;
 }
 
@@ -2847,11 +3008,13 @@ function getRoyalePaintTex(hex){
  return royaleTexCache[hex]=t;
 }
 
+const royalePaintMatCache={};
 function getRoyalePaintMaterial(hex){
+ if(royalePaintMatCache[hex])return royalePaintMatCache[hex];
  const map=getRoyalePaintTex(hex);
  const bump=getRoyalePaintBump();
  const col=new T.Color(hex);
- return new T.MeshPhysicalMaterial({
+ return royalePaintMatCache[hex]=new T.MeshPhysicalMaterial({
   color:hex,
   map:map,
   bumpMap:bump,
@@ -2868,64 +3031,55 @@ function getRoyalePaintMaterial(hex){
 function buildStatic(){
  disposeGroup(gStatic);
  const tex=initProceduralTextures();
+
+ const floorInMat=new T.MeshPhysicalMaterial({
+  map:tex.in,
+  roughness:0.08,
+  roughnessMap:tex.inRough,
+  bumpMap:tex.inBump,
+  bumpScale:0.032,
+  metalness:0.02,
+  clearcoat:0.88,
+  clearcoatRoughness:0.08,
+  ior:1.52,
+  specularIntensity:1.0,
+  specularColor:new T.Color('#ffffff'),
+  envMapIntensity:2.2
+ });
+ const floorWetMat=new T.MeshPhysicalMaterial({
+  map:tex.wet,
+  bumpMap:tex.wetBump,
+  bumpScale:0.018,
+  roughness:0.74,
+  metalness:0.02,
+  clearcoat:0.06,
+  clearcoatRoughness:0.45,
+  envMapIntensity:0.55
+ });
+ const floorOutMat=new T.MeshPhysicalMaterial({
+  map:tex.out,
+  bumpMap:tex.outBump,
+  bumpScale:0.024,
+  roughness:0.86,
+  metalness:0.01,
+  clearcoat:0.0,
+  envMapIntensity:0.4
+ });
+
  for(const r of ROOMS){
   const isWet=r.t==='wet',isOut=r.t==='out';
-  const t=(isWet?tex.wet:(isOut?tex.out:tex.in)).clone();
-  t.needsUpdate=true;
   const tw=r.w/(isWet||isOut?1.5:4.0), td=r.d/(isWet||isOut?1.5:4.0);
-  t.repeat.set(tw,td);
   const ox=((r.x%4.0)+4.0)%4.0/4.0;
   const oy=((-(r.y+r.d)%4.0)+4.0)%4.0/4.0;
-  t.offset.set(ox,oy);
-  
-  let matParams;
-  if(isWet){
-   matParams={
-    map:t,
-    roughness:0.74,
-    metalness:0.02,
-    clearcoat:0.06,
-    clearcoatRoughness:0.45,
-    bumpScale:0.018,
-    envMapIntensity:0.55
-   };
-   if(tex.wetBump){
-    const wb=tex.wetBump.clone();wb.needsUpdate=true;wb.repeat.set(tw,td);wb.offset.set(ox,oy);
-    matParams.bumpMap=wb;
-   }
-  }else if(isOut){
-   matParams={
-    map:t,
-    roughness:0.86,
-    metalness:0.01,
-    clearcoat:0.0,
-    bumpScale:0.024,
-    envMapIntensity:0.4
-   };
-   if(tex.outBump){
-    const ob=tex.outBump.clone();ob.needsUpdate=true;ob.repeat.set(tw,td);ob.offset.set(ox,oy);
-    matParams.bumpMap=ob;
-   }
-  }else{
-   const tr=tex.inRough.clone();tr.needsUpdate=true;tr.repeat.set(tw,td);tr.offset.set(ox,oy);
-   const tb=tex.inBump.clone();tb.needsUpdate=true;tb.repeat.set(tw,td);tb.offset.set(ox,oy);
-   matParams={
-    map:t,
-    roughness:0.08,
-    roughnessMap:tr,
-    bumpMap:tb,
-    bumpScale:0.032,
-    metalness:0.02,
-    clearcoat:0.88,
-    clearcoatRoughness:0.08,
-    ior:1.52,
-    specularIntensity:1.0,
-    specularColor:new T.Color('#ffffff'),
-    envMapIntensity:2.2
-   };
+
+  const geo=new T.PlaneGeometry(r.w,r.d);
+  const uvAttr=geo.attributes.uv;
+  for(let i=0;i<uvAttr.count;i++){
+   uvAttr.setXY(i, uvAttr.getX(i)*tw + ox, uvAttr.getY(i)*td + oy);
   }
-  const me=new T.Mesh(new T.PlaneGeometry(r.w,r.d),new T.MeshPhysicalMaterial(matParams));
-  me.rotation.x=-Math.PI/2;me.position.set(r.x+r.w/2,0,r.y+r.d/2);
+  const me=new T.Mesh(geo, isWet ? floorWetMat : (isOut ? floorOutMat : floorInMat));
+  me.rotation.x=-Math.PI/2;
+  me.position.set(r.x+r.w/2,0,r.y+r.d/2);
   me.receiveShadow=true;
   gStatic.add(me);
  }
@@ -2963,6 +3117,7 @@ function buildStatic(){
   beam.position.set(beamX,beamY,beamZ);
   beam.castShadow=true;
   beam.receiveShadow=true;
+  beam.userData.noMerge=true;
   rccBeamMesh=beam;
   gStatic.add(beam);
 
@@ -3045,6 +3200,7 @@ function buildStatic(){
   B(g,fx.w,fx.h,fx.d,0,fx.h/2,0,mat('#f7f7f5'));
   gStatic.add(g);
  }
+ mergeGroupMeshesByMaterial(gStatic);
  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
 }
 
@@ -3133,31 +3289,24 @@ function buildWalls(){
    }
   }
  }
+ mergeGroupMeshesByMaterial(gWalls);
  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
 }
 
-function makeCeilingFan(parent,x,y,z,finishColor){
- const fanG=new T.Group();
- fanG.position.set(x,y,z);
- 
- // Ceiling canopy
- C(fanG,0.28,0.22,0.16,0,-0.08,0,mat(finishColor||'#232528',true));
- 
- // Downrod
+function makeCeilingFan(staticParent,rotParent,x,y,z,finishColor){
  const rodLen=0.95;
- C(fanG,0.045,0.045,rodLen,0,-rodLen/2,0,mat('#1c1e20',true));
- 
- // Motor housing & cap
  const motorY=-rodLen-0.14;
- C(fanG,0.52,0.56,0.24,0,motorY,0,mat(finishColor||'#2c251f',false,'wood'));
- // Brass decorative bezel ring
- C(fanG,0.58,0.58,0.04,0,motorY,0,mat('',0,'brass'));
- // Warm LED bottom dome light
- C(fanG,0.36,0.26,0.08,0,motorY-0.13,0,mat('#ffeed8',0,'glow'));
+
+ // Static canopy, downrod, motor, brass ring, and LED dome
+ C(staticParent,0.28,0.22,0.16,x,y-0.08,z,mat(finishColor||'#232528',true));
+ C(staticParent,0.045,0.045,rodLen,x,y-rodLen/2,z,mat('#1c1e20',true));
+ C(staticParent,0.52,0.56,0.24,x,y+motorY,z,mat(finishColor||'#2c251f',false,'wood'));
+ C(staticParent,0.58,0.58,0.04,x,y+motorY,z,mat('',0,'brass'));
+ C(staticParent,0.36,0.26,0.08,x,y+motorY-0.13,z,mat('#ffeed8',0,'glow'));
  
  // Rotating blades group
  const bladeG=new T.Group();
- bladeG.position.set(0,motorY,0);
+ bladeG.position.set(x,y+motorY,z);
  const numBlades=3;
  const bladeLen=1.85;
  const bladeW=0.38;
@@ -3175,8 +3324,8 @@ function makeCeilingFan(parent,x,y,z,finishColor){
   bArm.add(bl);
   bladeG.add(bArm);
  }
- fanG.add(bladeG);
- parent.add(fanG);
+ mergeGroupMeshesByMaterial(bladeG);
+ rotParent.add(bladeG);
  return bladeG;
 }
 
@@ -3332,11 +3481,10 @@ function buildCeilingAndLights(){
   coveFill.position.set(cv.x+cv.w/2,H-dropH/2,cv.z+cv.d/2);
   gLights.add(coveFill);
  }
- gCeiling.add(gCeilingSlab);
 
  for(const l of ROOM_SPOTS){
-  C(gCeiling,0.32,0.32,0.04,l.x,H-0.02,l.z,ringMat);
-  C(gCeiling,0.22,0.22,0.05,l.x,H-0.025,l.z,spotMat);
+  C(gCeilingSlab,0.32,0.32,0.04,l.x,H-0.02,l.z,ringMat);
+  C(gCeilingSlab,0.22,0.22,0.05,l.x,H-0.025,l.z,spotMat);
  }
 
  // Ceiling Fans in all 5 places: Living, Dining, Master Bed, Brother's Bed, Kitchen
@@ -3348,9 +3496,12 @@ function buildCeilingAndLights(){
   {n:'Kitchen Fan',x:15.9,z:12.0,fin:'#e4e4df'}
  ];
  for(const f of CEILING_FANS_3D){
-  const bg=makeCeilingFan(gCeiling,f.x,H,f.z,f.fin);
+  const bg=makeCeilingFan(gCeilingSlab,gCeiling,f.x,H,f.z,f.fin);
   fanBlades.push(bg);
  }
+
+ mergeGroupMeshesByMaterial(gCeilingSlab);
+ gCeiling.add(gCeilingSlab);
 
  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
  syncCeilingVisibility();
@@ -3450,9 +3601,11 @@ function toggleStats(){
   updateStatsResolutionUI();
   if(renderer&&renderer.info){
    const r=renderer.info.render;
+   const calls = lastSceneCalls || r.calls;
+   const tris = lastSceneTriangles || r.triangles;
    const m=renderer.info.memory;
    const rEl=$('#statsRender');
-   if(rEl)rEl.textContent='Draws: '+r.calls+' · Tris: '+(r.triangles>999?(r.triangles/1000).toFixed(1)+'k':r.triangles);
+   if(rEl)rEl.textContent='Draws: '+calls+' · Tris: '+(tris>999?(tris/1000).toFixed(1)+'k':tris);
    const mEl=$('#statsMemory');
    if(mEl)mEl.textContent='Textures: '+m.textures+' · Geoms: '+m.geometries;
   }
@@ -5005,6 +5158,8 @@ window.__APP__ = {
  get player(){ return player; },
  get keysDown(){ return keysDown; },
  get state(){ return state; },
+ get drawCalls(){ return lastSceneCalls; },
+ get triangles(){ return lastSceneTriangles; },
  render3D,
  walkLoop,
  movePlayer,
@@ -5013,7 +5168,12 @@ window.__APP__ = {
  setQualityTier,
  setRenderScale,
  getActiveQualityTier,
- invalidateObstacles
+ invalidateObstacles,
+ schedule,
+ buildItems,
+ buildWalls,
+ buildStatic,
+ select
 };
 </script>
 </body>
