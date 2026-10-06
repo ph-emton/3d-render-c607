@@ -163,6 +163,7 @@ label.inline-select select{padding:4px 6px;font-size:12px}
           <button id="btnWalk" title="Walk through rooms at human eye level (Minecraft POV)">🚶 Walk (POV)</button>
         </div>
         <button id="btnModelMode" class="walk-btn on" style="pointer-events:auto;font-size:12px;padding:4px 9px;border-color:var(--accent);color:var(--accent);font-weight:600" title="Toggle between 3D glTF models and procedural geometry">📦 3D Models: ON</button>
+        <button id="btnPhoto" class="walk-btn" style="pointer-events:auto;font-size:12px;padding:4px 9px" title="Render 2x photo and download (c607--.png)">📸 Photo</button>
         <button id="btnFullscreen" class="walk-btn" style="pointer-events:auto;font-size:12px;padding:4px 9px" title="Toggle Fullscreen (or press F key)">⛶ Fullscreen</button>
         <span class="sp"></span>
         <label class="sub inline-select" style="gap:4px">Doors:
@@ -374,6 +375,7 @@ label.inline-select select{padding:4px 6px;font-size:12px}
               <button id="walkPostFxToggle" class="walk-btn on" style="pointer-events:auto" title="Toggle Real-Time Ambient Occlusion (GTAO) and Soft Bloom (Hotkey: B)">✨ Post-FX: ON</button>
               <button id="walkModelToggle" class="walk-btn on" title="Toggle between 3D glTF Models and Procedural Primitives">📦 3D Models: ON</button>
               <button id="btnCollision" class="walk-btn" title="Toggle wall collision (or press C key)">Collisions: ON</button>
+              <button id="btnWalkPhoto" class="walk-btn" style="pointer-events:auto" title="Render 2x photo and download (c607--.png)">📸 Photo</button>
               <button id="btnWalkFullscreen" class="walk-btn" title="Toggle Fullscreen (or press F key)">⛶ Fullscreen</button>
             </div>
           </div>
@@ -4139,6 +4141,90 @@ function render3D(){
  if(viewMode==='walk' && typeof updateDynamicResolution==='function') updateDynamicResolution(dt);
 }
 
+function takePhoto(){
+ if(!renderer || !camera || !scene) return;
+
+ const origSize = new T.Vector2();
+ renderer.getSize(origSize);
+ const origPixelRatio = renderer.getPixelRatio();
+ const origAspect = camera.aspect;
+
+ const currentW = Math.max(320, Math.round(origSize.x));
+ const currentH = Math.max(200, Math.round(origSize.y));
+ let photoW = Math.round(currentW * 2);
+ let photoH = Math.round(currentH * 2);
+
+ const activeTier = (typeof getActiveQualityTier === 'function') ? getActiveQualityTier() : 'medium';
+
+ // Safe cap on Low/Medium
+ if(activeTier === 'low'){
+  const maxLow = 1920 * 1080;
+  if(photoW * photoH > maxLow){
+   const f = Math.sqrt(maxLow / (photoW * photoH));
+   photoW = Math.round(photoW * f);
+   photoH = Math.round(photoH * f);
+  }
+ }else if(activeTier === 'medium'){
+  const maxMed = 2560 * 1440;
+  if(photoW * photoH > maxMed){
+   const f = Math.sqrt(maxMed / (photoW * photoH));
+   photoW = Math.round(photoW * f);
+   photoH = Math.round(photoH * f);
+  }
+ }
+
+ // Clamped to the GPU max size
+ try {
+  const gl = renderer.getContext();
+  if(gl){
+   const maxRb = gl.getParameter(gl.MAX_RENDERBUFFER_SIZE) || 8192;
+   const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE) || 8192;
+   const maxGlDim = Math.min(maxRb, maxTex);
+   if(photoW > maxGlDim || photoH > maxGlDim){
+    const f = Math.min(maxGlDim / photoW, maxGlDim / photoH);
+    photoW = Math.floor(photoW * f);
+    photoH = Math.floor(photoH * f);
+   }
+  }
+ } catch(e){}
+
+ photoW = Math.max(320, photoW);
+ photoH = Math.max(200, photoH);
+
+ try {
+  renderer.setPixelRatio(1);
+  renderer.setSize(photoW, photoH, false);
+  camera.aspect = photoW / photoH;
+  camera.updateProjectionMatrix();
+
+  if(typeof updateComposerSize === 'function') updateComposerSize(photoW, photoH);
+  if(renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
+
+  if(state.usePostProcessing !== false && activeTier !== 'low' && typeof composer !== 'undefined' && composer){
+   composer.render();
+  } else {
+   renderer.render(scene, camera);
+  }
+
+  const dataUrl = renderer.domElement.toDataURL('image/png');
+  const a = document.createElement('a');
+  a.download = 'c607--.png';
+  a.href = dataUrl;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+ } finally {
+  // Restore live settings exactly
+  renderer.setPixelRatio(origPixelRatio);
+  renderer.setSize(origSize.x, origSize.y, false);
+  camera.aspect = origAspect;
+  camera.updateProjectionMatrix();
+  if(typeof updateComposerSize === 'function') updateComposerSize(origSize.x, origSize.y);
+  if(window.rs3D) window.rs3D();
+  render3D();
+ }
+}
+
 /* ---------- Walk POV & Navigation ---------- */
 let viewMode='orbit';
 let walkEyeH=5.3;
@@ -5229,6 +5315,8 @@ $('#btnOrbit').onclick=()=>setViewMode('orbit');
 $('#btnWalk').onclick=()=>setViewMode('walk');
 const bModelMode=$('#btnModelMode');if(bModelMode)bModelMode.onclick=()=>toggleModelMode();
 const wModelToggle=$('#walkModelToggle');if(wModelToggle)wModelToggle.onclick=(e)=>{e.stopPropagation();toggleModelMode();};
+const btnPhoto=$('#btnPhoto');if(btnPhoto)btnPhoto.onclick=()=>takePhoto();
+const btnWPhoto=$('#btnWalkPhoto');if(btnWPhoto)btnWPhoto.onclick=(e)=>{e.stopPropagation();takePhoto();};
 const btnFs=$('#btnFullscreen');if(btnFs)btnFs.onclick=()=>toggleFullscreen();
 const btnWFs=$('#btnWalkFullscreen');if(btnWFs)btnWFs.onclick=(e)=>{e.stopPropagation();toggleFullscreen();};
 const btnFFs=$('#btnFsFloating');if(btnFFs)btnFFs.onclick=(e)=>{e.stopPropagation();toggleFullscreen();};
@@ -5818,7 +5906,8 @@ window.__APP__ = {
  buildWalls,
  buildStatic,
  select,
- rebuildScene
+ rebuildScene,
+ takePhoto
 };
 </script>
 </body>
