@@ -1902,8 +1902,6 @@ function mergeGroupMeshesByMaterial(rootGroup) {
  const rootInv = new T.Matrix4().copy(rootGroup.matrixWorld).invert();
 
  const materialBuckets = new Map();
- const unmergedMeshes = [];
- const meshesToRemove = [];
  const allMeshes = [];
 
  rootGroup.traverse(child => {
@@ -1916,32 +1914,43 @@ function mergeGroupMeshesByMaterial(rootGroup) {
   }
   if (child.isMesh) {
    if (Array.isArray(child.material)) {
-    allMeshes.push(...splitBoxMeshFaces(child));
-    meshesToRemove.push(child);
+    const faceMeshes = splitBoxMeshFaces(child);
+    for (const f of faceMeshes) {
+     allMeshes.push({ mesh: f, origMesh: child, isTemp: true });
+    }
    } else {
-    allMeshes.push(child);
-    meshesToRemove.push(child);
+    allMeshes.push({ mesh: child, origMesh: child, isTemp: false });
    }
   }
  });
 
- for (const child of allMeshes) {
-  if (child.userData && child.userData.noMerge) {
-   unmergedMeshes.push(child);
-   continue;
-  }
+ for (const item of allMeshes) {
+  const child = item.mesh;
+  if (child.userData && child.userData.noMerge) continue;
   const mat = child.material;
-  if (!mat) {
-   unmergedMeshes.push(child);
-   continue;
-  }
+  if (!mat) continue;
 
-  const matKey = mat.type + '|' + (mat.color ? mat.color.getHexString() : '') + '|' + (mat.map ? mat.map.id : '0') + '|' + (mat.bumpMap ? mat.bumpMap.id : '0') + '|' + (mat.roughnessMap ? mat.roughnessMap.id : '0') + '|' + (mat.transparent ? '1' : '0') + '|' + (mat.opacity != null ? mat.opacity : '1') + '|' + (mat.roughness != null ? mat.roughness : '0') + '|' + (mat.metalness != null ? mat.metalness : '0') + '|' + (mat.clearcoat != null ? mat.clearcoat : '0');
+  const matKey = mat.type + '|' +
+    (mat.color ? mat.color.getHexString() : '') + '|' +
+    (mat.emissive ? mat.emissive.getHexString() : '') + '|' +
+    (mat.sheen != null ? mat.sheen : '0') + '|' +
+    (mat.map ? mat.map.id : '0') + '|' +
+    (mat.normalMap ? mat.normalMap.id : '0') + '|' +
+    (mat.bumpMap ? mat.bumpMap.id : '0') + '|' +
+    (mat.roughnessMap ? mat.roughnessMap.id : '0') + '|' +
+    (mat.side != null ? mat.side : '') + '|' +
+    (mat.transmission != null ? mat.transmission : '0') + '|' +
+    (mat.transparent ? '1' : '0') + '|' +
+    (mat.opacity != null ? mat.opacity : '1') + '|' +
+    (mat.roughness != null ? mat.roughness : '0') + '|' +
+    (mat.metalness != null ? mat.metalness : '0') + '|' +
+    (mat.clearcoat != null ? mat.clearcoat : '0');
 
   if (!materialBuckets.has(matKey)) {
    materialBuckets.set(matKey, {
     material: mat,
     geometries: [],
+    items: [],
     castShadow: false,
     receiveShadow: false
    });
@@ -1973,31 +1982,48 @@ function mergeGroupMeshesByMaterial(rootGroup) {
   }
 
   bucket.geometries.push(g);
- }
-
- for (const m of meshesToRemove) {
-  if (m.parent) m.parent.remove(m);
-  if (m.geometry) m.geometry.dispose();
+  bucket.items.push(item);
  }
 
  for (const bucket of materialBuckets.values()) {
   if (bucket.geometries.length === 0) continue;
-  let mergedGeo;
+  let mergedGeo = null;
   if (bucket.geometries.length === 1) {
-   mergedGeo = bucket.geometries[0];
+   mergedGeo = BGU.mergeGeometries(bucket.geometries, false);
+   for (const g of bucket.geometries) g.dispose();
   } else {
    mergedGeo = BGU.mergeGeometries(bucket.geometries, false);
    for (const g of bucket.geometries) g.dispose();
   }
+
   if (mergedGeo) {
    const mm = new T.Mesh(mergedGeo, bucket.material);
    mm.castShadow = bucket.castShadow;
    mm.receiveShadow = bucket.receiveShadow;
    rootGroup.add(mm);
+
+   // Merge succeeded: remove original meshes for this bucket
+   const removedOrigs = new Set();
+   for (const item of bucket.items) {
+    if (item.isTemp && item.mesh && item.mesh.geometry) {
+     item.mesh.geometry.dispose();
+    }
+    const orig = item.origMesh;
+    if (orig && !removedOrigs.has(orig)) {
+     removedOrigs.add(orig);
+     if (orig.parent) orig.parent.remove(orig);
+     if (orig.geometry) orig.geometry.dispose();
+    }
+   }
+  } else {
+   // mergeGeometries returned null: keep the originals for that bucket!
+   for (const item of bucket.items) {
+    if (item.isTemp && item.mesh && item.mesh.geometry) {
+     item.mesh.geometry.dispose();
+    }
+   }
   }
  }
-
- for (const m of unmergedMeshes) rootGroup.add(m);
 
  const emptyGroups = [];
  rootGroup.traverse(child => {
@@ -4902,11 +4928,50 @@ function updateLoadingProgress(pct, status){
  }
 }
 
+function rebuildScene(){
+ if(typeof initEnvMap === 'function' && renderer && scene) initEnvMap(renderer, scene);
+ if(typeof buildStatic === 'function') buildStatic();
+ if(typeof buildWalls === 'function') buildWalls();
+ if(typeof buildCeilingAndLights === 'function') buildCeilingAndLights();
+ if(typeof buildItems === 'function') buildItems();
+ if(state.use3dModels && typeof ensureModelsLoaded === 'function'){
+  ensureModelsLoaded();
+ }
+ if(typeof initComposer === 'function') initComposer();
+ if(renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
+ if(window.rs3D) window.rs3D();
+ render3D();
+}
+
 async function init3D(){
  if(!T||!T.OrbitControls){$('#viewMsg').textContent='3D view could not load. The 2D plan still works.';return;}
  $('#viewMsg').style.display='none';
  updateLoadingProgress(15, 'Initializing WebGL Engine...');
  const cv=$('#view');
+
+ cv.addEventListener('webglcontextlost', (e) => {
+  e.preventDefault();
+  const msg = $('#viewMsg');
+  if(msg){
+   msg.style.display = 'flex';
+   msg.textContent = 'Graphics context was lost. Restoring 3D view...';
+  }
+ });
+
+ cv.addEventListener('webglcontextrestored', () => {
+  const msg = $('#viewMsg');
+  if(msg) msg.style.display = 'none';
+
+  // Drop one quality tier
+  const tiers = ['ultra', 'high', 'medium', 'low'];
+  const curTier = (typeof getActiveQualityTier === 'function') ? getActiveQualityTier() : 'medium';
+  const idx = tiers.indexOf(curTier);
+  const newTier = (idx !== -1 && idx < tiers.length - 1) ? tiers[idx + 1] : 'low';
+  if(typeof setQualityTier === 'function') setQualityTier(newTier, true);
+
+  rebuildScene();
+ });
+
  renderer=new T.WebGLRenderer({canvas:cv,antialias:true});
  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
  renderer.outputColorSpace=T.SRGBColorSpace;
@@ -5752,7 +5817,8 @@ window.__APP__ = {
  buildItems,
  buildWalls,
  buildStatic,
- select
+ select,
+ rebuildScene
 };
 </script>
 </body>
