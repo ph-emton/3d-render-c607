@@ -601,11 +601,11 @@ const LIB={
  bed_s:{label:'Single bed',kind:'bed',w:3,d:6.5,h:1.5,elev:0,fin:'walnut'},
  bed_q:{label:'Queen bed',kind:'bed',w:5,d:6.67,h:1.5,elev:0,fin:'walnut'},
  bed_k:{label:'King bed',kind:'bed',w:6,d:6.67,h:1.5,elev:0,fin:'walnut'},
- murphyQ:{label:'Murphy queen + sofa',kind:'murphy',w:7,d:3.5,h:6,elev:0,fin:'oak',extra:{open:false,openD:5.4}},
- murphy:{label:'Murphy single + sofa',kind:'murphy',w:7,d:3.4,h:4.2,elev:0,fin:'oak',extra:{open:false,openD:3.6}},
+ murphyQ:{label:'Sofa-cum-bed lounge (Queen)',kind:'murphy',w:7,d:3.5,h:2.83,elev:0,fin:'sage',extra:{open:false,openD:5.4}},
+ murphy:{label:'Sofa-cum-bed lounge (Single)',kind:'murphy',w:5.5,d:3.2,h:2.83,elev:0,fin:'sage',extra:{open:false,openD:4.5}},
  sofa3:{label:'Sofa, 3 seat',kind:'sofa',w:6.5,d:2.8,h:2.8,elev:0,fin:'sage'},
  sofa2:{label:'Sofa, 2 seat',kind:'sofa',w:5,d:2.8,h:2.8,elev:0,fin:'sage'},
- jhula:{label:'Jhula',kind:'jhula',w:3.5,d:2,h:10,elev:0,fin:'walnut',extra:{swing:1.5}},
+ jhula:{label:'Boho swing pod',kind:'jhula',w:3.5,d:3.5,h:10,elev:0,fin:'charcoal',extra:{swing:1.2,swingStyle:'boho_macrame'}},
  curtain:{label:'Curtain partition',kind:'curtain',w:10.05,d:0.35,h:9.85,elev:0,fin:'#f3efe6',extra:{opacity:0.88,walkthrough:24}},
  wardrobe:{label:'Wardrobe',kind:'wardrobe',w:6,d:1.92,h:7,elev:0,fin:'oak',extra:{doors:'hinged'}},
  loft:{label:'Loft',kind:'loft',w:6,d:2,h:2.5,elev:7.5,fin:'oak'},
@@ -650,8 +650,8 @@ const CARP={openshelf:1,wardrobe:1,loft:1,kbase:1,kwall:1,crockery:1,puja:1,dres
 
 let uidN=1;const uid=()=>'i'+(Date.now().toString(36))+(uidN++);
 function make(k,x,y,rot,o){const t=LIB[k];return Object.assign({id:uid(),key:k,kind:t.kind,label:t.label,w:t.w,d:t.d,h:t.h,elev:t.elev,fin:t.fin,rot:rot||0},JSON.parse(JSON.stringify(t.extra||{})),o||{},{x:x,y:y});}
-const SEED={"plan":"C607 planner realistic v1","note":"Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.","ceiling_ft":10,"items":[{"label":"Brother's bed","kind":"bed","room":"Brother's room","x_in":208,"y_in":390,"w_in":61,"d_in":76,"h_in":18,"elev_in":0,"rot":90,"finish":"#dd5340","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":130,"y_in":372,"w_in":96,"d_in":23,"h_in":84,"elev_in":0,"rot":270,"finish":"#c13c1a","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Brother's room","x_in":130,"y_in":335,"w_in":133,"d_in":23,"h_in":30,"elev_in":90,"rot":270,"finish":"#e65f33","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Your bed","kind":"bed","room":"Your room","x_in":55,"y_in":144,"w_in":54,"d_in":81,"h_in":18,"elev_in":0,"rot":90,"finish":"oak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Your room","x_in":45,"y_in":82,"w_in":64,"d_in":24,"h_in":30,"elev_in":0,"rot":0,"finish":"#000000","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study chair","kind":"chair","room":"Your room","x_in":61,"y_in":106,"w_in":19,"d_in":19,"h_in":36,"elev_in":0,"rot":180,"finish":"charcoal","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe (sliding)","kind":"wardrobe","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":84,"elev_in":0,"rot":90,"finish":"#b21f1f","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":30,"elev_in":90,"rot":90,"finish":"#c22424","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, top run","kind":"kbase","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, side run","kind":"kbase","room":"Kitchen","x_in":216,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hob","kind":"hob","room":"Kitchen","x_in":185,"y_in":84,"w_in":30,"d_in":19,"h_in":1,"elev_in":34,"rot":0,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Sink","kind":"sink","room":"Kitchen","x_in":220,"y_in":115,"w_in":24,"d_in":17,"h_in":1,"elev_in":34,"rot":90,"finish":"#1d221c","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Water purifier","kind":"purifier","room":"Kitchen","x_in":234,"y_in":136,"w_in":15,"d_in":6,"h_in":19,"elev_in":53,"rot":90,"finish":"midnight","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":142,"y_in":82,"w_in":36,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Chimney","kind":"chimney","room":"Kitchen","x_in":182,"y_in":82,"w_in":36,"d_in":19,"h_in":19,"elev_in":60,"rot":0,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":218,"y_in":82,"w_in":22,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":22,"h_in":30,"elev_in":90,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":217,"y_in":105,"w_in":100,"d_in":23,"h_in":30,"elev_in":90,"rot":90,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone, corner","kind":"kbase","room":"Utility","x_in":246,"y_in":82,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"gigrey","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone + sink","kind":"kbase","room":"Utility","x_in":246,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":270,"finish":"gigrey","granite":true,"sinkTop":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Gas cylinder (under stone)","kind":"cylinder","room":"Utility","x_in":247,"y_in":84,"w_in":13,"d_in":13,"h_in":32,"elev_in":0,"rot":0,"finish":"terracotta","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Top-load washer (no stone above)","kind":"wm","room":"Utility","x_in":256,"y_in":177,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"gigrey","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wall box (west wall)","kind":"kwall","room":"Utility","x_in":252,"y_in":190,"w_in":36,"d_in":14,"h_in":24,"elev_in":54,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Fridge","kind":"fridge","room":"Kitchen","x_in":173,"y_in":178,"w_in":25,"d_in":27,"h_in":70,"elev_in":0,"rot":180,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Puja unit","kind":"puja","room":"Hall","x_in":44,"y_in":210,"w_in":32,"d_in":18,"h_in":78,"elev_in":0,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining, against north wall","kind":"dining","room":"Hall","x_in":0,"y_in":274,"w_in":48,"d_in":30,"h_in":30,"elev_in":0,"rot":270,"finish":"sage","wall":true,"seats":4,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Jhula","kind":"jhula","room":"Hall","x_in":78,"y_in":293,"w_in":42,"d_in":24,"h_in":120,"elev_in":0,"rot":0,"finish":"sage","swing":1.5,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mom's Murphy queen + sofa","kind":"murphy","room":"Hall","x_in":82,"y_in":376,"w_in":84,"d_in":42,"h_in":72,"elev_in":0,"rot":90,"finish":"sage","openD":5.4,"open":false,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wallpaper","kind":"wallpaper","room":"Hall","x_in":0,"y_in":354,"w_in":60,"d_in":1,"h_in":120,"elev_in":0,"rot":270,"finish":"wpB","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Floating TV box (UPS, router)","kind":"kwall","room":"Hall","x_in":0,"y_in":345,"w_in":82,"d_in":15,"h_in":24,"elev_in":7,"rot":270,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"TV 32in","kind":"tv","room":"Hall","x_in":0,"y_in":370,"w_in":32,"d_in":2,"h_in":21,"elev_in":46,"rot":270,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Kitchen","x_in":199,"y_in":186,"w_in":40,"d_in":18,"h_in":34,"elev_in":0,"rot":180,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Microwave","kind":"micro","room":"Hall","x_in":76,"y_in":213,"w_in":20,"d_in":15,"h_in":12,"elev_in":34,"rot":180,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mixer","kind":"mixer","room":"Kitchen","x_in":206,"y_in":193,"w_in":9,"d_in":9,"h_in":16,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Rice cooker","kind":"cooker","room":"Kitchen","x_in":222,"y_in":190,"w_in":12,"d_in":12,"h_in":12,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Kitchen","x_in":217,"y_in":192,"w_in":23,"d_in":12,"h_in":24,"elev_in":58,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":168,"y_in":449,"w_in":38,"d_in":20,"h_in":84,"elev_in":0,"rot":180,"finish":"obsidian","doors":"hinged","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Side table","kind":"wardrobe","room":"Brother's room","x_in":266,"y_in":451,"w_in":18,"d_in":18,"h_in":22,"elev_in":0,"rot":90,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Brother's room","x_in":260,"y_in":341,"w_in":49,"d_in":24,"h_in":30,"elev_in":0,"rot":90,"finish":"teak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":18,"h_in":29,"elev_in":0,"rot":0,"finish":"dusty_rose","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":12,"h_in":24,"elev_in":48,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hall curtain","kind":"curtain","room":"Hall","x_in":2,"y_in":323,"w_in":121,"d_in":4,"h_in":118,"elev_in":0,"rot":0,"finish":"#f3efe6","opacity":0.88,"walkthrough":24}],"wallColor":"teal","roomWallColors":{"Your room":"#3982d0","Brother's room":"#ea9739"}};
-function fromExport(i){return {id:uid(),key:i.kind==='curtain'?'curtain':'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:(i.kind==='curtain'?'#f3efe6':'oak'),opacity:typeof i.opacity==='number'?i.opacity:(i.kind==='curtain'?0.88:undefined),walkthrough:typeof i.walkthrough==='number'?i.walkthrough:(i.kind==='curtain'?24:undefined),open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,doorState:i.doorState,glassProfile:i.glassProfile,shelfLights:i.shelfLights,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass',wpImage:i.wpImage,wpTile:i.wpTile};}
+const SEED={"plan":"C607 planner realistic v1","note":"Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.","ceiling_ft":10,"items":[{"label":"Brother's bed","kind":"bed","room":"Brother's room","x_in":208,"y_in":390,"w_in":61,"d_in":76,"h_in":18,"elev_in":0,"rot":90,"finish":"#dd5340","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":130,"y_in":372,"w_in":96,"d_in":23,"h_in":84,"elev_in":0,"rot":270,"finish":"#c13c1a","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Brother's room","x_in":130,"y_in":335,"w_in":133,"d_in":23,"h_in":30,"elev_in":90,"rot":270,"finish":"#e65f33","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Your bed","kind":"bed","room":"Your room","x_in":55,"y_in":144,"w_in":54,"d_in":81,"h_in":18,"elev_in":0,"rot":90,"finish":"oak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Your room","x_in":45,"y_in":82,"w_in":64,"d_in":24,"h_in":30,"elev_in":0,"rot":0,"finish":"#000000","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study chair","kind":"chair","room":"Your room","x_in":61,"y_in":106,"w_in":19,"d_in":19,"h_in":36,"elev_in":0,"rot":180,"finish":"charcoal","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe (sliding)","kind":"wardrobe","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":84,"elev_in":0,"rot":90,"finish":"#b21f1f","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":30,"elev_in":90,"rot":90,"finish":"#c22424","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, top run","kind":"kbase","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, side run","kind":"kbase","room":"Kitchen","x_in":216,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hob","kind":"hob","room":"Kitchen","x_in":185,"y_in":84,"w_in":30,"d_in":19,"h_in":1,"elev_in":34,"rot":0,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Sink","kind":"sink","room":"Kitchen","x_in":220,"y_in":115,"w_in":24,"d_in":17,"h_in":1,"elev_in":34,"rot":90,"finish":"#1d221c","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Water purifier","kind":"purifier","room":"Kitchen","x_in":234,"y_in":136,"w_in":15,"d_in":6,"h_in":19,"elev_in":53,"rot":90,"finish":"midnight","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":142,"y_in":82,"w_in":36,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Chimney","kind":"chimney","room":"Kitchen","x_in":182,"y_in":82,"w_in":36,"d_in":19,"h_in":19,"elev_in":60,"rot":0,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":218,"y_in":82,"w_in":22,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":22,"h_in":30,"elev_in":90,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":217,"y_in":105,"w_in":100,"d_in":23,"h_in":30,"elev_in":90,"rot":90,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone, corner","kind":"kbase","room":"Utility","x_in":246,"y_in":82,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"gigrey","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone + sink","kind":"kbase","room":"Utility","x_in":246,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":270,"finish":"gigrey","granite":true,"sinkTop":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Gas cylinder (under stone)","kind":"cylinder","room":"Utility","x_in":247,"y_in":84,"w_in":13,"d_in":13,"h_in":32,"elev_in":0,"rot":0,"finish":"terracotta","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Top-load washer (no stone above)","kind":"wm","room":"Utility","x_in":256,"y_in":177,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"gigrey","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wall box (west wall)","kind":"kwall","room":"Utility","x_in":252,"y_in":190,"w_in":36,"d_in":14,"h_in":24,"elev_in":54,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Fridge","kind":"fridge","room":"Kitchen","x_in":173,"y_in":178,"w_in":25,"d_in":27,"h_in":70,"elev_in":0,"rot":180,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Puja unit","kind":"puja","room":"Hall","x_in":44,"y_in":210,"w_in":32,"d_in":18,"h_in":78,"elev_in":0,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining, against north wall","kind":"dining","room":"Hall","x_in":0,"y_in":274,"w_in":48,"d_in":30,"h_in":30,"elev_in":0,"rot":270,"finish":"sage","wall":true,"seats":4,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Boho swing pod","kind":"jhula","room":"Hall","x_in":78,"y_in":293,"w_in":42,"d_in":42,"h_in":120,"elev_in":0,"rot":0,"finish":"charcoal","swing":1.2,"swingStyle":"boho_macrame","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mom's sofa-cum-bed lounge","kind":"murphy","room":"Hall","x_in":82,"y_in":376,"w_in":84,"d_in":42,"h_in":34,"elev_in":0,"rot":90,"finish":"sage","openD":5.4,"open":false,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wallpaper","kind":"wallpaper","room":"Hall","x_in":0,"y_in":354,"w_in":60,"d_in":1,"h_in":120,"elev_in":0,"rot":270,"finish":"wpB","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Floating TV box (UPS, router)","kind":"kwall","room":"Hall","x_in":0,"y_in":345,"w_in":82,"d_in":15,"h_in":24,"elev_in":7,"rot":270,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"TV 32in","kind":"tv","room":"Hall","x_in":0,"y_in":370,"w_in":32,"d_in":2,"h_in":21,"elev_in":46,"rot":270,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Kitchen","x_in":199,"y_in":186,"w_in":40,"d_in":18,"h_in":34,"elev_in":0,"rot":180,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Microwave","kind":"micro","room":"Hall","x_in":76,"y_in":213,"w_in":20,"d_in":15,"h_in":12,"elev_in":34,"rot":180,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mixer","kind":"mixer","room":"Kitchen","x_in":206,"y_in":193,"w_in":9,"d_in":9,"h_in":16,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Rice cooker","kind":"cooker","room":"Kitchen","x_in":222,"y_in":190,"w_in":12,"d_in":12,"h_in":12,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Kitchen","x_in":217,"y_in":192,"w_in":23,"d_in":12,"h_in":24,"elev_in":58,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":168,"y_in":449,"w_in":38,"d_in":20,"h_in":84,"elev_in":0,"rot":180,"finish":"obsidian","doors":"hinged","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Side table","kind":"wardrobe","room":"Brother's room","x_in":266,"y_in":451,"w_in":18,"d_in":18,"h_in":22,"elev_in":0,"rot":90,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Brother's room","x_in":260,"y_in":341,"w_in":49,"d_in":24,"h_in":30,"elev_in":0,"rot":90,"finish":"teak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":18,"h_in":29,"elev_in":0,"rot":0,"finish":"dusty_rose","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":12,"h_in":24,"elev_in":48,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hall curtain","kind":"curtain","room":"Hall","x_in":2,"y_in":323,"w_in":121,"d_in":4,"h_in":118,"elev_in":0,"rot":0,"finish":"#f3efe6","opacity":0.88,"walkthrough":24}],"wallColor":"teal","roomWallColors":{"Your room":"#3982d0","Brother's room":"#ea9739"}};
+function fromExport(i){return {id:uid(),key:i.kind==='curtain'?'curtain':'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:(i.kind==='curtain'?'#f3efe6':'oak'),opacity:typeof i.opacity==='number'?i.opacity:(i.kind==='curtain'?0.88:undefined),walkthrough:typeof i.walkthrough==='number'?i.walkthrough:(i.kind==='curtain'?24:undefined),open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,swingStyle:i.swingStyle||(i.kind==='jhula'?'boho_macrame':undefined),doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,doorState:i.doorState,glassProfile:i.glassProfile,shelfLights:i.shelfLights,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass',wpImage:i.wpImage,wpTile:i.wpTile};}
 function defaults(){
  state.wallColor = SEED.wallColor || 'teal';
  state.roomWallColors = Object.assign({}, SEED.roomWallColors || {"Your room":"#3982d0","Brother's room":"#ea9739"});
@@ -694,7 +694,17 @@ function load(){
      if(typeof it.opacity!=='number') it.opacity=0.88;
      if(typeof it.walkthrough!=='number') it.walkthrough=24;
     }
+    if(it.kind==='murphy'){
+     if(it.label&&it.label.toLowerCase().includes('murphy')) it.label="Mom's sofa-cum-bed lounge";
+     if(it.h>4.5) it.h=2.83;
+    }
+    if(it.kind==='jhula'){
+     if(!it.swingStyle) it.swingStyle='boho_macrame';
+     if(it.d<2.8) it.d=3.5;
+     if(it.label==='Jhula') it.label='Boho swing pod';
+    }
    }
+   state.items=state.items.filter(it=>!(it.kind==='plant'&&(it.room==='Hall'||it.room==='Dining'||!it.room)&&it.x<6&&it.y>=18&&it.y<=28));
    H=s.H||10;
    state.wallMode=s.wallMode||'full';
    state.wallColor=s.wallColor||'teal';
@@ -854,9 +864,48 @@ function itemSVG(it,bad){
  const K=it.kind;
  if(K==='bed'){const n=w>=4?2:1,pw=(w-0.5)/n-0.15;for(let i=0;i<n;i++)s+='<rect x="'+(x0+0.25+i*(pw+0.15)+0.075)+'" y="'+(y0+0.35)+'" width="'+pw+'" height="1" rx="0.15" fill="#fff" fill-opacity=".9" stroke="#0004" stroke-width="0.02"/>';s+='<rect x="'+(x0+0.1)+'" y="'+(y0+d*0.48)+'" width="'+(w-0.2)+'" height="'+(d*0.5)+'" fill="#a9b8c9" fill-opacity=".55"/>';}
  if(K==='sofa'){s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.7" fill="#0002"/><rect x="'+x0+'" y="'+y0+'" width="0.5" height="'+d+'" fill="#0002"/><rect x="'+(w/2-0.5)+'" y="'+y0+'" width="0.5" height="'+d+'" fill="#0002"/>';}
- if(K==='murphy'){s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="1.2" fill="#0003"/>';s+='<rect x="'+(x0+0.2)+'" y="'+(y0+1.2)+'" width="'+(w-0.4)+'" height="'+(d-1.2)+'" fill="#d9c8a9" fill-opacity=".8"/>';
-  s+='<rect x="'+(x0+0.2)+'" y="'+y0+'" width="'+(w-0.4)+'" height="'+(it.openD||3.6)+'" fill="'+(it.open?'#fff':'none')+'" fill-opacity=".55" stroke="var(--accent)" stroke-width="0.05" stroke-dasharray="0.25 0.15"/>';}
- if(K==='jhula'){const sw2=it.swing!=null?it.swing:1.5;s+='<rect x="'+x0+'" y="'+(y0-sw2)+'" width="'+w+'" height="'+(d+2*sw2)+'" fill="none" stroke="var(--accent)" stroke-width="0.05" stroke-dasharray="0.25 0.15" opacity=".8"/>';for(const p of [[x0+0.15,y0+0.15],[-x0-0.15,y0+0.15],[x0+0.15,-y0-0.15],[-x0-0.15,-y0-0.15]])s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="0.09" fill="var(--ink)"/>';s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.35" fill="#0003"/>';}
+ if(K==='murphy'){
+  s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.65" rx="0.05" fill="#0003"/>';
+  s+='<rect x="'+x0+'" y="'+y0+'" width="0.45" height="'+d+'" rx="0.05" fill="#0002"/>';
+  s+='<rect x="'+(w/2-0.45)+'" y="'+y0+'" width="0.45" height="'+d+'" rx="0.05" fill="#0002"/>';
+  if(!it.open){
+   const nC=w>=6?3:2,cw=(w-0.9)/nC;
+   for(let i=0;i<nC;i++) s+='<rect x="'+(x0+0.45+i*cw+0.05)+'" y="'+(y0+0.68)+'" width="'+(cw-0.1)+'" height="'+(d-0.72)+'" rx="0.08" fill="#fff" fill-opacity=".35" stroke="var(--ink)" stroke-width="0.02" stroke-opacity=".3"/>';
+   s+='<rect x="'+(x0+0.5)+'" y="'+(y0+0.72)+'" width="0.55" height="0.55" rx="0.06" fill="var(--accent)" fill-opacity=".4" stroke="#0003" stroke-width="0.02"/>';
+   s+='<rect x="'+(w/2-1.05)+'" y="'+(y0+0.72)+'" width="0.55" height="0.55" rx="0.06" fill="var(--accent)" fill-opacity=".4" stroke="#0003" stroke-width="0.02"/>';
+   s+='<rect x="'+(x0+0.45)+'" y="'+y0+'" width="'+(w-0.9)+'" height="'+(it.openD||5.4)+'" fill="none" stroke="var(--accent)" stroke-width="0.03" stroke-dasharray="0.18 0.12" opacity=".35"/>';
+  }else{
+   const od=it.openD||5.4;
+   s+='<rect x="'+(x0+0.45)+'" y="'+y0+'" width="'+(w-0.9)+'" height="'+od+'" rx="0.1" fill="#fff" fill-opacity=".85" stroke="var(--accent)" stroke-width="0.06" stroke-dasharray="0.25 0.15"/>';
+   const nP=w>=6?2:1,pw=(w-1.2)/nP-0.15;
+   for(let i=0;i<nP;i++) s+='<rect x="'+(x0+0.6+i*(pw+0.15))+'" y="'+(y0+0.75)+'" width="'+pw+'" height="0.95" rx="0.15" fill="#f0ede6" stroke="#0003" stroke-width="0.03"/>';
+   s+='<rect x="'+(x0+0.5)+'" y="'+(y0+od*0.48)+'" width="'+(w-1.0)+'" height="'+(od*0.5)+'" rx="0.08" fill="var(--accent)" fill-opacity=".45"/>';
+   s+='<text x="0" y="'+(y0+od*0.75)+'" font-size="0.28" text-anchor="middle" dominant-baseline="central" fill="var(--ink)" font-weight="600">🛏️ Extended Bed</text>';
+  }
+ }
+ if(K==='jhula'){
+  const sw2=it.swing!=null?it.swing:1.2;
+  if(it.swingStyle==='traditional_wood'){
+   s+='<rect x="'+x0+'" y="'+(y0-sw2)+'" width="'+w+'" height="'+(d+2*sw2)+'" fill="none" stroke="var(--accent)" stroke-width="0.05" stroke-dasharray="0.25 0.15" opacity=".8"/>';
+   for(const p of [[x0+0.15,y0+0.15],[-x0-0.15,y0+0.15],[x0+0.15,-y0-0.15],[-x0-0.15,-y0-0.15]]) s+='<circle cx="'+p[0]+'" cy="'+p[1]+'" r="0.09" fill="var(--ink)"/>';
+   s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.35" fill="#0003"/>';
+  }else{
+   const R=Math.min(w,d)/2;
+   s+='<ellipse cx="0" cy="0" rx="'+(R+0.1)+'" ry="'+(R+sw2)+'" fill="none" stroke="var(--accent)" stroke-width="0.04" stroke-dasharray="0.25 0.15" opacity=".7"/>';
+   s+='<circle cx="0" cy="0" r="'+(R+0.12)+'" fill="none" stroke="#d5cebd" stroke-width="0.05" stroke-dasharray="0.08 0.08"/>';
+   s+='<circle cx="0" cy="0" r="'+R+'" fill="#f5f2eb" fill-opacity=".8" stroke="#8b7355" stroke-width="0.07"/>';
+   s+='<path d="M '+r2(-R*0.85)+' '+r2(-R*0.2)+' A '+r2(R*0.85)+' '+r2(R*0.85)+' 0 0 1 '+r2(R*0.85)+' '+r2(-R*0.2)+' Q 0 '+r2(-R*0.55)+' '+r2(-R*0.85)+' '+r2(-R*0.2)+'" fill="#3d4045" fill-opacity=".85" stroke="#222" stroke-width="0.02"/>';
+   s+='<circle cx="0" cy="'+r2(R*0.08)+'" r="'+r2(R*0.82)+'" fill="#4a4d52" fill-opacity=".95" stroke="#2b2d30" stroke-width="0.03"/>';
+   for(let a=0;a<6;a++){
+    const rad=a*Math.PI/3, bx=Math.cos(rad)*R*0.45, by=Math.sin(rad)*R*0.45+R*0.08;
+    s+='<circle cx="'+r2(bx)+'" cy="'+r2(by)+'" r="0.05" fill="#222" opacity=".7"/>';
+   }
+   s+='<circle cx="0" cy="'+r2(R*0.08)+'" r="0.06" fill="#222" opacity=".8"/>';
+   s+='<circle cx="'+r2(-R*0.2)+'" cy="'+r2(R*0.05)+'" r="'+r2(R*0.32)+'" fill="#666a73" stroke="#222" stroke-width="0.02"/>';
+   s+='<circle cx="'+r2(-R*0.2)+'" cy="'+r2(R*0.05)+'" r="0.05" fill="#fff" opacity=".9"/>';
+   s+='<circle cx="0" cy="0" r="0.12" fill="#dcd5c6" stroke="#555" stroke-width="0.03"/>';
+  }
+ }
  if(K==='dining'||K==='dining_round'){for(const c of chairSpots(it))s+='<rect x="'+(c.x-0.68)+'" y="'+(c.z-0.68)+'" width="1.36" height="1.36" rx="0.15" fill="'+col+'" fill-opacity=".45" stroke="var(--ink)" stroke-opacity=".4" stroke-width="0.03"/>';}
  if(K==='wardrobe'&&it.doors==='hinged'){const n=Math.max(1,Math.round(w/1.5)),sw=w/n,yf=d/2;for(let i=0;i<n;i++){const left=i%2===0,xh=left?x0+i*sw:x0+(i+1)*sw,xc=left?xh+sw:xh-sw;s+='<path d="M'+r2(xh)+' '+r2(yf)+' L'+r2(xh)+' '+r2(yf+sw)+' A'+r2(sw)+' '+r2(sw)+' 0 0 '+(left?0:1)+' '+r2(xc)+' '+r2(yf)+'" fill="none" stroke="var(--accent)" stroke-width="0.035" stroke-dasharray="0.18 0.12" opacity=".75"/>';}}
  if(K==='wardrobe'&&it.doors==='sliding'){s+='<line x1="'+(x0+0.1)+'" y1="'+(d/2-0.12)+'" x2="'+(w/2-0.1)+'" y2="'+(d/2-0.12)+'" stroke="var(--ink)" stroke-opacity=".6" stroke-width="0.05"/><line x1="'+(x0+0.1)+'" y1="'+(d/2-0.28)+'" x2="'+(w/2-0.1)+'" y2="'+(d/2-0.28)+'" stroke="var(--ink)" stroke-opacity=".6" stroke-width="0.05"/>';}
@@ -1281,7 +1330,15 @@ function renderInspector(){
     '</div>' +
    '</div>';
   }
-  if(it.kind==='murphy')extra+='<label class="inline"><input type="checkbox" id="f-open"'+(it.open?' checked':'')+'> Show bed open</label>';
+  if(it.kind==='murphy'){
+   extra+='<div style="width:100%;margin-top:6px;margin-bottom:6px">' +
+    '<label style="font-weight:600;font-size:12px;display:block;margin-bottom:4px">Convertible Mode</label>' +
+    '<div style="display:flex;gap:4px">' +
+     '<button type="button" id="b-sofa-mode" style="flex:1;padding:6px 4px;font-size:11px;border-radius:6px;border:1px solid '+(!it.open?'var(--accent)':'#ccc')+';background:'+(!it.open?'var(--accent)':'#f5f5f5')+';color:'+(!it.open?'#fff':'#333')+';font-weight:600;cursor:pointer">🛋️ Sofa Lounge</button>' +
+     '<button type="button" id="b-bed-mode" style="flex:1;padding:6px 4px;font-size:11px;border-radius:6px;border:1px solid '+(it.open?'var(--accent)':'#ccc')+';background:'+(it.open?'var(--accent)':'#f5f5f5')+';color:'+(it.open?'#fff':'#333')+';font-weight:600;cursor:pointer">🛏️ Extended Bed</button>' +
+    '</div>' +
+   '</div>';
+  }
   if(it.kind==='dining'||it.kind==='dining_round')extra+='<label>Seats<select id="f-seats">'+[2,4,6].map(n=>'<option'+(n===(it.seats||4)?' selected':'')+'>'+n+'</option>').join('')+'</select></label>';
   if(it.kind==='wardrobe'&&it.doors)extra+='<label>Doors<select id="f-doors"><option value="hinged"'+(it.doors==='hinged'?' selected':'')+'>Hinged (open out)</option><option value="sliding"'+(it.doors==='sliding'?' selected':'')+'>Sliding</option></select></label>';
   if(it.kind==='wardrobe'||it.kind==='crockery'||it.kind==='kwall'||it.kind==='openshelf'){
@@ -1297,7 +1354,17 @@ function renderInspector(){
    extra+='<label class="inline"><input type="checkbox" id="f-shelf-lights"'+(it.shelfLights!==false?' checked':'')+'> 💡 Warm Interior LED Lights</label>';
   }
   if(it.kind==='dining')extra+='<label class="inline"><input type="checkbox" id="f-wall"'+(it.wall?' checked':'')+'> Back against wall</label>';
-  if(it.kind==='jhula')extra+='<label>Swing each way (in)<input type="number" id="f-sw" min="0" step="1" value="'+Math.round((it.swing!=null?it.swing:1.5)*12)+'" style="width:90px"></label>';
+  if(it.kind==='jhula'){
+   const curStyle = it.swingStyle || 'boho_macrame';
+   extra+='<div style="width:100%;margin-top:6px;margin-bottom:6px">' +
+    '<label style="font-weight:600;font-size:12px;display:block;margin-bottom:4px">Swing Design</label>' +
+    '<select id="f-swing-style" style="width:100%;height:30px;font-size:12px;border-radius:5px">' +
+     '<option value="boho_macrame"'+(curStyle==='boho_macrame'?' selected':'')+'>🪢 Boho Macrame Hammock Pod (Photo)</option>' +
+     '<option value="traditional_wood"'+(curStyle==='traditional_wood'?' selected':'')+'>🪵 Traditional Wooden Jhula with Chains</option>' +
+    '</select>' +
+   '</div>' +
+   '<label>Swing clearance (in)<input type="number" id="f-sw" min="0" step="1" value="'+Math.round((it.swing!=null?it.swing:1.2)*12)+'" style="width:90px"></label>';
+  }
   if(it.kind==='kbase')extra+='<label class="inline"><input type="checkbox" id="f-granite"'+(it.granite!==false?' checked':'')+'> Stone top</label>';
   if(it.kind==='curtain'){
    const curOp = typeof it.opacity === 'number' ? it.opacity : 0.88;
@@ -1351,7 +1418,15 @@ function renderInspector(){
     it.fin=e.target.value;
     schedule(it.id);
   });
+  if($('#b-sofa-mode'))$('#b-sofa-mode').addEventListener('click',()=>{it.open=false;schedule(it.id);renderInspector();});
+  if($('#b-bed-mode'))$('#b-bed-mode').addEventListener('click',()=>{it.open=true;schedule(it.id);renderInspector();});
   if($('#f-open'))$('#f-open').addEventListener('change',e=>{it.open=e.target.checked;schedule(it.id);});
+  if($('#f-swing-style'))$('#f-swing-style').addEventListener('change',e=>{
+    it.swingStyle=e.target.value;
+    if(it.swingStyle==='boho_macrame'){it.w=3.5;it.d=3.5;}
+    schedule(it.id);
+    renderInspector();
+  });
   if($('#f-seats'))$('#f-seats').addEventListener('change',e=>{it.seats=parseInt(e.target.value,10);schedule(it.id);});
   if($('#f-doors'))$('#f-doors').addEventListener('change',e=>{it.doors=e.target.value;schedule(it.id);});
   if($('#f-wall'))$('#f-wall').addEventListener('change',e=>{it.wall=e.target.checked;schedule(it.id);});
@@ -2637,43 +2712,223 @@ function buildProceduralItem(g,it){
   B(g,0.85,0.85,0.3,w/2-0.85,1.8,0.15,mF(it.fin,0.82,'fabric'));
  }
  else if(K==='murphy'){
-  B(g,w-0.1,0.25,1.2,0,0.125,-d/2+0.6,mat('#2c241c'));
-  B(g,w,h-0.25,1.2,0,0.25+(h-0.25)/2,-d/2+0.6,m);
-  B(g,w-0.2,0.04,0.03,0,h-0.3,-d/2+1.21,mc);
-  const murphyCushM=mF(it.fin,1.0,'fabric');
-  B(g,w-0.2,1.3,d-1.25,0,0.65,-d/2+1.2+(d-1.25)/2,murphyCushM);
-  B(g,w-0.6,0.35,d-1.55,0,1.475,-d/2+1.35+(d-1.55)/2,mF(it.fin,1.08,'fabric'));
+  const sofaMat=mF(it.fin,1.0,'fabric'), cushionMat=mF(it.fin,1.08,'fabric'), backMat=mF(it.fin,0.92,'fabric');
+  const brassLeg=mat('',0,'brass');
+  // 4 tapered brass legs
+  for(const sx of [-1,1])for(const sz of [-1,1]){
+   C(g,0.06,0.035,0.25,sx*(w/2-0.25),0.125,sz*(d/2-0.25),brassLeg);
+  }
+  // Base upholstered seat platform
+  B(g,w,0.6,d,0,0.25+0.3,0,sofaMat);
+  // Backrest structure
+  B(g,w,h-0.25,0.55,0,0.25+(h-0.25)/2,-d/2+0.275,backMat);
+  // Padded armrests
+  for(const s of [-1,1]){
+   B(g,0.45,1.55,d,s*(w/2-0.225),0.25+0.775,0,sofaMat);
+  }
   if(!it.open){
-   for(const s of [-1,1])B(g,(w-0.8)/2-0.1,1.1,0.4,s*((w-0.8)/4+0.05),2.05,-d/2+1.45,mF(it.fin,0.92,'fabric'));
+   // Sofa Lounge Mode
+   const nC=w>=6?3:2, cw=(w-0.9)/nC;
+   // Deep plush lounge seat cushions
+   for(let i=0;i<nC;i++){
+    B(g,cw-0.06,0.42,d-0.7,-w/2+0.45+cw*(i+0.5),0.85+0.21,0.25,cushionMat);
+    // Plush back cushions
+    B(g,cw-0.08,0.95,0.42,-w/2+0.45+cw*(i+0.5),1.28+0.475,-d/2+0.76,mF(it.fin,1.0,'fabric'));
+   }
+   // Accent throw pillows on corners
+   B(g,0.75,0.75,0.28,-w/2+0.85,1.5,0.1,mF(it.fin,1.25,'fabric'));
+   B(g,0.75,0.75,0.28,w/2-0.85,1.5,0.1,mF(it.fin,0.85,'fabric'));
   }else{
-   const od=it.openD||3.6;
-   B(g,w-0.4,0.22,od-0.1,0,1.72,-d/2+od/2+0.05,m);
-   B(g,w-0.6,0.55,od-0.3,0,2.1,-d/2+od/2+0.1,mat('',0,'bedding'));
-   B(g,1.1,0.3,Math.min(od-0.8,3.6),-w/2+0.85,2.5,-d/2+od/2,white);
-   // Fold-down leg bar
-   B(g,w-0.8,0.08,0.08,0,1.65,od-0.3,mat('#333',true));
-   C(g,0.04,0.04,1.65,-w/2+0.5,0.825,od-0.3,mat('#333',true));
-   C(g,0.04,0.04,1.65,w/2-0.5,0.825,od-0.3,mat('#333',true));
+   // Extended Lounge Bed Mode
+   const od=it.openD||5.4;
+   // Extended bed trundle platform
+   B(g,w-0.9,0.38,od,0,0.19,-d/2+od/2,sofaMat);
+   // Front support legs/casters
+   for(const s of [-1,1]){
+    C(g,0.05,0.05,0.15,s*(w/2-0.65),0.075,-d/2+od-0.2,mat('#333',true));
+   }
+   // Continuous hybrid sleeping mattress
+   B(g,w-0.94,0.65,od-0.2,0,0.38+0.325,-d/2+od/2+0.1,mat('#f6f4ee',0,'bedding'));
+   // Large plush sleeping pillows propped at the backrest
+   const nP=w>=6?2:1, pw=(w-1.2)/nP-0.12;
+   for(let i=0;i<nP;i++){
+    B(g,pw,0.32,0.7,-w/2+0.6+i*(pw+0.12)+pw/2,1.15,-d/2+0.9,white);
+   }
+   // Soft folded duvet / blanket runner at foot of bed
+   B(g,w-0.92,0.14,od*0.42,0,1.05,-d/2+od*0.75,mF(it.fin,1.1,'fabric'));
+   // Decorative accent pillows
+   B(g,0.65,0.65,0.22,-w/2+0.85,1.3,-d/2+1.2,mF(it.fin,1.25,'fabric'));
+   B(g,0.65,0.65,0.22,w/2-0.85,1.3,-d/2+1.2,mF(it.fin,0.85,'fabric'));
   }
  }
  else if(K==='jhula'){
   const top=H;
-  // Wooden carved plank
-  B(g,w,0.2,d,0,1.6,0,m);
-  B(g,w,1.25,0.14,0,2.3,-d/2+0.1,m);
-  for(const s of [-1,1])B(g,0.14,0.65,d,s*(w/2-0.07),1.95,0,m);
-  // Tufted cushion and bolsters
-  B(g,w-0.25,0.24,d-0.25,0,1.82,0.04,mF(it.fin,1.0,'fabric'));
-  C(g,0.25,0.25,d-0.3,-w/2+0.35,2.05,0.05,mF(it.fin,1.18,'fabric'));
-  C(g,0.25,0.25,d-0.3,w/2-0.35,2.05,0.05,mF(it.fin,1.18,'fabric'));
-  // Brass chains to ceiling
-  const ch=mat('',0,'brass'),len=top-1.7;
-  for(const a of [-1,1])for(const b of [-1,1]){
-   C(g,0.025,0.025,len,a*(w/2-0.1),1.7+len/2,b*(d/2-0.1),ch);
-   C(g,0.08,0.08,0.08,a*(w/2-0.1),top-0.04,b*(d/2-0.1),ch);
+  if(it.swingStyle==='traditional_wood'){
+   // Traditional wooden swing with brass chains
+   B(g,w,0.2,d,0,1.6,0,m);
+   B(g,w,1.25,0.14,0,2.3,-d/2+0.1,m);
+   for(const s of [-1,1])B(g,0.14,0.65,d,s*(w/2-0.07),1.95,0,m);
+   B(g,w-0.25,0.24,d-0.25,0,1.82,0.04,mF(it.fin,1.0,'fabric'));
+   C(g,0.25,0.25,d-0.3,-w/2+0.35,2.05,0.05,mF(it.fin,1.18,'fabric'));
+   C(g,0.25,0.25,d-0.3,w/2-0.35,2.05,0.05,mF(it.fin,1.18,'fabric'));
+   const ch=mat('',0,'brass'),len=top-1.7;
+   for(const a of [-1,1])for(const b of [-1,1]){
+    C(g,0.025,0.025,len,a*(w/2-0.1),1.7+len/2,b*(d/2-0.1),ch);
+    C(g,0.08,0.08,0.08,a*(w/2-0.1),top-0.04,b*(d/2-0.1),ch);
+   }
+   B(g,w+0.2,0.1,0.1,0,top-0.05,-d/2+0.1,ch);
+   B(g,w+0.2,0.1,0.1,0,top-0.05,d/2-0.1,ch);
+  }else{
+   // Boho Macrame Hammock Pod Chair (as in photo)
+   const R=Math.min(w,d)/2, hoopY=1.45, apexY=Math.min(top-1.5, 7.2);
+   const cordCol=0xf6f4ed;
+   const cordMat=new T.MeshPhysicalMaterial({color:cordCol,roughness:0.85,metalness:0.02,sheen:0.4,sheenColor:new T.Color(0xffffff)});
+   const cushionCol=it.fin&&it.fin!=='charcoal'&&FIN[it.fin]?FIN[it.fin].hex:(it.fin&&it.fin.startsWith('#')?it.fin:'#484b52');
+   const cushionMat=new T.MeshPhysicalMaterial({color:cushionCol,roughness:0.75,metalness:0.04,sheen:0.55,sheenColor:new T.Color(0x888b94)});
+   const rosetteMat=new T.MeshPhysicalMaterial({color:'#585c64',roughness:0.7,sheen:0.5});
+   const brassMat=mat('',0,'brass');
+
+   // 1. Ceiling mount & top suspension rope
+   C(g,0.12,0.12,0.05,0,top-0.025,0,mat('#f0ede4',true));
+   const topCordLen=Math.max(0.2, top-0.05-apexY);
+   C(g,0.032,0.032,topCordLen,0,apexY+topCordLen/2,0,cordMat);
+
+   // 2. Top macrame crown collar & hanging center decorative tassel
+   C(g,0.22,0.32,0.45,0,apexY,0,cordMat);
+   for(let a=0;a<6;a++){
+    const ang=a*Math.PI/3;
+    const kn=new T.Mesh(new T.SphereGeometry(0.04,8,8),cordMat);
+    kn.position.set(0.27*Math.sin(ang),apexY,0.27*Math.cos(ang));
+    g.add(kn);
+   }
+   // Inside hanging tassel
+   C(g,0.012,0.012,0.55,0,apexY-0.42,0,cordMat);
+   C(g,0.065,0.055,0.12,0,apexY-0.72,0,cordMat);
+   C(g,0.055,0.11,0.38,0,apexY-0.95,0,cordMat);
+
+   // Helper for oriented macrame rope strands
+   const ropeBetween=(p1,p2,rad,m)=>{
+    const v1=new T.Vector3(p1[0],p1[1],p1[2]), v2=new T.Vector3(p2[0],p2[1],p2[2]);
+    const len=v1.distanceTo(v2);
+    if(len<0.01) return;
+    const cyl=new T.Mesh(new T.CylinderGeometry(rad,rad,len,8),m);
+    cyl.position.copy(v1).add(v2).multiplyScalar(0.5);
+    cyl.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),v2.clone().sub(v1).normalize());
+    cyl.castShadow=true;
+    g.add(cyl);
+    return cyl;
+   };
+
+   // 3. Conical Macrame Net Canopy with front arched entrance
+   const rTop=0.28, rBot=R;
+   // Front opening arch: from angle theta = -0.75 rad to +0.75 rad (front faces +Z)
+   const archHalf=0.72;
+   // Braided front entrance ropes
+   for(const s of [-1,1]){
+    const ang=s*archHalf;
+    const topP=[rTop*Math.sin(ang), apexY-0.2, rTop*Math.cos(ang)];
+    const botP=[rBot*Math.sin(ang), hoopY+0.22, rBot*Math.cos(ang)];
+    ropeBetween(topP,botP,0.038,cordMat);
+    // Side hanging tassels along entrance
+    C(g,0.045,0.038,0.09,botP[0],hoopY+0.28,botP[1],cordMat);
+    C(g,0.038,0.075,0.25,botP[0],hoopY+0.12,botP[1],cordMat);
+   }
+
+   // Canopy lattice ribs around back and sides
+   const numRibs=16;
+   const startAng=archHalf, endAng=2*Math.PI-archHalf;
+   const ribStep=(endAng-startAng)/numRibs;
+   const ribTops=[], ribBots=[];
+   for(let i=0;i<=numRibs;i++){
+    const ang=startAng+i*ribStep;
+    const tp=[rTop*Math.sin(ang), apexY-0.2, rTop*Math.cos(ang)];
+    const bp=[rBot*Math.sin(ang), hoopY+0.18, rBot*Math.cos(ang)];
+    ribTops.push(tp); ribBots.push(bp);
+    ropeBetween(tp,bp,0.02,cordMat);
+   }
+   // Horizontal and diagonal macrame lattice rings
+   const rings=[0.3,0.58,0.82];
+   for(const t of rings){
+    const ringY=(1-t)*apexY+t*hoopY;
+    const ringR=(1-t)*rTop+t*rBot;
+    for(let i=0;i<numRibs;i++){
+     const a1=startAng+i*ribStep, a2=startAng+(i+1)*ribStep;
+     const p1=[ringR*Math.sin(a1), ringY, ringR*Math.cos(a1)];
+     const p2=[ringR*Math.sin(a2), ringY, ringR*Math.cos(a2)];
+     ropeBetween(p1,p2,0.016,cordMat);
+     // Diamond criss-cross cord
+     if(t<0.8){
+      const nextT=t===0.3?0.58:0.82;
+      const nextY=(1-nextT)*apexY+nextT*hoopY, nextR=(1-nextT)*rTop+nextT*rBot;
+      const pCross=[nextR*Math.sin(a2), nextY, nextR*Math.cos(a2)];
+      ropeBetween(p1,pCross,0.012,cordMat);
+     }
+    }
+   }
+
+   // 4. Circular Basket Rim Hoop & Woven Skirt Band
+   const hoopTorus=new T.Mesh(new T.TorusGeometry(R,0.065,14,40),cordMat);
+   hoopTorus.rotation.x=Math.PI/2;
+   hoopTorus.position.set(0,hoopY,0);
+   hoopTorus.castShadow=true;
+   g.add(hoopTorus);
+
+   // Woven macrame band around hoop rim
+   C(g,R+0.02,R+0.02,0.22,0,hoopY-0.1,0,cordMat);
+   // Underseat support base
+   C(g,R*0.94,R*0.94,0.04,0,hoopY-0.02,0,cordMat);
+
+   // 5. Dense Cascading Hanging Fringe & Knot Tassels (all around 360°)
+   const numFringe=42;
+   for(let i=0;i<numFringe;i++){
+    const phi=i*(2*Math.PI/numFringe);
+    const fx=(R+0.025)*Math.sin(phi), fz=(R+0.025)*Math.cos(phi);
+    const fLen=0.72+0.08*Math.sin(phi*3);
+    C(g,0.011,0.011,fLen,fx,hoopY-0.21-fLen/2,fz,cordMat);
+    // Tiny knot bead at the tip of each strand
+    C(g,0.026,0.026,0.04,fx,hoopY-0.21-fLen+0.02,fz,cordMat);
+   }
+
+   // 6. Ultra-Plush Round Charcoal Tufted Cushion
+   C(g,R*0.86,R*0.86,0.38,0,hoopY+0.18,0,cushionMat);
+   const cushTorus=new T.Mesh(new T.TorusGeometry(R*0.84,0.14,14,36),cushionMat);
+   cushTorus.rotation.x=Math.PI/2;
+   cushTorus.position.set(0,hoopY+0.22,0);
+   cushTorus.castShadow=true;
+   g.add(cushTorus);
+   // Button tufts on round cushion
+   const btnMat=mat('#1d2024',true);
+   for(let a=0;a<8;a++){
+    const ang=a*Math.PI/4;
+    C(g,0.045,0.045,0.03,R*0.48*Math.sin(ang),hoopY+0.37,R*0.48*Math.cos(ang),btnMat);
+   }
+   C(g,0.05,0.05,0.03,0,hoopY+0.37,0,btnMat);
+
+   // 7. Curved Rear Bolster Cushion
+   const bolster=new T.Mesh(new T.TorusGeometry(R*0.72,0.24,12,28,Math.PI),cushionMat);
+   bolster.rotation.x=Math.PI/2;
+   bolster.position.set(0,hoopY+0.62,-0.05);
+   bolster.castShadow=true;
+   g.add(bolster);
+
+   // 8. Signature Round Pleated Rosette Button Throw Pillow (as in photo)
+   const rosetteG=new T.Group();
+   rosetteG.position.set(-0.35, hoopY+0.52, 0.22);
+   rosetteG.rotation.set(0.35, -0.4, 0.2);
+   const rosDisk=new T.Mesh(new T.CylinderGeometry(0.38,0.38,0.2,24),rosetteMat);
+   rosDisk.castShadow=true;
+   rosetteG.add(rosDisk);
+   const rosRim=new T.Mesh(new T.TorusGeometry(0.36,0.09,10,24),rosetteMat);
+   rosRim.rotation.x=Math.PI/2;
+   rosRim.castShadow=true;
+   rosetteG.add(rosRim);
+   C(rosetteG,0.055,0.055,0.24,0,0,0,btnMat);
+   g.add(rosetteG);
+
+   // 9. Back Lumbar Comfort Pillow
+   const backPillow=B(g,0.92,0.54,0.28,0.22,hoopY+0.65,-0.32,cushionMat);
+   if(backPillow) backPillow.rotation.x=-0.2;
   }
-  B(g,w+0.2,0.1,0.1,0,top-0.05,-d/2+0.1,ch);
-  B(g,w+0.2,0.1,0.1,0,top-0.05,d/2-0.1,ch);
  }
  else if(K==='dining'){
   B(g,w,0.12,d,0,h-0.06,0,m);
@@ -3539,21 +3794,6 @@ function buildStatic(){
   me.receiveShadow=true;
   gStatic.add(me);
  }
-
- // Architectural potted monstera plant in corner
- const plG=new T.Group();plG.position.set(1.6,0,27.2);
- C(plG,0.48,0.4,1.3,0,0.65,0,mat('#e8e5df'));
- C(plG,0.5,0.5,0.06,0,1.28,0,mat('',0,'brass'));
- C(plG,0.44,0.44,0.08,0,1.26,0,mat('#2c241c'));
- for(let lp=0;lp<7;lp++){
-  const ang=(lp*Math.PI*2)/7;
-  const leaf=new T.Mesh(new T.SphereGeometry(0.38,8,6),mat('#2e5628',false,'fabric'));
-  leaf.scale.set(0.8,0.18,1.4);
-  leaf.rotation.set(0.4*Math.sin(ang),ang,0.4*Math.cos(ang));
-  leaf.position.set(Math.sin(ang)*0.38,1.45+lp*0.1,Math.cos(ang)*0.38);
-  leaf.castShadow=true;plG.add(leaf);
- }
- gStatic.add(plG);
 
  // Concrete subfloor base
  const base=new T.Mesh(new T.BoxGeometry(25.5,0.3,40),mat('#7d776f'));
@@ -5552,7 +5792,7 @@ $('#btnReset').onclick=()=>{
 function exportText(){
  const L=state.items.map(it=>{
   const f=fp(it);
-  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,opacity:it.opacity,walkthrough:it.walkthrough,swing:it.swing,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,doorState:it.doorState,glassProfile:it.glassProfile,shelfLights:it.shelfLights,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent,wpImage:it.wpImage,wpTile:it.wpTile};
+  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,opacity:it.opacity,walkthrough:it.walkthrough,swing:it.swing,swingStyle:it.swingStyle,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,doorState:it.doorState,glassProfile:it.glassProfile,shelfLights:it.shelfLights,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent,wpImage:it.wpImage,wpTile:it.wpTile};
  });
  const out={
   plan:'C607 planner realistic v1',
@@ -6119,6 +6359,8 @@ window.__APP__ = {
  buildWalls,
  buildStatic,
  select,
+ renderInspector,
+ get gItems(){ return gItems; },
  rebuildScene,
  takePhoto,
  updateItemTransform,
