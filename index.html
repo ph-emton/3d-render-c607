@@ -594,8 +594,9 @@ const GROUPS=[
  ['Beds & seating',['bed_s','bed_q','bed_k','murphyQ','murphy','sofa3','sofa2','jhula']],
  ['Storage',['wardrobe','loft','crockery','shoerack','puja','dressing','sidetable','shelf','tvbox','broom']],
  ['Kitchen & utility',['kbase','kwall','kloft','chimney','hob','sink','fridge','wm','usink','uunit','cylinder','purifier','openshelf','micro','mixer','cooker']],
- ['Dining & study',['dine4','dine6','dineR','study','chair']],
- ['Living & decor',['tv','fan','wallpaper','curtain','rug','plant','box']]
+ ['Dining & study',['dine4','dine6','dineR','study','chair','chair_dining','chair_study']],
+ ['Lighting & Ceiling',['light_cob','light_profile','light_spot','light_pendant','fan']],
+ ['Living & decor',['tv','wallpaper','curtain','rug','plant','box']]
 ];
 const LIB={
  bed_s:{label:'Single bed',kind:'bed',w:3,d:6.5,h:1.5,elev:0,fin:'walnut'},
@@ -629,7 +630,13 @@ const LIB={
  dine6:{label:'Dining, 6 seat',kind:'dining',w:5,d:3,h:2.5,elev:0,fin:'oak',extra:{seats:6}},
  dineR:{label:'Round dining',kind:'dining_round',w:3.5,d:3.5,h:2.5,elev:0,fin:'oak',extra:{seats:4}},
  study:{label:'Study table',kind:'study',w:4,d:2,h:2.5,elev:0,fin:'oak'},
- chair:{label:'Chair',kind:'chair',w:1.6,d:1.6,h:3,elev:0,fin:'charcoal'},
+ chair:{label:'Dining chair',kind:'chair',subKind:'dining_chair',w:1.5,d:1.5,h:3.1,elev:0,fin:'charcoal',extra:{chairStyle:'dining_upholstered'}},
+ chair_dining:{label:'Upholstered dining chair',kind:'chair',subKind:'dining_chair',w:1.5,d:1.5,h:3.1,elev:0,fin:'sage',extra:{chairStyle:'dining_upholstered',cushionColor:'#42474e'}},
+ chair_study:{label:'Ergonomic study chair',kind:'chair',subKind:'study_chair',w:1.8,d:1.8,h:3.2,elev:0,fin:'black',extra:{chairStyle:'study_ergonomic',cushionColor:'#22252a'}},
+ light_cob:{label:'COB Downlight',kind:'light',subKind:'cob',w:0.75,d:0.75,h:0.35,elev:9.65,fin:'white',extra:{lightType:'cob',colorTemp:'warm',intensity:1.2,beam:'medium',powered:true}},
+ light_profile:{label:'Profile strip light (6ft)',kind:'light',subKind:'profile',w:6.0,d:0.35,h:0.25,elev:9.75,fin:'black',extra:{lightType:'profile',colorTemp:'neutral',intensity:1.4,powered:true}},
+ light_spot:{label:'Directional spotlight',kind:'light',subKind:'spot',w:0.75,d:0.75,h:0.65,elev:9.35,fin:'black',extra:{lightType:'spot',colorTemp:'warm',intensity:1.3,beam:'narrow',tilt:25,powered:true}},
+ light_pendant:{label:'Dining pendant light',kind:'light',subKind:'pendant',w:1.2,d:1.2,h:3.2,elev:6.8,fin:'brass',extra:{lightType:'pendant',colorTemp:'warm',intensity:1.5,powered:true}},
  tv:{label:'TV 32in',kind:'tv',w:2.4,d:0.2,h:1.4,elev:3.1,fin:'black'},
  wallpaper:{label:'Wallpaper',kind:'wallpaper',w:6,d:0.05,h:10,elev:0,fin:'wpA'},
  rug:{label:'Rug',kind:'rug',w:4,d:6,h:0.03,elev:0,fin:'terracotta'},
@@ -642,16 +649,16 @@ const LIB={
  micro:{label:'Microwave',kind:'micro',w:1.67,d:1.25,h:1,elev:2.83,fin:'black'},
  mixer:{label:'Mixer',kind:'mixer',w:0.75,d:0.75,h:1.35,elev:2.83,fin:'white'},
  cooker:{label:'Rice cooker',kind:'cooker',w:1,d:1,h:1,elev:2.83,fin:'white'},
- fan:{label:'Ceiling fan',kind:'fan',w:3.8,d:3.8,h:1.3,elev:8.7,fin:'walnut'},
+ fan:{label:'Ceiling fan',kind:'fan',w:4.0,d:4.0,h:1.3,elev:8.7,fin:'walnut',extra:{fanSpeed:3,fanBlades:3}},
  box:{label:'Custom unit',kind:'wardrobe',w:2,d:2,h:3,elev:0,fin:'white'}
 };
-const NOCOL=new Set(['wallpaper','rug','hob','sink','purifier','cylinder','fan','curtain']);
+const NOCOL=new Set(['wallpaper','rug','hob','sink','purifier','cylinder','fan','curtain','light']);
 const CARP={openshelf:1,wardrobe:1,loft:1,kbase:1,kwall:1,crockery:1,puja:1,dressing:1,shelf:2,study:2,murphy:2};
 
 let uidN=1;const uid=()=>'i'+(Date.now().toString(36))+(uidN++);
 function make(k,x,y,rot,o){const t=LIB[k];return Object.assign({id:uid(),key:k,kind:t.kind,label:t.label,w:t.w,d:t.d,h:t.h,elev:t.elev,fin:t.fin,rot:rot||0},JSON.parse(JSON.stringify(t.extra||{})),o||{},{x:x,y:y});}
-const SEED={"plan":"C607 planner realistic v1","note":"Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.","ceiling_ft":10,"items":[{"label":"Brother's bed","kind":"bed","room":"Brother's room","x_in":208,"y_in":390,"w_in":61,"d_in":76,"h_in":18,"elev_in":0,"rot":90,"finish":"#dd5340","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":130,"y_in":372,"w_in":96,"d_in":23,"h_in":84,"elev_in":0,"rot":270,"finish":"#c13c1a","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Brother's room","x_in":130,"y_in":335,"w_in":133,"d_in":23,"h_in":30,"elev_in":90,"rot":270,"finish":"#e65f33","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Your bed","kind":"bed","room":"Your room","x_in":55,"y_in":144,"w_in":54,"d_in":81,"h_in":18,"elev_in":0,"rot":90,"finish":"oak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Your room","x_in":45,"y_in":82,"w_in":64,"d_in":24,"h_in":30,"elev_in":0,"rot":0,"finish":"#000000","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study chair","kind":"chair","room":"Your room","x_in":61,"y_in":106,"w_in":19,"d_in":19,"h_in":36,"elev_in":0,"rot":180,"finish":"charcoal","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe (sliding)","kind":"wardrobe","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":84,"elev_in":0,"rot":90,"finish":"#b21f1f","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":30,"elev_in":90,"rot":90,"finish":"#c22424","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, top run","kind":"kbase","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, side run","kind":"kbase","room":"Kitchen","x_in":216,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hob","kind":"hob","room":"Kitchen","x_in":185,"y_in":84,"w_in":30,"d_in":19,"h_in":1,"elev_in":34,"rot":0,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Sink","kind":"sink","room":"Kitchen","x_in":220,"y_in":115,"w_in":24,"d_in":17,"h_in":1,"elev_in":34,"rot":90,"finish":"#1d221c","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Water purifier","kind":"purifier","room":"Kitchen","x_in":234,"y_in":136,"w_in":15,"d_in":6,"h_in":19,"elev_in":53,"rot":90,"finish":"midnight","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":142,"y_in":82,"w_in":36,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Chimney","kind":"chimney","room":"Kitchen","x_in":182,"y_in":82,"w_in":36,"d_in":19,"h_in":19,"elev_in":60,"rot":0,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":218,"y_in":82,"w_in":22,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":22,"h_in":30,"elev_in":90,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":217,"y_in":105,"w_in":100,"d_in":23,"h_in":30,"elev_in":90,"rot":90,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone, corner","kind":"kbase","room":"Utility","x_in":246,"y_in":82,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"gigrey","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone + sink","kind":"kbase","room":"Utility","x_in":246,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":270,"finish":"gigrey","granite":true,"sinkTop":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Gas cylinder (under stone)","kind":"cylinder","room":"Utility","x_in":247,"y_in":84,"w_in":13,"d_in":13,"h_in":32,"elev_in":0,"rot":0,"finish":"terracotta","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Top-load washer (no stone above)","kind":"wm","room":"Utility","x_in":256,"y_in":177,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"gigrey","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wall box (west wall)","kind":"kwall","room":"Utility","x_in":252,"y_in":190,"w_in":36,"d_in":14,"h_in":24,"elev_in":54,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Fridge","kind":"fridge","room":"Kitchen","x_in":173,"y_in":178,"w_in":25,"d_in":27,"h_in":70,"elev_in":0,"rot":180,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Puja unit","kind":"puja","room":"Hall","x_in":44,"y_in":210,"w_in":32,"d_in":18,"h_in":78,"elev_in":0,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining, against north wall","kind":"dining","room":"Hall","x_in":0,"y_in":274,"w_in":48,"d_in":30,"h_in":30,"elev_in":0,"rot":270,"finish":"sage","wall":true,"seats":4,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Boho swing pod","kind":"jhula","room":"Hall","x_in":78,"y_in":293,"w_in":42,"d_in":42,"h_in":120,"elev_in":0,"rot":0,"finish":"charcoal","swing":1.2,"swingStyle":"boho_macrame","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mom's sofa-cum-bed lounge","kind":"murphy","room":"Hall","x_in":82,"y_in":376,"w_in":84,"d_in":42,"h_in":34,"elev_in":0,"rot":90,"finish":"sage","openD":5.4,"open":false,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wallpaper","kind":"wallpaper","room":"Hall","x_in":0,"y_in":354,"w_in":60,"d_in":1,"h_in":120,"elev_in":0,"rot":270,"finish":"wpB","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Floating TV box (UPS, router)","kind":"kwall","room":"Hall","x_in":0,"y_in":345,"w_in":82,"d_in":15,"h_in":24,"elev_in":7,"rot":270,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"TV 32in","kind":"tv","room":"Hall","x_in":0,"y_in":370,"w_in":32,"d_in":2,"h_in":21,"elev_in":46,"rot":270,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Kitchen","x_in":199,"y_in":186,"w_in":40,"d_in":18,"h_in":34,"elev_in":0,"rot":180,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Microwave","kind":"micro","room":"Hall","x_in":76,"y_in":213,"w_in":20,"d_in":15,"h_in":12,"elev_in":34,"rot":180,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mixer","kind":"mixer","room":"Kitchen","x_in":206,"y_in":193,"w_in":9,"d_in":9,"h_in":16,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Rice cooker","kind":"cooker","room":"Kitchen","x_in":222,"y_in":190,"w_in":12,"d_in":12,"h_in":12,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Kitchen","x_in":217,"y_in":192,"w_in":23,"d_in":12,"h_in":24,"elev_in":58,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":168,"y_in":449,"w_in":38,"d_in":20,"h_in":84,"elev_in":0,"rot":180,"finish":"obsidian","doors":"hinged","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Side table","kind":"wardrobe","room":"Brother's room","x_in":266,"y_in":451,"w_in":18,"d_in":18,"h_in":22,"elev_in":0,"rot":90,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Brother's room","x_in":260,"y_in":341,"w_in":49,"d_in":24,"h_in":30,"elev_in":0,"rot":90,"finish":"teak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":18,"h_in":29,"elev_in":0,"rot":0,"finish":"dusty_rose","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":12,"h_in":24,"elev_in":48,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hall curtain","kind":"curtain","room":"Hall","x_in":2,"y_in":323,"w_in":121,"d_in":4,"h_in":118,"elev_in":0,"rot":0,"finish":"#f3efe6","opacity":0.88,"walkthrough":24}],"wallColor":"teal","roomWallColors":{"Your room":"#3982d0","Brother's room":"#ea9739"}};
-function fromExport(i){return {id:uid(),key:i.kind==='curtain'?'curtain':'',kind:i.kind,label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:(i.kind==='curtain'?'#f3efe6':'oak'),opacity:typeof i.opacity==='number'?i.opacity:(i.kind==='curtain'?0.88:undefined),walkthrough:typeof i.walkthrough==='number'?i.walkthrough:(i.kind==='curtain'?24:undefined),open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,swingStyle:i.swingStyle||(i.kind==='jhula'?'boho_macrame':undefined),doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,doorState:i.doorState,glassProfile:i.glassProfile,shelfLights:i.shelfLights,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass',wpImage:i.wpImage,wpTile:i.wpTile};}
+const SEED={"plan":"C607 planner realistic v1","note":"Origin top-left of plan; x runs North to South, y runs East to West. rot=direction the back faces: 0 East wall, 90 South, 180 West, 270 North.","ceiling_ft":10,"items":[{"label":"Brother's bed","kind":"bed","room":"Brother's room","x_in":208,"y_in":390,"w_in":61,"d_in":76,"h_in":18,"elev_in":0,"rot":90,"finish":"#dd5340","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":130,"y_in":372,"w_in":96,"d_in":23,"h_in":84,"elev_in":0,"rot":270,"finish":"#c13c1a","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Brother's room","x_in":130,"y_in":335,"w_in":133,"d_in":23,"h_in":30,"elev_in":90,"rot":270,"finish":"#e65f33","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Your bed","kind":"bed","room":"Your room","x_in":55,"y_in":144,"w_in":54,"d_in":81,"h_in":18,"elev_in":0,"rot":90,"finish":"oak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Your room","x_in":45,"y_in":82,"w_in":64,"d_in":24,"h_in":30,"elev_in":0,"rot":0,"finish":"#000000","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study chair","kind":"chair","subKind":"study_chair","room":"Your room","x_in":61,"y_in":106,"w_in":21,"d_in":21,"h_in":36,"elev_in":0,"rot":180,"finish":"charcoal","chairStyle":"study_ergonomic","cushionColor":"#22252a","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe (sliding)","kind":"wardrobe","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":84,"elev_in":0,"rot":90,"finish":"#b21f1f","doors":"sliding","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Loft","kind":"loft","room":"Your room","x_in":111,"y_in":82,"w_in":60,"d_in":25,"h_in":30,"elev_in":90,"rot":90,"finish":"#c22424","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, top run","kind":"kbase","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Base unit, side run","kind":"kbase","room":"Kitchen","x_in":216,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hob","kind":"hob","room":"Kitchen","x_in":185,"y_in":84,"w_in":30,"d_in":19,"h_in":1,"elev_in":34,"rot":0,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Sink","kind":"sink","room":"Kitchen","x_in":220,"y_in":115,"w_in":24,"d_in":17,"h_in":1,"elev_in":34,"rot":90,"finish":"#1d221c","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Water purifier","kind":"purifier","room":"Kitchen","x_in":234,"y_in":136,"w_in":15,"d_in":6,"h_in":19,"elev_in":53,"rot":90,"finish":"midnight","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":142,"y_in":82,"w_in":36,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Chimney","kind":"chimney","room":"Kitchen","x_in":182,"y_in":82,"w_in":36,"d_in":19,"h_in":19,"elev_in":60,"rot":0,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen wall unit","kind":"kwall","room":"Kitchen","x_in":218,"y_in":82,"w_in":22,"d_in":14,"h_in":24,"elev_in":56,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":142,"y_in":82,"w_in":98,"d_in":22,"h_in":30,"elev_in":90,"rot":0,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Kitchen loft","kind":"loft","room":"Kitchen","x_in":217,"y_in":105,"w_in":100,"d_in":23,"h_in":30,"elev_in":90,"rot":90,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone, corner","kind":"kbase","room":"Utility","x_in":246,"y_in":82,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":0,"finish":"gigrey","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Utility stone + sink","kind":"kbase","room":"Utility","x_in":246,"y_in":106,"w_in":43,"d_in":24,"h_in":34,"elev_in":0,"rot":270,"finish":"gigrey","granite":true,"sinkTop":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Gas cylinder (under stone)","kind":"cylinder","room":"Utility","x_in":247,"y_in":84,"w_in":13,"d_in":13,"h_in":32,"elev_in":0,"rot":0,"finish":"terracotta","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Top-load washer (no stone above)","kind":"wm","room":"Utility","x_in":256,"y_in":177,"w_in":24,"d_in":24,"h_in":34,"elev_in":0,"rot":90,"finish":"gigrey","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wall box (west wall)","kind":"kwall","room":"Utility","x_in":252,"y_in":190,"w_in":36,"d_in":14,"h_in":24,"elev_in":54,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Fridge","kind":"fridge","room":"Kitchen","x_in":173,"y_in":178,"w_in":25,"d_in":27,"h_in":70,"elev_in":0,"rot":180,"finish":"steel","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Puja unit","kind":"puja","room":"Hall","x_in":44,"y_in":210,"w_in":32,"d_in":18,"h_in":78,"elev_in":0,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining, against north wall","kind":"dining","room":"Hall","x_in":0,"y_in":274,"w_in":48,"d_in":30,"h_in":30,"elev_in":0,"rot":270,"finish":"sage","wall":true,"seats":4,"chairsDetached":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Dining chair 1 (Front L)","kind":"chair","subKind":"dining_chair","room":"Hall","x_in":36,"y_in":265,"w_in":18,"d_in":18,"h_in":37,"elev_in":0,"rot":270,"finish":"sage","chairStyle":"dining_upholstered","cushionColor":"#42474e"},{"label":"Dining chair 2 (Front R)","kind":"chair","subKind":"dining_chair","room":"Hall","x_in":36,"y_in":295,"w_in":18,"d_in":18,"h_in":37,"elev_in":0,"rot":270,"finish":"sage","chairStyle":"dining_upholstered","cushionColor":"#42474e"},{"label":"Dining chair 3 (End L)","kind":"chair","subKind":"dining_chair","room":"Hall","x_in":12,"y_in":252,"w_in":18,"d_in":18,"h_in":37,"elev_in":0,"rot":0,"finish":"sage","chairStyle":"dining_upholstered","cushionColor":"#42474e"},{"label":"Dining chair 4 (End R)","kind":"chair","subKind":"dining_chair","room":"Hall","x_in":12,"y_in":308,"w_in":18,"d_in":18,"h_in":37,"elev_in":0,"rot":180,"finish":"sage","chairStyle":"dining_upholstered","cushionColor":"#42474e"},{"label":"Boho swing pod","kind":"jhula","room":"Hall","x_in":78,"y_in":293,"w_in":42,"d_in":42,"h_in":120,"elev_in":0,"rot":0,"finish":"charcoal","swing":1.2,"swingStyle":"boho_macrame","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mom's sofa-cum-bed lounge","kind":"murphy","room":"Hall","x_in":82,"y_in":376,"w_in":84,"d_in":42,"h_in":34,"elev_in":0,"rot":90,"finish":"sage","openD":5.4,"open":false,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wallpaper","kind":"wallpaper","room":"Hall","x_in":0,"y_in":354,"w_in":60,"d_in":1,"h_in":120,"elev_in":0,"rot":270,"finish":"wpB","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Floating TV box (UPS, router)","kind":"kwall","room":"Hall","x_in":0,"y_in":345,"w_in":82,"d_in":15,"h_in":24,"elev_in":7,"rot":270,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"TV 32in","kind":"tv","room":"Hall","x_in":0,"y_in":370,"w_in":32,"d_in":2,"h_in":21,"elev_in":46,"rot":270,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Kitchen","x_in":199,"y_in":186,"w_in":40,"d_in":18,"h_in":34,"elev_in":0,"rot":180,"finish":"rosegold","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Microwave","kind":"micro","room":"Hall","x_in":76,"y_in":213,"w_in":20,"d_in":15,"h_in":12,"elev_in":34,"rot":180,"finish":"black","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Mixer","kind":"mixer","room":"Kitchen","x_in":206,"y_in":193,"w_in":9,"d_in":9,"h_in":16,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Rice cooker","kind":"cooker","room":"Kitchen","x_in":222,"y_in":190,"w_in":12,"d_in":12,"h_in":12,"elev_in":34,"rot":180,"finish":"white","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Kitchen","x_in":217,"y_in":192,"w_in":23,"d_in":12,"h_in":24,"elev_in":58,"rot":180,"finish":"rosegold","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Wardrobe","kind":"wardrobe","room":"Brother's room","x_in":168,"y_in":449,"w_in":38,"d_in":20,"h_in":84,"elev_in":0,"rot":180,"finish":"obsidian","doors":"hinged","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Side table","kind":"wardrobe","room":"Brother's room","x_in":266,"y_in":451,"w_in":18,"d_in":18,"h_in":22,"elev_in":0,"rot":90,"finish":"walnut","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Study desk","kind":"study","room":"Brother's room","x_in":260,"y_in":341,"w_in":49,"d_in":24,"h_in":30,"elev_in":0,"rot":90,"finish":"teak","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Brother's study chair","kind":"chair","subKind":"study_chair","room":"Brother's room","x_in":236,"y_in":341,"w_in":21,"d_in":21,"h_in":36,"elev_in":0,"rot":270,"finish":"black","chairStyle":"study_ergonomic","cushionColor":"#22252a"},{"label":"Appliance counter (west wall)","kind":"kbase","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":18,"h_in":29,"elev_in":0,"rot":0,"finish":"dusty_rose","granite":true,"wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Open shelves","kind":"openshelf","room":"Hall","x_in":76,"y_in":210,"w_in":62,"d_in":12,"h_in":24,"elev_in":48,"rot":0,"finish":"dusty_rose","wpStyle":"fluted","wpColor":"#22252a","wpAccent":"brass"},{"label":"Hall curtain","kind":"curtain","room":"Hall","x_in":2,"y_in":323,"w_in":121,"d_in":4,"h_in":118,"elev_in":0,"rot":0,"finish":"#f3efe6","opacity":0.88,"walkthrough":24},{"label":"Hall living fan","kind":"fan","room":"Hall","x_in":62,"y_in":408,"w_in":48,"d_in":48,"h_in":15,"elev_in":105,"rot":0,"finish":"walnut","fanSpeed":3,"fanBlades":3},{"label":"Hall dining fan","kind":"fan","room":"Hall","x_in":62,"y_in":282,"w_in":48,"d_in":48,"h_in":15,"elev_in":105,"rot":0,"finish":"walnut","fanSpeed":3,"fanBlades":3},{"label":"Your room fan","kind":"fan","room":"Your room","x_in":68,"y_in":144,"w_in":48,"d_in":48,"h_in":15,"elev_in":105,"rot":0,"finish":"walnut","fanSpeed":3,"fanBlades":3},{"label":"Brother's room fan","kind":"fan","room":"Brother's room","x_in":207,"y_in":402,"w_in":48,"d_in":48,"h_in":15,"elev_in":105,"rot":0,"finish":"walnut","fanSpeed":3,"fanBlades":3},{"label":"Kitchen fan","kind":"fan","room":"Kitchen","x_in":191,"y_in":144,"w_in":42,"d_in":42,"h_in":15,"elev_in":105,"rot":0,"finish":"white","fanSpeed":3,"fanBlades":3},{"label":"Living COB downlight 1","kind":"light","subKind":"cob","room":"Hall","x_in":62,"y_in":396,"w_in":9,"d_in":9,"h_in":4,"elev_in":116,"rot":0,"finish":"white","lightType":"cob","colorTemp":"warm","intensity":1.3,"beam":"medium","powered":true},{"label":"TV accent spotlight","kind":"light","subKind":"spot","room":"Hall","x_in":24,"y_in":426,"w_in":9,"d_in":9,"h_in":8,"elev_in":112,"rot":90,"finish":"black","lightType":"spot","colorTemp":"warm","intensity":1.4,"beam":"narrow","tilt":28,"powered":true},{"label":"Profile strip light (Hall)","kind":"light","subKind":"profile","room":"Hall","x_in":62,"y_in":336,"w_in":72,"d_in":4,"h_in":3,"elev_in":117,"rot":0,"finish":"black","lightType":"profile","colorTemp":"neutral","intensity":1.5,"powered":true},{"label":"Dining pendant light","kind":"light","subKind":"pendant","room":"Hall","x_in":18,"y_in":280,"w_in":14,"d_in":14,"h_in":38,"elev_in":82,"rot":0,"finish":"brass","lightType":"pendant","colorTemp":"warm","intensity":1.6,"powered":true}],"wallColor":"teal","roomWallColors":{"Your room":"#3982d0","Brother's room":"#ea9739"}};
+function fromExport(i){return {id:uid(),key:i.kind==='curtain'?'curtain':(i.key||''),kind:i.kind,subKind:i.subKind||(i.kind==='light'?(i.lightType||'cob'):(i.kind==='chair'?(i.chairStyle==='study_ergonomic'?'study_chair':'dining_chair'):'')),label:i.label,x:i.x_in/12,y:i.y_in/12,w:i.w_in/12,d:i.d_in/12,h:i.h_in/12,elev:i.elev_in/12,rot:i.rot||0,fin:(FIN[i.finish]||(typeof i.finish==='string'&&i.finish.startsWith('#')))?i.finish:(i.kind==='curtain'?'#f3efe6':'oak'),opacity:typeof i.opacity==='number'?i.opacity:(i.kind==='curtain'?0.88:undefined),walkthrough:typeof i.walkthrough==='number'?i.walkthrough:(i.kind==='curtain'?24:undefined),open:i.open,openD:i.openD||(i.kind==='murphy'?(i.h_in>=60?5.4:3.6):undefined),seats:i.seats,swing:i.swing,swingStyle:i.swingStyle||(i.kind==='jhula'?'boho_macrame':undefined),doors:i.doors,wall:i.wall,granite:i.granite,sinkTop:i.sinkTop,doorState:i.doorState,glassProfile:i.glassProfile,shelfLights:i.shelfLights,wpStyle:i.wpStyle||'fluted',wpColor:i.wpColor||'#22252a',wpAccent:i.wpAccent||'brass',wpImage:i.wpImage,wpTile:i.wpTile,lightType:i.lightType||(i.kind==='light'?(i.subKind||'cob'):undefined),colorTemp:i.colorTemp||(i.kind==='light'?'warm':undefined),intensity:typeof i.intensity==='number'?i.intensity:(i.kind==='light'?1.3:undefined),beam:i.beam||(i.kind==='light'?'medium':undefined),tilt:typeof i.tilt==='number'?i.tilt:(i.kind==='light'?25:undefined),powered:i.powered!==false,fanSpeed:typeof i.fanSpeed==='number'?i.fanSpeed:(i.kind==='fan'?3:undefined),fanBlades:typeof i.fanBlades==='number'?i.fanBlades:(i.kind==='fan'?3:undefined),chairStyle:i.chairStyle||(i.kind==='chair'?(i.subKind==='study_chair'?'study_ergonomic':'dining_upholstered'):undefined),cushionColor:i.cushionColor||(i.kind==='chair'?'#42474e':undefined),chairsDetached:i.chairsDetached,parentId:i.parentId};}
 function defaults(){
  state.wallColor = SEED.wallColor || 'teal';
  state.roomWallColors = Object.assign({}, SEED.roomWallColors || {"Your room":"#3982d0","Brother's room":"#ea9739"});
@@ -663,7 +670,7 @@ function defaults(){
  return SEED.items.map(fromExport);
 }
 let state={items:[],sel:null,wallMode:'full',wallColor:SEED.wallColor||'teal',roomWallColors:Object.assign({},SEED.roomWallColors||{"Your room":"#3982d0","Brother's room":"#ea9739"}),roomWallImages:{},toneMapping:'ACESFilmic',exposure:0.95,envIntensity:0.88,ceilingMode:'auto',use3dModels:false,usePostProcessing:true,qualityTier:'auto',renderScale:1.0,basinFinish:'walnut',basinCounter:'#151618',basinBowlColor:'#ffffff',basinMirrorBacklight:true,roomDoorState:'partial'};
-function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto',renderScale:state.renderScale||1.0,basinFinish:state.basinFinish,basinCounter:state.basinCounter,basinBowlColor:state.basinBowlColor,basinMirrorBacklight:state.basinMirrorBacklight!==false,roomDoorState:state.roomDoorState||'partial'}));}catch(e){}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify({v:5,H:H,items:state.items,wallMode:state.wallMode,wallColor:state.wallColor,roomWallColors:state.roomWallColors,roomWallImages:state.roomWallImages,toneMapping:state.toneMapping,exposure:state.exposure,envIntensity:state.envIntensity,ceilingMode:state.ceilingMode,use3dModels:state.use3dModels,usePostProcessing:state.usePostProcessing!==false,qualityTier:state.qualityTier||'auto',renderScale:state.renderScale||1.0,basinFinish:state.basinFinish,basinCounter:state.basinCounter,basinBowlColor:state.basinBowlColor,basinMirrorBacklight:state.basinMirrorBacklight!==false,roomDoorState:state.roomDoorState||'partial'}));}catch(e){} }
 function load(){
  try{
   const raw=localStorage.getItem(STORE);
@@ -689,6 +696,40 @@ function load(){
      walkthrough: 24
     });
    }
+   if(!state.items.some(i=>i.kind==='fan')){
+    state.items.push(
+     {id:uid(),key:'fan',kind:'fan',label:'Hall living fan',x:5.2,y:34.0,w:4.0,d:4.0,h:1.25,elev:8.75,rot:0,fin:'walnut',fanSpeed:3,fanBlades:3},
+     {id:uid(),key:'fan',kind:'fan',label:'Hall dining fan',x:5.2,y:23.5,w:4.0,d:4.0,h:1.25,elev:8.75,rot:0,fin:'walnut',fanSpeed:3,fanBlades:3},
+     {id:uid(),key:'fan',kind:'fan',label:'Your room fan',x:5.66,y:12.0,w:4.0,d:4.0,h:1.25,elev:8.75,rot:0,fin:'walnut',fanSpeed:3,fanBlades:3},
+     {id:uid(),key:'fan',kind:'fan',label:"Brother's room fan",x:17.25,y:33.5,w:4.0,d:4.0,h:1.25,elev:8.75,rot:0,fin:'walnut',fanSpeed:3,fanBlades:3},
+     {id:uid(),key:'fan',kind:'fan',label:'Kitchen fan',x:15.9,y:12.0,w:3.5,d:3.5,h:1.25,elev:8.75,rot:0,fin:'white',fanSpeed:3,fanBlades:3}
+    );
+   }
+   if(!state.items.some(i=>i.kind==='chair'&&(i.label||'').toLowerCase().includes("brother"))){
+    state.items.push({
+     id:uid(),key:'chair_study',kind:'chair',subKind:'study_chair',label:"Brother's study chair",x:19.67,y:28.42,w:1.75,d:1.75,h:3.0,elev:0,rot:270,fin:'black',chairStyle:'study_ergonomic',cushionColor:'#22252a'
+    });
+   }
+   const dineT=state.items.find(i=>i.kind==='dining'||i.kind==='dining_round');
+   if(dineT&&!dineT.chairsDetached){
+    dineT.chairsDetached=true;
+    if(!state.items.some(i=>i.kind==='chair'&&(i.label||'').toLowerCase().includes('dining'))){
+     state.items.push(
+      {id:uid(),key:'chair_dining',kind:'chair',subKind:'dining_chair',label:'Dining chair 1 (Front L)',x:3.0,y:22.08,w:1.5,d:1.5,h:3.1,elev:0,rot:270,fin:'sage',chairStyle:'dining_upholstered',cushionColor:'#42474e',parentId:dineT.id},
+      {id:uid(),key:'chair_dining',kind:'chair',subKind:'dining_chair',label:'Dining chair 2 (Front R)',x:3.0,y:24.58,w:1.5,d:1.5,h:3.1,elev:0,rot:270,fin:'sage',chairStyle:'dining_upholstered',cushionColor:'#42474e',parentId:dineT.id},
+      {id:uid(),key:'chair_dining',kind:'chair',subKind:'dining_chair',label:'Dining chair 3 (End L)',x:1.0,y:21.0,w:1.5,d:1.5,h:3.1,elev:0,rot:0,fin:'sage',chairStyle:'dining_upholstered',cushionColor:'#42474e',parentId:dineT.id},
+      {id:uid(),key:'chair_dining',kind:'chair',subKind:'dining_chair',label:'Dining chair 4 (End R)',x:1.0,y:25.67,w:1.5,d:1.5,h:3.1,elev:0,rot:180,fin:'sage',chairStyle:'dining_upholstered',cushionColor:'#42474e',parentId:dineT.id}
+     );
+    }
+   }
+   if(!state.items.some(i=>i.kind==='light')){
+    state.items.push(
+     {id:uid(),key:'light_cob',kind:'light',subKind:'cob',label:'Living COB downlight 1',x:5.2,y:33.0,w:0.75,d:0.75,h:0.35,elev:9.65,rot:0,fin:'white',lightType:'cob',colorTemp:'warm',intensity:1.3,beam:'medium',powered:true},
+     {id:uid(),key:'light_spot',kind:'light',subKind:'spot',label:'TV accent spotlight',x:2.0,y:35.5,w:0.75,d:0.75,h:0.65,elev:9.35,rot:90,fin:'black',lightType:'spot',colorTemp:'warm',intensity:1.4,beam:'narrow',tilt:28,powered:true},
+     {id:uid(),key:'light_profile',kind:'light',subKind:'profile',label:'Profile strip light (Hall)',x:5.2,y:28.0,w:6.0,d:0.35,h:0.25,elev:9.75,rot:0,fin:'black',lightType:'profile',colorTemp:'neutral',intensity:1.5,powered:true},
+     {id:uid(),key:'light_pendant',kind:'light',subKind:'pendant',label:'Dining pendant light',x:1.5,y:23.33,w:1.2,d:1.2,h:3.2,elev:6.8,rot:0,fin:'brass',lightType:'pendant',colorTemp:'warm',intensity:1.6,powered:true}
+    );
+   }
    for(const it of state.items){
     if(it.kind==='curtain'){
      if(typeof it.opacity!=='number') it.opacity=0.88;
@@ -702,6 +743,20 @@ function load(){
      if(!it.swingStyle) it.swingStyle='boho_macrame';
      if(it.d<2.8) it.d=3.5;
      if(it.label==='Jhula') it.label='Boho swing pod';
+    }
+    if(it.kind==='chair'){
+     if(!it.chairStyle) it.chairStyle = (it.subKind==='study_chair'||(it.label||'').toLowerCase().includes('study')) ? 'study_ergonomic' : 'dining_upholstered';
+     if(!it.cushionColor) it.cushionColor = it.chairStyle==='study_ergonomic' ? '#22252a' : '#42474e';
+    }
+    if(it.kind==='fan'){
+     if(it.fanSpeed==null) it.fanSpeed = 3;
+     if(!it.fanBlades) it.fanBlades = 3;
+    }
+    if(it.kind==='light'){
+     if(!it.lightType) it.lightType = it.subKind || 'cob';
+     if(!it.colorTemp) it.colorTemp = 'warm';
+     if(it.intensity==null) it.intensity = 1.3;
+     if(it.powered==null) it.powered = true;
     }
    }
    state.items=state.items.filter(it=>!(it.kind==='plant'&&(it.room==='Hall'||it.room==='Dining'||!it.room)&&it.x<6&&it.y>=18&&it.y<=28));
@@ -733,7 +788,7 @@ const fmt=ft=>{let t=Math.round(ft*12);const n=t<0;t=Math.abs(t);const f=Math.fl
 const r2=v=>Math.round(v*1000)/1000;
 function fp(it){const r=((it.rot%360)+360)%360,s=(r===90||r===270);return {x:it.x,y:it.y,w:s?it.d:it.w,h:s?it.w:it.d};}
 const frontVec=r=>({0:[0,1],90:[-1,0],180:[0,-1],270:[1,0]})[((r%360)+360)%360];
-const isOver=it=>it.elev>=4.5||it.kind==='chimney'||it.kind==='fan';
+const isOver=it=>it.elev>=4.5||it.kind==='chimney'||it.kind==='fan'||it.kind==='light';
 const byId=id=>state.items.find(i=>i.id===id);
 function roomOf(x,y){for(const r of ROOMS){if(x>=r.x&&x<=r.x+r.w&&y>=r.y&&y<=r.y+r.d)return r.n;}return 'Other';}
 
@@ -816,6 +871,7 @@ function overlaps(){
  return bad;
 }
 function chairSpots(it){
+ if(it.chairsDetached) return [];
  const s=it.seats||4,w=it.w,d=it.d,out=[];
  if(it.kind==='dining_round'){const r=w/2+0.7;for(let k=0;k<s;k++){const a=2*Math.PI*k/s+Math.PI/4;out.push({x:r*Math.cos(a),z:r*Math.sin(a),ang:Math.atan2(Math.cos(a),Math.sin(a))});}return out;}
  if(it.wall){const nf=s>=4?2:(s===3?1:Math.min(s,2)),ne=s>=3?2:0;for(let i=0;i<nf;i++)out.push({x:-w/2+w*(i+0.5)/nf,z:d/2+0.75,ang:0});if(ne){out.push({x:w/2+0.75,z:0,ang:Math.PI/2});out.push({x:-w/2-0.75,z:0,ang:-Math.PI/2});}return out;}
@@ -858,6 +914,8 @@ function itemSVG(it,bad){
   }else{
    s+=drawWaves(x0+0.05,-x0-0.05);
   }
+ }else if(it.kind==='fan'||it.kind==='light'){
+  // Drawn specifically in their own blocks below
  }else{
   s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="'+d+'" rx="0.05" fill="'+col+'" fill-opacity="'+fo+'" stroke="'+stroke+'" stroke-width="'+sw+'"'+dash+(over?' stroke-opacity="0.8"':' stroke-opacity="'+(sel?1:0.45)+'"')+'/>';
  }
@@ -912,18 +970,62 @@ function itemSVG(it,bad){
  if(K==='wardrobe'||K==='crockery'||K==='puja'||K==='dressing'){s+='<line x1="'+x0+'" y1="'+(-y0)+'" x2="'+(-x0)+'" y2="'+y0+'" stroke="var(--ink)" stroke-opacity=".35" stroke-width="0.03"/>';}
  if(K==='hob'){s+='<circle cx="'+(-w/4)+'" cy="0" r="0.32" fill="none" stroke="#ddd" stroke-width="0.05"/><circle cx="'+(w/4)+'" cy="0" r="0.32" fill="none" stroke="#ddd" stroke-width="0.05"/>';}
  if(K==='sink'){s+='<rect x="'+(x0+0.15)+'" y="'+(y0+0.15)+'" width="'+(w-0.3)+'" height="'+(d-0.3)+'" rx="0.15" fill="#fff" fill-opacity=".5" stroke="#555" stroke-width="0.03"/>';}
- if(K==='chair'){s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="0.3" fill="#0004"/>';}
+ if(K==='chair'){
+  const chStyle = it.chairStyle || (it.subKind==='study_chair'?'study_ergonomic':'dining_upholstered');
+  const cushCol = it.cushionColor || col;
+  if(chStyle==='study_ergonomic'){
+   s+='<circle cx="0" cy="0" r="'+r2(w*0.48)+'" fill="none" stroke="var(--ink)" stroke-width="0.02" stroke-dasharray="0.1 0.08" opacity="0.4"/>';
+   for(let a=0;a<5;a++){
+    const rad=a*Math.PI*2/5-Math.PI/2, bx=Math.cos(rad)*w*0.42, by=Math.sin(rad)*d*0.42;
+    s+='<line x1="0" y1="0" x2="'+r2(bx)+'" y2="'+r2(by)+'" stroke="var(--ink)" stroke-width="0.04" stroke-linecap="round" opacity="0.5"/>';
+   }
+   s+='<rect x="'+(x0+0.05)+'" y="'+(y0+d*0.3)+'" width="0.22" height="'+(d*0.45)+'" rx="0.08" fill="#1b1e22"/>';
+   s+='<rect x="'+(-x0-0.27)+'" y="'+(y0+d*0.3)+'" width="0.22" height="'+(d*0.45)+'" rx="0.08" fill="#1b1e22"/>';
+   s+='<rect x="'+(x0+0.25)+'" y="'+(y0+0.2)+'" width="'+(w-0.5)+'" height="'+(d-0.35)+'" rx="0.2" fill="'+cushCol+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+   s+='<path d="M '+r2(x0+0.2)+' '+r2(y0+0.25)+' Q 0 '+r2(y0-0.05)+' '+r2(-x0-0.2)+' '+r2(y0+0.25)+'" fill="none" stroke="var(--ink)" stroke-width="0.14" stroke-linecap="round"/>';
+  }else{
+   s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="'+d+'" rx="0.15" fill="'+cushCol+'" fill-opacity="0.9" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+   s+='<rect x="'+(x0+0.1)+'" y="'+(y0+0.08)+'" width="'+(w-0.2)+'" height="0.28" rx="0.06" fill="'+col+'" stroke="var(--ink)" stroke-width="0.02"/>';
+  }
+ }
  if(K==='fan'){
-  s+='<circle cx="0" cy="0" r="'+r2(w/2)+'" fill="none" stroke="var(--accent)" stroke-width="0.035" stroke-dasharray="0.14 0.1" opacity="0.65"/>';
-  for(let a=0;a<3;a++){
-   const rad=a*Math.PI*2/3-Math.PI/2;
+  const numB = it.fanBlades || 3;
+  const spd = (it.fanSpeed != null ? it.fanSpeed : 3);
+  s+='<circle cx="0" cy="0" r="'+r2(w/2)+'" fill="none" stroke="'+(sel?'var(--accent)':'var(--ink)')+'" stroke-width="'+sw+'" stroke-dasharray="0.14 0.1" opacity="'+(spd>0?0.75:0.35)+'"/>';
+  for(let a=0;a<numB;a++){
+   const rad=a*Math.PI*2/numB-Math.PI/2;
    const x2=(w/2-0.12)*Math.cos(rad),y2=(w/2-0.12)*Math.sin(rad);
-   s+='<line x1="0" y1="0" x2="'+r2(x2)+'" y2="'+r2(y2)+'" stroke="var(--ink)" stroke-width="0.08" stroke-linecap="round" opacity="0.6"/>';
+   s+='<line x1="0" y1="0" x2="'+r2(x2)+'" y2="'+r2(y2)+'" stroke="'+(spd>0?col:'var(--ink)')+'" stroke-width="0.09" stroke-linecap="round" opacity="'+(spd>0?0.85:0.45)+'"/>';
   }
   s+='<circle cx="0" cy="0" r="0.38" fill="var(--panel)" stroke="var(--ink)" stroke-width="0.04"/>';
-  s+='<circle cx="0" cy="0" r="0.15" fill="var(--accent)"/>';
+  s+='<circle cx="0" cy="0" r="0.15" fill="'+(spd>0?'var(--accent)':'#888')+'"/>';
  }
- if(!['dining_round','rug','plant','hob','sink','dining','cylinder','cooker','fan','curtain'].includes(K))s+='<line x1="'+x0+'" y1="'+y0+'" x2="'+(-x0)+'" y2="'+y0+'" stroke="var(--ink)" stroke-width="0.1" stroke-opacity="'+(over?0.45:0.75)+'"/>';
+ if(K==='light'){
+  const lType = it.lightType || it.subKind || 'cob';
+  const pwr = it.powered !== false;
+  const glowCol = it.colorTemp === 'cool' ? '#81d4fa' : (it.colorTemp === 'neutral' ? '#fff59d' : (it.colorTemp === 'candle' ? '#ffb74d' : '#ffe082'));
+  if(lType==='cob'){
+   s+='<circle cx="0" cy="0" r="'+r2(w/2+0.18)+'" fill="'+glowCol+'" fill-opacity="'+(pwr?0.32:0.04)+'" stroke="none"/>';
+   s+='<circle cx="0" cy="0" r="'+r2(w/2)+'" fill="'+col+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+   s+='<circle cx="0" cy="0" r="'+r2(w*0.3)+'" fill="'+(pwr?glowCol:'#666')+'" stroke="var(--ink)" stroke-width="0.02"/>';
+  }else if(lType==='profile'){
+   s+='<rect x="'+x0+'" y="'+y0+'" width="'+w+'" height="'+d+'" rx="0.08" fill="'+col+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+   s+='<rect x="'+(x0+0.1)+'" y="'+(y0+0.05)+'" width="'+(w-0.2)+'" height="'+(d-0.1)+'" rx="0.04" fill="'+(pwr?glowCol:'#555')+'" fill-opacity="'+(pwr?0.9:0.4)+'"/>';
+   s+='<line x1="'+(x0+0.2)+'" y1="0" x2="'+(-x0-0.2)+'" y2="0" stroke="'+(pwr?'#fff':'#888')+'" stroke-width="0.06" stroke-linecap="round"/>';
+  }else if(lType==='spot'){
+   s+='<circle cx="0" cy="0" r="'+r2(w/2)+'" fill="'+col+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+   s+='<circle cx="0" cy="0" r="'+r2(w*0.3)+'" fill="'+(pwr?glowCol:'#666')+'"/>';
+   const aimTilt = (it.tilt != null ? it.tilt : 25);
+   const arrowLen = 0.42 + (aimTilt / 60) * 0.45;
+   s+='<line x1="0" y1="0" x2="0" y2="'+r2(arrowLen)+'" stroke="'+(pwr?glowCol:'var(--ink)')+'" stroke-width="0.07" stroke-linecap="round"/>';
+   s+='<polygon points="0,'+r2(arrowLen+0.14)+' -0.12,'+r2(arrowLen)+' 0.12,'+r2(arrowLen)+'" fill="'+(pwr?glowCol:'var(--ink)')+'"/>';
+  }else if(lType==='pendant'){
+   s+='<circle cx="0" cy="0" r="'+r2(w/2+0.25)+'" fill="none" stroke="var(--accent)" stroke-width="0.03" stroke-dasharray="0.12 0.08" opacity="'+(pwr?0.7:0.2)+'"/>';
+   s+='<circle cx="0" cy="0" r="'+r2(w/2)+'" fill="'+col+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+   s+='<circle cx="0" cy="0" r="'+r2(w*0.28)+'" fill="'+(pwr?glowCol:'#fff')+'" stroke="var(--ink)" stroke-width="0.02"/>';
+  }
+ }
+ if(!['dining_round','rug','plant','hob','sink','dining','cylinder','cooker','fan','curtain','light'].includes(K))s+='<line x1="'+x0+'" y1="'+y0+'" x2="'+(-x0)+'" y2="'+y0+'" stroke="var(--ink)" stroke-width="0.1" stroke-opacity="'+(over?0.45:0.75)+'"/>';
  s+='</g>';
  if(K!=='wallpaper'||sel){
   let lx=cx,ly=cy;const mn=Math.min(f.w,f.h),mx=Math.max(f.w,f.h),vert=f.h>f.w*1.3,fv=frontVec(it.rot);
@@ -943,9 +1045,9 @@ function computeGaps(it){
  for(const x of FIXTURES)if(zo(0,x.h))obs.push({x:x.x,y:x.y,w:x.w,h:x.d});
  const R=[],cxm=f.x+f.w/2,cym=f.y+f.h/2;
  let b=1e9;for(const o of obs)if(o.y<f.y+f.h-0.01&&o.y+o.h>f.y+0.01&&o.x>=f.x+f.w-0.01)b=Math.min(b,o.x-(f.x+f.w));if(b<25&&b>0.03)R.push([f.x+f.w,cym,f.x+f.w+b,cym,b,'r']);
- b=1e9;for(const o of obs)if(o.y<f.y+f.h-0.01&&o.y+o.h>f.y+0.01&&o.x+o.w<=f.x+0.01)b=Math.min(b,f.x-(o.x+o.w));if(b<25&&b>0.03)R.push([f.x-b,cym,f.x,cym,b,'l']);
- b=1e9;for(const o of obs)if(o.x<f.x+f.w-0.01&&o.x+o.w>f.x+0.01&&o.y>=f.y+f.h-0.01)b=Math.min(b,o.y-(f.y+f.h));if(b<25&&b>0.03)R.push([cxm,f.y+f.h,cxm,f.y+f.h+b,b,'d']);
- b=1e9;for(const o of obs)if(o.x<f.x+f.w-0.01&&o.x+o.w>f.x+0.01&&o.y+o.h<=f.y+0.01)b=Math.min(b,f.y-(o.y+o.h));if(b<25&&b>0.03)R.push([cxm,f.y-b,cxm,f.y,b,'u']);
+ let b2=1e9;for(const o of obs)if(o.y<f.y+f.h-0.01&&o.y+o.h>f.y+0.01&&o.x+o.w<=f.x+0.01)b2=Math.min(b2,f.x-(o.x+o.w));if(b2<25&&b2>0.03)R.push([f.x-b2,cym,f.x,cym,b2,'l']);
+ let b3=1e9;for(const o of obs)if(o.x<f.x+f.w-0.01&&o.x+o.w>f.x+0.01&&o.y>=f.y+f.h-0.01)b3=Math.min(b3,o.y-(f.y+f.h));if(b3<25&&b3>0.03)R.push([cxm,f.y+f.h,cxm,f.y+f.h+b3,b3,'d']);
+ let b4=1e9;for(const o of obs)if(o.x<f.x+f.w-0.01&&o.x+o.w>f.x+0.01&&o.y+o.h<=f.y+0.01)b4=Math.min(b4,f.y-(o.y+o.h));if(b4<25&&b4>0.03)R.push([cxm,f.y-b4,cxm,f.y,b4,'u']);
  return R;
 }
 let PIECES=wallPieces(H,false);
@@ -986,26 +1088,6 @@ function renderPlan(){
  s+='<text x="12" y="40.35" font-size="0.48" text-anchor="middle" fill="var(--muted)">West · main door</text>';
  s+='<text x="-1.05" y="26" font-size="0.55" text-anchor="middle" fill="var(--muted)" style="font-weight:600">N</text>';
  s+='<text x="25.6" y="33" font-size="0.55" text-anchor="middle" fill="var(--muted)" style="font-weight:600">S</text>';
- const CEILING_FANS_2D=[
-  {x:5.2,y:34.0},
-  {x:5.2,y:23.5},
-  {x:5.66,y:12.0},
-  {x:17.25,y:33.5},
-  {x:15.9,y:12.0}
- ];
- for(const f of CEILING_FANS_2D){
-  s+='<g class="ceiling-fan-fixed" style="pointer-events:none">';
-  s+='<circle cx="'+r2(f.x)+'" cy="'+r2(f.y)+'" r="1.85" fill="none" stroke="var(--accent)" stroke-width="0.03" stroke-dasharray="0.15 0.12" opacity="0.55"/>';
-  for(let a=0;a<3;a++){
-   const rad=a*Math.PI*2/3-Math.PI/2;
-   const x2=f.x+1.65*Math.cos(rad),y2=f.y+1.65*Math.sin(rad);
-   s+='<line x1="'+r2(f.x)+'" y1="'+r2(f.y)+'" x2="'+r2(x2)+'" y2="'+r2(y2)+'" stroke="var(--ink)" stroke-width="0.07" stroke-linecap="round" opacity="0.5"/>';
-  }
-  s+='<circle cx="'+r2(f.x)+'" cy="'+r2(f.y)+'" r="0.36" fill="var(--panel)" stroke="var(--ink)" stroke-width="0.035" stroke-opacity="0.6"/>';
-  s+='<circle cx="'+r2(f.x)+'" cy="'+r2(f.y)+'" r="0.14" fill="var(--accent)" fill-opacity="0.8"/>';
-  s+='<text x="'+r2(f.x)+'" y="'+r2(f.y+0.62)+'" font-size="0.28" text-anchor="middle" fill="var(--accent)" font-weight="600" opacity="0.85">Fan</text>';
-  s+='</g>';
- }
  // RCC Ceiling Beam between Living and Dining (at y = 27.5 ft / 330 in, where Jhula hangs)
  s+='<g class="rcc-beam-2d" style="pointer-events:none">';
  s+='<rect x="0" y="27.21" width="10.35" height="0.58" fill="rgba(120,110,95,0.18)" stroke="#584e40" stroke-width="0.04" stroke-dasharray="0.3 0.15"/>';
@@ -1387,71 +1469,290 @@ function renderInspector(){
     '</div>' +
    '</div>';
   }
-  let modelBadge = '';
-  const mKey = (typeof getModelKey === 'function') ? getModelKey(it) : null;
-  if (state.use3dModels !== false && mKey && typeof MODEL_CACHE !== 'undefined' && MODEL_CACHE.has(mKey)) {
-   modelBadge = '<span style="display:inline-block;margin-left:8px;font-size:11px;background:#e2f0f6;color:#0e7fae;padding:2px 8px;border-radius:12px;font-weight:600;vertical-align:middle">📦 3D glTF: '+mKey+'</span>';
-  } else {
-   modelBadge = '<span style="display:inline-block;margin-left:8px;font-size:11px;background:var(--bg);color:var(--muted);padding:2px 8px;border-radius:12px;font-weight:500;vertical-align:middle">📐 Procedural PBR</span>';
-  }
-  const curItemHex = (FIN[it.fin] ? FIN[it.fin].hex : (typeof it.fin === 'string' && it.fin.startsWith('#') ? it.fin : '#c49969'));
-  el.innerHTML='<h2>Selected item '+modelBadge+'</h2><input type="text" id="f-label" value="'+esc(it.label)+'" aria-label="Item name">'+
-  '<div class="ig"><label>Width (in)<input type="number" id="f-w" min="1" step="1"></label><label>Depth (in)<input type="number" id="f-d" min="1" step="1"></label><label>Height (in)<input type="number" id="f-h" min="1" step="1"></label><label>From floor (in)<input type="number" id="f-e" min="0" step="1"></label></div>'+
-  '<div class="row">'+(it.kind==='wallpaper'?'':'<label style="flex:1">Finish &amp; Color<div style="display:flex;gap:6px;align-items:center;margin-top:3px"><select id="f-fin" style="flex:1">'+fins+'</select><input type="color" id="f-fin-color" value="'+curItemHex+'" title="Pick custom item color" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer"></div></label>')+extra+'</div>'+
-  '<div class="row"><button id="b-rl">Rotate ⟲</button><button id="b-rr">Rotate ⟳</button><button id="b-dup">Duplicate</button><button id="b-del" class="warn">Delete</button></div>'+
-  '<p class="hint" id="f-info"></p>';
-  syncInspector();
-  const num=(id,key)=>{const e=$(id);if(!e)return;e.addEventListener('input',ev=>{const v=parseFloat(ev.target.value);if(!isFinite(v))return;if(key!=='elev'&&v<1)return;it[key]=r2(v/12);schedule(it.id);});};
-  num('#f-w','w');num('#f-d','d');num('#f-h','h');num('#f-e','elev');
-  if($('#f-label'))$('#f-label').addEventListener('input',e=>{it.label=e.target.value;schedule(it.id);});
-  if($('#f-fin'))$('#f-fin').addEventListener('change',e=>{
-    const val = e.target.value;
-    if(val==='custom'){
-      if($('#f-fin-color')) $('#f-fin-color').click();
-      return;
-    }
-    it.fin=val;
-    if($('#f-fin-color') && FIN[val]) $('#f-fin-color').value = FIN[val].hex;
-    schedule(it.id);
-  });
-  if($('#f-fin-color'))$('#f-fin-color').addEventListener('input',e=>{
-    it.fin=e.target.value;
-    schedule(it.id);
-  });
-  if($('#b-sofa-mode'))$('#b-sofa-mode').addEventListener('click',()=>{it.open=false;schedule(it.id);renderInspector();});
-  if($('#b-bed-mode'))$('#b-bed-mode').addEventListener('click',()=>{it.open=true;schedule(it.id);renderInspector();});
-  if($('#f-open'))$('#f-open').addEventListener('change',e=>{it.open=e.target.checked;schedule(it.id);});
-  if($('#f-swing-style'))$('#f-swing-style').addEventListener('change',e=>{
-    it.swingStyle=e.target.value;
-    if(it.swingStyle==='boho_macrame'){it.w=3.5;it.d=3.5;}
-    schedule(it.id);
-    renderInspector();
-  });
-  if($('#f-seats'))$('#f-seats').addEventListener('change',e=>{it.seats=parseInt(e.target.value,10);schedule(it.id);});
-  if($('#f-doors'))$('#f-doors').addEventListener('change',e=>{it.doors=e.target.value;schedule(it.id);});
-  if($('#f-wall'))$('#f-wall').addEventListener('change',e=>{it.wall=e.target.checked;schedule(it.id);});
-  if($('#f-sw'))$('#f-sw').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(isFinite(v)&&v>=0){it.swing=v/12;schedule(it.id);}});
-  if($('#f-granite'))$('#f-granite').addEventListener('change',e=>{it.granite=e.target.checked;schedule(it.id);});
-  if($('#f-door-state'))$('#f-door-state').addEventListener('change',e=>{it.doorState=e.target.value;schedule(it.id);});
-  if($('#f-glass-profile'))$('#f-glass-profile').addEventListener('change',e=>{it.glassProfile=e.target.checked;schedule(it.id);});
-  if($('#f-shelf-lights'))$('#f-shelf-lights').addEventListener('change',e=>{it.shelfLights=e.target.checked;schedule(it.id);});
+   if(it.kind==='dining'||it.kind==='dining_round'){
+    extra+='<div style="width:100%;margin-top:6px;margin-bottom:6px">' +
+     '<button type="button" id="b-toggle-chairs" style="width:100%;padding:7px 10px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--accent);background:'+(it.chairsDetached?'#eaf3f8':'var(--accent)')+';color:'+(it.chairsDetached?'var(--accent)':'#fff')+';cursor:pointer">' +
+      (it.chairsDetached ? '🪑 Group chairs back to table' : '🪑 Detach & move individual chairs') +
+     '</button>' +
+    '</div>';
+   }
+   if(it.kind==='chair'){
+    const cStyle = it.chairStyle || (it.subKind==='study_chair' ? 'study_ergonomic' : 'dining_upholstered');
+    const cColor = it.cushionColor || '#42474e';
+    extra+='<div style="width:100%;margin-top:8px;padding:10px;background:rgba(0,0,0,0.03);border-radius:8px;border:1px solid rgba(0,0,0,0.08)">' +
+     '<h3 style="margin:0 0 8px;font-size:12px;font-weight:700">🪑 Chair Style & Cushion Fabric</h3>' +
+     '<label style="display:block;margin-bottom:6px">Model Design' +
+      '<select id="f-chair-style" style="width:100%;margin-top:2px;height:28px">' +
+       '<option value="study_ergonomic"'+(cStyle==='study_ergonomic'?' selected':'')+'>🧑‍💻 Ergonomic High-Back Mesh (5-Star Swivel Casters)</option>' +
+       '<option value="dining_upholstered"'+(cStyle==='dining_upholstered'?' selected':'')+'>🪑 Modern Padded Dining Chair (Brass Leg Caps)</option>' +
+       '<option value="wooden_slat"'+(cStyle==='wooden_slat'?' selected':'')+'>🪵 Mid-Century Spindle Slat Timber Chair</option>' +
+      '</select>' +
+     '</label>' +
+     '<div style="display:flex;gap:8px;align-items:center;margin-top:6px">' +
+      '<label style="flex:1">Cushion Fabric Color' +
+       '<div style="display:flex;gap:6px;align-items:center;margin-top:2px">' +
+        '<input type="color" id="f-chair-cushion-color" value="'+cColor+'" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer">' +
+        '<input type="text" id="f-chair-cushion-color-hex" value="'+cColor+'" style="flex:1;height:28px;font-family:monospace;font-size:12px;padding:2px 6px">' +
+       '</div>' +
+      '</label>' +
+     '</div>' +
+    '</div>';
+   }
+   if(it.kind==='fan'){
+    const curSpd = typeof it.fanSpeed === 'number' ? it.fanSpeed : 3;
+    const curBlades = it.fanBlades || 3;
+    extra+='<div style="width:100%;margin-top:8px;padding:10px;background:rgba(0,0,0,0.03);border-radius:8px;border:1px solid rgba(0,0,0,0.08)">' +
+     '<h3 style="margin:0 0 8px;font-size:12px;font-weight:700">🌀 Ceiling Fan Adjustments</h3>' +
+     '<label style="font-weight:600;font-size:11px;display:block;margin-bottom:4px">Fan Speed (RPM)</label>' +
+     '<div style="display:flex;gap:4px;margin-bottom:8px">' +
+      [0,1,2,3,4].map(s=>'<button type="button" class="btn-fan-spd" data-spd="'+s+'" style="flex:1;padding:5px 2px;font-size:11px;border-radius:5px;border:1px solid '+(curSpd===s?'var(--accent)':'#ccc')+';background:'+(curSpd===s?'var(--accent)':'#f5f5f5')+';color:'+(curSpd===s?'#fff':'#333')+';font-weight:600;cursor:pointer">'+(s===0?'Off':s)+'</button>').join('') +
+     '</div>' +
+     '<label style="display:block;margin-bottom:6px">Aerodynamic Blades' +
+      '<select id="f-fan-blades" style="width:100%;margin-top:2px;height:28px">' +
+       '<option value="3"'+(curBlades===3?' selected':'')+'>3 Aerodynamic Blades</option>' +
+       '<option value="4"'+(curBlades===4?' selected':'')+'>4 Designer Blades</option>' +
+       '<option value="5"'+(curBlades===5?' selected':'')+'>5 Luxury Tropical Blades</option>' +
+      '</select>' +
+     '</label>' +
+     '<p style="margin:6px 0 0;font-size:11px;color:var(--muted)">💡 Tip: Change Width for sweep diameter (e.g. 48" or 52"), and Height for downrod drop.</p>' +
+    '</div>';
+   }
+   if(it.kind==='light'){
+    const lType = it.subKind || it.lightType || 'cob';
+    const isPow = it.powered !== false;
+    const cTemp = it.colorTemp || 'warm';
+    const curInt = typeof it.intensity === 'number' ? it.intensity : 1.3;
+    const curTilt = typeof it.tilt === 'number' ? it.tilt : 28;
+    const curBeam = it.beam || 'medium';
+    const watts = Math.round(curInt * 10);
+    const lumens = Math.round(curInt * 950);
 
-  // Curtain event listeners
-  if($('#f-curtain-opacity')) $('#f-curtain-opacity').addEventListener('input', e => {
-    const v = parseFloat(e.target.value);
-    it.opacity = v;
-    const opPct = Math.round(v * 100);
-    const opDesc = v <= 0.25 ? opPct+'% (Sheer Voile)' : (v <= 0.65 ? opPct+'% (Light Filter)' : (v < 0.95 ? opPct+'% (Semi-sheer)' : opPct+'% (Blackout)'));
-    if($('#f-curtain-opacity-val')) $('#f-curtain-opacity-val').textContent = opDesc;
-    schedule(it.id);
-  });
-  if($('#f-curtain-gap')) $('#f-curtain-gap').addEventListener('input', e => {
-    const v = parseFloat(e.target.value);
-    if(isFinite(v) && v >= 0){
-      it.walkthrough = v;
-      schedule(it.id);
-    }
-  });
+    extra+='<div style="width:100%;margin-top:8px;padding:10px;background:rgba(0,0,0,0.03);border-radius:8px;border:1px solid rgba(0,0,0,0.08)">' +
+     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
+      '<h3 style="margin:0;font-size:12px;font-weight:700">💡 Light Fixture &amp; Illumination</h3>' +
+      '<button type="button" id="b-light-power" style="padding:4px 10px;font-size:11px;font-weight:700;border-radius:6px;border:1px solid '+(isPow?'#27ae60':'#999')+';background:'+(isPow?'#27ae60':'#eee')+';color:'+(isPow?'#fff':'#666')+';cursor:pointer">'+(isPow?'⚡ Powered ON':'🔌 Switched OFF')+'</button>' +
+     '</div>' +
+     '<label style="display:block;margin-bottom:6px">Fixture Type' +
+      '<select id="f-light-type" style="width:100%;margin-top:2px;height:28px">' +
+       '<option value="cob"'+(lType==='cob'?' selected':'')+'>🔆 Recessed COB Downlight</option>' +
+       '<option value="profile"'+(lType==='profile'?' selected':'')+'>📏 Linear Profile LED Strip Light</option>' +
+       '<option value="spot"'+(lType==='spot'?' selected':'')+'>🎯 Directional Adjustable Spotlight</option>' +
+       '<option value="pendant"'+(lType==='pendant'?' selected':'')+'>🏮 Designer Dining Pendant</option>' +
+      '</select>' +
+     '</label>' +
+     '<label style="font-weight:600;font-size:11px;display:block;margin-bottom:4px">Color Temperature</label>' +
+     '<div style="display:flex;gap:4px;margin-bottom:8px">' +
+      [['warm','🟠 2700K'],['soft_warm','🟡 3000K'],['neutral','⚪ 4000K'],['cool','🔵 5000K']].map(([k,lbl])=>'<button type="button" class="btn-color-temp" data-temp="'+k+'" style="flex:1;padding:5px 2px;font-size:10px;border-radius:5px;border:1px solid '+(cTemp===k?'var(--accent)':'#ccc')+';background:'+(cTemp===k?'var(--accent)':'#f5f5f5')+';color:'+(cTemp===k?'#fff':'#333')+';font-weight:600;cursor:pointer">'+lbl+'</button>').join('') +
+     '</div>' +
+     '<div style="margin-bottom:8px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;margin-bottom:2px">' +
+       '<span>Brightness / Lumens</span>' +
+       '<span id="f-light-int-val" style="color:var(--accent)">'+curInt.toFixed(1)+'x ('+watts+'W · '+lumens+' lm)</span>' +
+      '</div>' +
+      '<input type="range" id="f-light-intensity" min="0.2" max="3.0" step="0.1" value="'+curInt+'" style="width:100%">' +
+     '</div>' +
+     (lType==='cob'||lType==='spot' ? '<label style="display:block;margin-bottom:6px">Beam Angle' +
+      '<select id="f-light-beam" style="width:100%;margin-top:2px;height:28px">' +
+       '<option value="narrow"'+(curBeam==='narrow'?' selected':'')+'>Narrow 24° (Focused Accent)</option>' +
+       '<option value="medium"'+(curBeam==='medium'?' selected':'')+'>Medium 38° (Standard Flood)</option>' +
+       '<option value="wide"'+(curBeam==='wide'?' selected':'')+'>Wide 60° (Wide Ambient Wash)</option>' +
+      '</select></label>' : '') +
+     (lType==='spot' ? '<div style="margin-bottom:6px">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;font-weight:600;margin-bottom:2px">' +
+       '<span>Spotlight Gimbal Tilt</span>' +
+       '<span id="f-light-tilt-val" style="color:var(--accent)">'+curTilt+'°</span>' +
+      '</div>' +
+      '<input type="range" id="f-light-tilt" min="0" max="60" step="5" value="'+curTilt+'" style="width:100%">' +
+     '</div>' : '') +
+     '<p style="margin:6px 0 0;font-size:10px;color:var(--muted)">✨ Changes update real 3D lighting, room brightness, and shadows instantly.</p>' +
+    '</div>';
+   }
+   let modelBadge = '';
+   const mKey = (typeof getModelKey === 'function') ? getModelKey(it) : null;
+   if (state.use3dModels !== false && mKey && typeof MODEL_CACHE !== 'undefined' && MODEL_CACHE.has(mKey)) {
+    modelBadge = '<span style="display:inline-block;margin-left:8px;font-size:11px;background:#e2f0f6;color:#0e7fae;padding:2px 8px;border-radius:12px;font-weight:600;vertical-align:middle">📦 3D glTF: '+mKey+'</span>';
+   } else {
+    modelBadge = '<span style="display:inline-block;margin-left:8px;font-size:11px;background:var(--bg);color:var(--muted);padding:2px 8px;border-radius:12px;font-weight:500;vertical-align:middle">📐 Procedural PBR</span>';
+   }
+   const curItemHex = (FIN[it.fin] ? FIN[it.fin].hex : (typeof it.fin === 'string' && it.fin.startsWith('#') ? it.fin : '#c49969'));
+   el.innerHTML='<h2>Selected item '+modelBadge+'</h2><input type="text" id="f-label" value="'+esc(it.label)+'" aria-label="Item name">'+
+   '<div class="ig"><label>Width (in)<input type="number" id="f-w" min="1" step="1"></label><label>Depth (in)<input type="number" id="f-d" min="1" step="1"></label><label>Height (in)<input type="number" id="f-h" min="1" step="1"></label><label>From floor (in)<input type="number" id="f-e" min="0" step="1"></label></div>'+
+   '<div class="row">'+(it.kind==='wallpaper'?'':'<label style="flex:1">Finish &amp; Color<div style="display:flex;gap:6px;align-items:center;margin-top:3px"><select id="f-fin" style="flex:1">'+fins+'</select><input type="color" id="f-fin-color" value="'+curItemHex+'" title="Pick custom item color" style="width:36px;height:28px;padding:1px;border-radius:4px;border:1px solid #ccc;cursor:pointer"></div></label>')+extra+'</div>'+
+   '<div class="row"><button id="b-rl">Rotate ⟲</button><button id="b-rr">Rotate ⟳</button><button id="b-dup">Duplicate</button><button id="b-del" class="warn">Delete</button></div>'+
+   '<p class="hint" id="f-info"></p>';
+   syncInspector();
+   const num=(id,key)=>{const e=$(id);if(!e)return;e.addEventListener('input',ev=>{const v=parseFloat(ev.target.value);if(!isFinite(v))return;if(key!=='elev'&&v<1)return;it[key]=r2(v/12);schedule(it.id);if(it.kind==='light'&&typeof updateUserLights==='function')updateUserLights();});};
+   num('#f-w','w');num('#f-d','d');num('#f-h','h');num('#f-e','elev');
+   if($('#f-label'))$('#f-label').addEventListener('input',e=>{it.label=e.target.value;schedule(it.id);});
+   if($('#f-fin'))$('#f-fin').addEventListener('change',e=>{
+     const val = e.target.value;
+     if(val==='custom'){
+       if($('#f-fin-color')) $('#f-fin-color').click();
+       return;
+     }
+     it.fin=val;
+     if($('#f-fin-color') && FIN[val]) $('#f-fin-color').value = FIN[val].hex;
+     schedule(it.id);
+   });
+   if($('#f-fin-color'))$('#f-fin-color').addEventListener('input',e=>{
+     it.fin=e.target.value;
+     schedule(it.id);
+   });
+   if($('#b-sofa-mode'))$('#b-sofa-mode').addEventListener('click',()=>{it.open=false;schedule(it.id);renderInspector();});
+   if($('#b-bed-mode'))$('#b-bed-mode').addEventListener('click',()=>{it.open=true;schedule(it.id);renderInspector();});
+   if($('#f-open'))$('#f-open').addEventListener('change',e=>{it.open=e.target.checked;schedule(it.id);});
+   if($('#f-swing-style'))$('#f-swing-style').addEventListener('change',e=>{
+     it.swingStyle=e.target.value;
+     if(it.swingStyle==='boho_macrame'){it.w=3.5;it.d=3.5;}
+     schedule(it.id);
+     renderInspector();
+   });
+   if($('#f-seats'))$('#f-seats').addEventListener('change',e=>{it.seats=parseInt(e.target.value,10);schedule(it.id);});
+   if($('#f-doors'))$('#f-doors').addEventListener('change',e=>{it.doors=e.target.value;schedule(it.id);});
+   if($('#f-wall'))$('#f-wall').addEventListener('change',e=>{it.wall=e.target.checked;schedule(it.id);});
+   if($('#f-sw'))$('#f-sw').addEventListener('input',e=>{const v=parseFloat(e.target.value);if(isFinite(v)&&v>=0){it.swing=v/12;schedule(it.id);}});
+   if($('#f-granite'))$('#f-granite').addEventListener('change',e=>{it.granite=e.target.checked;schedule(it.id);});
+   if($('#f-door-state'))$('#f-door-state').addEventListener('change',e=>{it.doorState=e.target.value;schedule(it.id);});
+   if($('#f-glass-profile'))$('#f-glass-profile').addEventListener('change',e=>{it.glassProfile=e.target.checked;schedule(it.id);});
+   if($('#f-shelf-lights'))$('#f-shelf-lights').addEventListener('change',e=>{it.shelfLights=e.target.checked;schedule(it.id);});
+
+   // Dining chair detachment toggle
+   if($('#b-toggle-chairs')) $('#b-toggle-chairs').addEventListener('click', ()=>{
+     if(it.chairsDetached){
+       state.items = state.items.filter(i => !(i.parentId === it.id || (i.kind === 'chair' && i.subKind === 'dining_chair' && i.room === 'Hall')));
+       it.chairsDetached = false;
+     } else {
+       it.chairsDetached = false;
+       const spots = chairSpots(it);
+       it.chairsDetached = true;
+       const rad = (it.rot * Math.PI) / 180;
+       const cosR = Math.cos(rad), sinR = Math.sin(rad);
+       spots.forEach((sp, idx) => {
+         const worldX = it.x + (sp.x * cosR - sp.z * sinR);
+         const worldY = it.y + (sp.x * sinR + sp.z * cosR);
+         const chairRot = Math.round((it.rot + (sp.ang * 180 / Math.PI)) % 360);
+         state.items.push(fromExport({
+           label: 'Dining chair ' + (idx + 1),
+           kind: 'chair',
+           subKind: 'dining_chair',
+           room: roomOf(worldX, worldY),
+           x_in: Math.round(worldX * 12),
+           y_in: Math.round(worldY * 12),
+           w_in: 18,
+           d_in: 18,
+           h_in: 37,
+           elev_in: 0,
+           rot: chairRot,
+           finish: it.fin || 'sage',
+           chairStyle: 'dining_upholstered',
+           cushionColor: '#42474e',
+           parentId: it.id
+         }));
+       });
+     }
+     schedule();
+     renderInspector();
+   });
+
+   // Chair style & cushion color event listeners
+   if($('#f-chair-style')) $('#f-chair-style').addEventListener('change', e => {
+     it.chairStyle = e.target.value;
+     if(it.chairStyle === 'study_ergonomic') it.subKind = 'study_chair';
+     else if(it.chairStyle === 'dining_upholstered') it.subKind = 'dining_chair';
+     schedule(it.id);
+   });
+   if($('#f-chair-cushion-color')) $('#f-chair-cushion-color').addEventListener('input', e => {
+     it.cushionColor = e.target.value;
+     if($('#f-chair-cushion-color-hex')) $('#f-chair-cushion-color-hex').value = e.target.value;
+     schedule(it.id);
+   });
+   if($('#f-chair-cushion-color-hex')) $('#f-chair-cushion-color-hex').addEventListener('change', e => {
+     let v = e.target.value.trim();
+     if (!v.startsWith('#')) v = '#' + v;
+     if (/^#[0-9a-fA-F]{6}$/.test(v)) {
+       it.cushionColor = v;
+       if($('#f-chair-cushion-color')) $('#f-chair-cushion-color').value = v;
+       schedule(it.id);
+     }
+   });
+
+   // Fan speed and blades event listeners
+   document.querySelectorAll('.btn-fan-spd').forEach(btn => {
+     btn.addEventListener('click', () => {
+       it.fanSpeed = parseInt(btn.dataset.spd, 10);
+       schedule(it.id);
+       renderInspector();
+     });
+   });
+   if($('#f-fan-blades')) $('#f-fan-blades').addEventListener('change', e => {
+     it.fanBlades = parseInt(e.target.value, 10);
+     schedule(it.id);
+   });
+
+   // Light controls event listeners
+   if($('#b-light-power')) $('#b-light-power').addEventListener('click', () => {
+     it.powered = !(it.powered !== false);
+     schedule(it.id);
+     if(typeof updateUserLights==='function') updateUserLights();
+     renderInspector();
+   });
+   if($('#f-light-type')) $('#f-light-type').addEventListener('change', e => {
+     it.lightType = e.target.value;
+     it.subKind = e.target.value;
+     if(it.lightType === 'profile') { it.w = 6.0; it.d = 0.35; it.h = 0.25; it.elev = 9.75; }
+     else if(it.lightType === 'cob') { it.w = 0.75; it.d = 0.75; it.h = 0.33; it.elev = 9.67; }
+     else if(it.lightType === 'spot') { it.w = 0.75; it.d = 0.75; it.h = 0.65; it.elev = 9.35; }
+     else if(it.lightType === 'pendant') { it.w = 1.2; it.d = 1.2; it.h = 3.2; it.elev = 6.8; }
+     schedule(it.id);
+     if(typeof updateUserLights==='function') updateUserLights();
+     renderInspector();
+   });
+   document.querySelectorAll('.btn-color-temp').forEach(btn => {
+     btn.addEventListener('click', () => {
+       it.colorTemp = btn.dataset.temp;
+       schedule(it.id);
+       if(typeof updateUserLights==='function') updateUserLights();
+       renderInspector();
+     });
+   });
+   if($('#f-light-intensity')) $('#f-light-intensity').addEventListener('input', e => {
+     const v = parseFloat(e.target.value);
+     it.intensity = v;
+     const watts = Math.round(v * 10);
+     const lumens = Math.round(v * 950);
+     if($('#f-light-int-val')) $('#f-light-int-val').textContent = v.toFixed(1) + 'x (' + watts + 'W · ' + lumens + ' lm)';
+     if(typeof updateUserLights==='function') updateUserLights();
+     schedule(it.id);
+   });
+   if($('#f-light-beam')) $('#f-light-beam').addEventListener('change', e => {
+     it.beam = e.target.value;
+     if(typeof updateUserLights==='function') updateUserLights();
+     schedule(it.id);
+   });
+   if($('#f-light-tilt')) $('#f-light-tilt').addEventListener('input', e => {
+     const v = parseInt(e.target.value, 10);
+     it.tilt = v;
+     if($('#f-light-tilt-val')) $('#f-light-tilt-val').textContent = v + '°';
+     if(typeof updateUserLights==='function') updateUserLights();
+     schedule(it.id);
+   });
+
+   // Curtain event listeners
+   if($('#f-curtain-opacity')) $('#f-curtain-opacity').addEventListener('input', e => {
+     const v = parseFloat(e.target.value);
+     it.opacity = v;
+     const opPct = Math.round(v * 100);
+     const opDesc = v <= 0.25 ? opPct+'% (Sheer Voile)' : (v <= 0.65 ? opPct+'% (Light Filter)' : (v < 0.95 ? opPct+'% (Semi-sheer)' : opPct+'% (Blackout)'));
+     if($('#f-curtain-opacity-val')) $('#f-curtain-opacity-val').textContent = opDesc;
+     schedule(it.id);
+   });
+   if($('#f-curtain-gap')) $('#f-curtain-gap').addEventListener('input', e => {
+     const v = parseFloat(e.target.value);
+     if(isFinite(v) && v >= 0){
+       it.walkthrough = v;
+       schedule(it.id);
+     }
+   });
 
   // TV Wallpaper event listeners
   if($('#f-wp-style')) $('#f-wp-style').addEventListener('change', e => { it.wpStyle = e.target.value; schedule(it.id); });
@@ -1559,6 +1860,21 @@ function syncInspector(){
  if($('#f-curtain-gap')&&document.activeElement!==$('#f-curtain-gap')){
   $('#f-curtain-gap').value = Math.round(it.walkthrough !== undefined ? it.walkthrough : 24);
  }
+ if(it.kind==='chair'){
+  const cColor = it.cushionColor || '#42474e';
+  if($('#f-chair-cushion-color')) $('#f-chair-cushion-color').value = cColor;
+  if($('#f-chair-cushion-color-hex') && document.activeElement!==$('#f-chair-cushion-color-hex')) $('#f-chair-cushion-color-hex').value = cColor;
+  if($('#f-chair-style')) $('#f-chair-style').value = it.chairStyle || (it.subKind==='study_chair'?'study_ergonomic':'dining_upholstered');
+ }
+ if(it.kind==='fan'){
+  if($('#f-fan-blades')) $('#f-fan-blades').value = String(it.fanBlades || 3);
+ }
+ if(it.kind==='light'){
+  if($('#f-light-type')) $('#f-light-type').value = it.subKind || it.lightType || 'cob';
+  if($('#f-light-intensity') && document.activeElement!==$('#f-light-intensity')) $('#f-light-intensity').value = typeof it.intensity==='number'?it.intensity:1.3;
+  if($('#f-light-beam')) $('#f-light-beam').value = it.beam || 'medium';
+  if($('#f-light-tilt') && document.activeElement!==$('#f-light-tilt')) $('#f-light-tilt').value = typeof it.tilt==='number'?it.tilt:28;
+ }
 }
 document.addEventListener('keydown',e=>{
  if(/INPUT|SELECT|TEXTAREA/.test(e.target.tagName))return;
@@ -1655,7 +1971,7 @@ function renderScope(){
 
 /* ---------- 3D REALISTIC ENGINE ---------- */
 let renderer,scene,camera,controls;
-let gStatic,gWalls,gCeiling,gCeilingSlab,gItems,gLights,selHelper,fanBlades=[],rccBeamMesh=null;
+let gStatic,gWalls,gCeiling,gCeilingSlab,gItems,gLights,gUserLights=null,selHelper,fanBlades=[],rccBeamMesh=null;
 const matCache={};
 const texCache={};
 
@@ -2289,6 +2605,289 @@ function chair3(g,x,z,ang,m,cushM){
  }
  B(c,1.35,1.5,0.1,0,2.25,0.62,m);
  g.add(c);
+}
+
+function getLightHex(ct){
+ if(ct === 'warm') return 0xffdfaa;       // 2700K Cozy Warm
+ if(ct === 'soft_warm') return 0xffe8cc;  // 3000K Soft Warm
+ if(ct === 'neutral') return 0xfff4ea;    // 4000K Neutral White
+ if(ct === 'cool') return 0xebf3ff;       // 5000K Crisp Daylight
+ return 0xffdfaa;
+}
+
+function buildChair3D(g, it){
+ const w = it.w || 1.75, d = it.d || 1.75, h = it.h || 3.0;
+ const style = it.chairStyle || (it.subKind === 'study_chair' ? 'study_ergonomic' : 'dining_upholstered');
+ const frameMat = mF(it.fin);
+ const cushHex = it.cushionColor || '#42474e';
+ const cushMat = mat(cushHex, false, 'fabric');
+ const ironMat = mat('#1e2022', true);
+ const chromeMat = mat('#c8d0d8', true);
+ const brassMat = mat('', 0, 'brass');
+
+ if(style === 'study_ergonomic'){
+  // Modern ergonomic mesh office chair (5-star swivel spider with wheels)
+  const baseRadius = 0.82;
+  C(g, 0.16, 0.16, 0.12, 0, 0.22, 0, ironMat);
+  for(let i = 0; i < 5; i++){
+   const a = (i * 2 * Math.PI) / 5;
+   const legArm = new T.Group();
+   legArm.rotation.y = a;
+   B(legArm, 0.08, 0.05, baseRadius, 0, 0.16, baseRadius / 2, ironMat);
+   const wheel = C(legArm, 0.06, 0.06, 0.08, 0, 0.06, baseRadius - 0.05, ironMat);
+   if(wheel) wheel.rotation.z = Math.PI / 2;
+   g.add(legArm);
+  }
+  C(g, 0.06, 0.06, 0.85, 0, 0.65, 0, chromeMat);
+  C(g, 0.09, 0.09, 0.40, 0, 0.42, 0, ironMat);
+  B(g, 0.55, 0.12, 0.55, 0, 1.08, 0, ironMat);
+
+  // Contoured waterfall seat
+  B(g, 1.45, 0.16, 1.40, 0, 1.22, 0.02, cushMat);
+  const lip = C(g, 0.08, 0.08, 1.45, 0, 1.16, 0.70, cushMat);
+  if(lip) lip.rotation.z = Math.PI / 2;
+
+  // Ergonomic back spine & lumbar support
+  B(g, 0.14, 0.95, 0.08, 0, 1.65, -0.62, ironMat);
+  B(g, 0.45, 0.12, 0.08, 0, 1.55, -0.58, ironMat);
+  const backG = new T.Group();
+  backG.position.set(0, 1.95, -0.58);
+  backG.rotation.x = -0.08;
+  B(backG, 1.35, 1.40, 0.06, 0, 0, 0, ironMat);
+  B(backG, 1.18, 1.24, 0.03, 0, 0, 0.02, cushMat);
+  B(backG, 0.75, 0.35, 0.08, 0, 0.82, 0.06, cushMat);
+  g.add(backG);
+
+  // 3D adjustable T-armrests
+  for(const s of [-1, 1]){
+   B(g, 0.08, 0.55, 0.08, s * 0.76, 1.45, -0.05, ironMat);
+   B(g, 0.22, 0.06, 0.72, s * 0.76, 1.74, 0.05, ironMat);
+  }
+ }
+ else if(style === 'wooden_slat'){
+  // Scandi / Mid-Century Spindle Timber Chair
+  const legMat = frameMat;
+  for(const a of [-0.55, 0.55]) for(const b of [-0.55, 0.55]){
+   const leg = new T.Group();
+   leg.position.set(a, 0.75, b);
+   leg.rotation.z = -a * 0.12;
+   leg.rotation.x = b * 0.12;
+   C(leg, 0.045, 0.08, 1.48, 0, 0, 0, legMat);
+   g.add(leg);
+  }
+  B(g, 1.05, 0.04, 0.04, 0, 0.45, -0.45, legMat);
+  B(g, 1.05, 0.04, 0.04, 0, 0.45, 0.45, legMat);
+  B(g, 1.40, 0.10, 1.35, 0, 1.48, 0, legMat);
+  B(g, 1.25, 0.06, 1.20, 0, 1.54, 0, cushMat);
+  C(g, 0.72, 0.72, 0.12, 0, 2.70, -0.45, legMat);
+  for(let i = -3; i <= 3; i++){
+   C(g, 0.025, 0.025, 1.15, i * 0.16, 2.10, -0.50 + Math.abs(i) * 0.04, legMat);
+  }
+ }
+ else {
+  // Premium modern upholstered dining chair with brass ferrules
+  const legMat = mat('#242628', true);
+  for(const a of [-0.56, 0.56]) for(const b of [-0.56, 0.56]){
+   const leg = new T.Group();
+   leg.position.set(a, 0.72, b);
+   leg.rotation.z = -a * 0.08;
+   leg.rotation.x = b * 0.08;
+   C(leg, 0.04, 0.075, 1.44, 0, 0, 0, legMat);
+   C(leg, 0.042, 0.042, 0.18, 0, -0.63, 0, brassMat);
+   g.add(leg);
+  }
+  B(g, 1.44, 0.18, 1.40, 0, 1.50, 0, cushMat);
+  B(g, 1.40, 0.08, 1.36, 0, 1.38, 0, frameMat);
+  const backG = new T.Group();
+  backG.position.set(0, 2.22, -0.56);
+  backG.rotation.x = -0.06;
+  B(backG, 1.40, 1.35, 0.14, 0, 0, 0, cushMat);
+  for(const s of [-1, 1]){
+   const wing = new T.Group();
+   wing.position.set(s * 0.65, 0, 0.20);
+   wing.rotation.y = s * 0.35;
+   B(wing, 0.14, 1.35, 0.45, 0, 0, 0, cushMat);
+   backG.add(wing);
+  }
+  g.add(backG);
+ }
+}
+
+function buildFan3D(g, it){
+ const finishColor = it.fin ? (FIN[it.fin] ? FIN[it.fin].hex : it.fin) : '#2c251f';
+ const rodLen = Math.max(0.45, it.h - 0.40);
+ const motorY = it.h - rodLen - 0.14;
+
+ // 1. Canopy
+ C(g, 0.32, 0.26, 0.16, 0, it.h - 0.08, 0, mat(finishColor, true));
+ // 2. Downrod
+ C(g, 0.045, 0.045, rodLen, 0, it.h - rodLen / 2, 0, mat('#1c1e20', true));
+ // 3. Motor housing
+ C(g, 0.54, 0.58, 0.24, 0, motorY, 0, mat(finishColor, false, 'wood'));
+ C(g, 0.60, 0.60, 0.04, 0, motorY, 0, mat('', 0, 'brass'));
+ C(g, 0.38, 0.28, 0.08, 0, motorY - 0.13, 0, mat('#ffeed8', 0, 'glow'));
+
+ // 4. Rotating blade rotor
+ const bladeG = new T.Group();
+ bladeG.position.set(0, motorY, 0);
+ bladeG.userData = { speed: typeof it.fanSpeed === 'number' ? it.fanSpeed : 3 };
+
+ const numBlades = it.fanBlades || 3;
+ const bladeLen = Math.max(1.2, (it.w / 2) * 0.88);
+ const bladeW = 0.38;
+ const bladeMat = mat(finishColor, false, 'wood');
+ const ironMat = mat('#18191a', true);
+
+ for(let i = 0; i < numBlades; i++){
+  const ang = (i * 2 * Math.PI) / numBlades;
+  const bArm = new T.Group();
+  bArm.rotation.y = ang;
+  B(bArm, 0.12, 0.03, 0.45, 0, 0, 0.35, ironMat);
+  const bl = new T.Mesh(new T.BoxGeometry(bladeW, 0.02, bladeLen), bladeMat);
+  bl.position.set(0, 0, 0.52 + bladeLen / 2);
+  bl.rotation.x = 0.14;
+  bArm.add(bl);
+  bladeG.add(bArm);
+ }
+ mergeGroupMeshesByMaterial(bladeG);
+ g.add(bladeG);
+ fanBlades.push(bladeG);
+}
+
+function buildLightFixture(g, it){
+ const lType = it.subKind || it.lightType || 'cob';
+ const h = it.h || 0.4;
+ const isPow = it.powered !== false;
+ const colHex = getLightHex(it.colorTemp);
+ const chanColor = (FIN[it.fin] ? FIN[it.fin].hex : (typeof it.fin === 'string' && it.fin.startsWith('#') ? it.fin : '#ffffff'));
+ const rimMat = mat(chanColor, true);
+ const glowMat = isPow ? mat(colHex, 0, 'glow') : mat('#666666');
+
+ if(lType === 'cob'){
+  // Recessed architectural COB Downlight
+  C(g, 0.38, 0.38, 0.04, 0, h - 0.02, 0, rimMat);
+  C(g, 0.28, 0.20, 0.16, 0, h - 0.10, 0, mat('#18191c', true));
+  C(g, 0.16, 0.16, 0.03, 0, h - 0.17, 0, glowMat);
+  if(isPow){
+   C(g, 0.36, 0.36, 0.01, 0, h - 0.005, 0, mat(colHex, 0, 'glow'));
+  }
+ }
+ else if(lType === 'profile'){
+  // Linear aluminum profile strip light
+  B(g, it.w, 0.18, 0.28, 0, h - 0.09, 0, rimMat);
+  B(g, it.w - 0.08, 0.04, 0.20, 0, h - 0.18, 0, glowMat);
+ }
+ else if(lType === 'spot'){
+  // Directional Gimbal Spotlight
+  C(g, 0.32, 0.32, 0.06, 0, h - 0.03, 0, rimMat);
+  B(g, 0.06, 0.18, 0.06, 0, h - 0.15, 0, rimMat);
+  const canG = new T.Group();
+  canG.position.set(0, h - 0.26, 0);
+  const tiltRad = ((it.tilt != null ? it.tilt : 28) * Math.PI) / 180;
+  canG.rotation.x = tiltRad;
+  C(canG, 0.18, 0.18, 0.45, 0, -0.22, 0, rimMat);
+  C(canG, 0.20, 0.20, 0.05, 0, -0.02, 0, mat('', 0, 'brass'));
+  C(canG, 0.14, 0.14, 0.03, 0, -0.42, 0, glowMat);
+  g.add(canG);
+ }
+ else if(lType === 'pendant'){
+  // Designer Hanging Dining Pendant
+  C(g, 0.25, 0.25, 0.05, 0, h - 0.02, 0, rimMat);
+  const dropLen = Math.max(0.6, h - 1.2);
+  C(g, 0.02, 0.02, dropLen, 0, h - dropLen / 2, 0, mat('#1c1e20', true));
+  const shadeY = h - dropLen;
+  C(g, 0.58, 0.32, 0.65, 0, shadeY - 0.32, 0, rimMat);
+  C(g, 0.60, 0.60, 0.04, 0, shadeY - 0.62, 0, mat('', 0, 'brass'));
+  C(g, 0.22, 0.22, 0.25, 0, shadeY - 0.45, 0, glowMat);
+ }
+}
+
+function updateUserLights(){
+ if(!gLights) return;
+ if(!gUserLights){
+  gUserLights = new T.Group();
+  gLights.add(gUserLights);
+ }
+ disposeGroup(gUserLights);
+
+ const activeTier = (typeof getActiveQualityTier === 'function') ? getActiveQualityTier() : 'medium';
+ const userLights = state.items.filter(i => i.kind === 'light');
+
+ for(const it of userLights){
+  if(it.powered === false) continue;
+  const col = getLightHex(it.colorTemp);
+  const userInt = typeof it.intensity === 'number' ? it.intensity : 1.3;
+  const lType = it.subKind || it.lightType || 'cob';
+  const worldY = (it.elev != null ? it.elev : 9.5);
+
+  if(lType === 'cob'){
+   const beamMap = { narrow: Math.PI / 4.5, medium: Math.PI / 3.2, wide: Math.PI / 2.3 };
+   const bAngle = beamMap[it.beam] || Math.PI / 3.2;
+   const sl = new T.SpotLight(col, userInt * 1.35, 26, bAngle, 0.72, 2.0);
+   sl.position.set(it.x, worldY, it.y);
+   sl.target.position.set(it.x, 0, it.y);
+   if(activeTier !== 'low'){
+    sl.castShadow = true;
+    sl.shadow.mapSize.width = 512;
+    sl.shadow.mapSize.height = 512;
+    sl.shadow.bias = -0.0004;
+    sl.shadow.normalBias = 0.02;
+   }
+   gUserLights.add(sl);
+   gUserLights.add(sl.target);
+   const pl = new T.PointLight(col, userInt * 0.22, 12, 2.0);
+   pl.position.set(it.x, worldY - 0.15, it.y);
+   gUserLights.add(pl);
+  }
+  else if(lType === 'profile'){
+   const numSegments = Math.max(2, Math.round(it.w / 2.0));
+   const rotRad = (it.rot * Math.PI) / 180;
+   const cosR = Math.cos(rotRad), sinR = Math.sin(rotRad);
+   const segInt = (userInt * 1.4) / numSegments;
+   for(let s = 0; s < numSegments; s++){
+    const frac = (s + 0.5) / numSegments - 0.5;
+    const dx = frac * it.w * cosR;
+    const dz = frac * it.w * sinR;
+    const pl = new T.PointLight(col, segInt, 14, 1.8);
+    pl.position.set(it.x + dx, worldY - 0.15, it.y + dz);
+    gUserLights.add(pl);
+   }
+  }
+  else if(lType === 'spot'){
+   const tiltDeg = typeof it.tilt === 'number' ? it.tilt : 28;
+   const tiltRad = (tiltDeg * Math.PI) / 180;
+   const rotRad = (it.rot * Math.PI) / 180;
+   const beamMap = { narrow: Math.PI / 5.2, medium: Math.PI / 3.6, wide: Math.PI / 2.6 };
+   const bAngle = beamMap[it.beam] || Math.PI / 4.2;
+
+   const sl = new T.SpotLight(col, userInt * 1.5, 28, bAngle, 0.65, 2.0);
+   sl.position.set(it.x, worldY, it.y);
+   const aimDist = Math.max(2, worldY * Math.tan(tiltRad));
+   const targetX = it.x + Math.sin(rotRad) * aimDist;
+   const targetZ = it.y - Math.cos(rotRad) * aimDist;
+   sl.target.position.set(targetX, 0, targetZ);
+   if(activeTier !== 'low'){
+    sl.castShadow = true;
+    sl.shadow.mapSize.width = 512;
+    sl.shadow.mapSize.height = 512;
+    sl.shadow.bias = -0.0004;
+    sl.shadow.normalBias = 0.02;
+   }
+   gUserLights.add(sl);
+   gUserLights.add(sl.target);
+  }
+  else if(lType === 'pendant'){
+   const pl = new T.PointLight(col, userInt * 1.1, 15, 2.0);
+   pl.position.set(it.x, worldY - 0.4, it.y);
+   gUserLights.add(pl);
+   const sl = new T.SpotLight(col, userInt * 0.9, 14, Math.PI / 3.0, 0.8, 2.0);
+   sl.position.set(it.x, worldY - 0.3, it.y);
+   sl.target.position.set(it.x, 0, it.y);
+   gUserLights.add(sl);
+   gUserLights.add(sl.target);
+  }
+ }
+ if(renderer && renderer.shadowMap) renderer.shadowMap.needsUpdate = true;
 }
 
 let wpTexCache={};
@@ -2977,7 +3576,7 @@ function buildProceduralItem(g,it){
   // Ceramic coffee mug
   C(g,0.12,0.1,0.28,-w/2+1.45,h+0.14,-d/2+0.5,mat('#f5f4f0'));
  }
- else if(K==='chair'){chair3(g,0,0,Math.PI,m,mF(it.fin,1.1,'fabric'));}
+ else if(K==='chair'){buildChair3D(g,it);}
  else if(K==='puja'){
   fronts(g,w,2.3,d,0,m,mc,{sw:1.25,hy:2.0,plinth:0.25});
   B(g,w,0.1,d,0,2.35,0,mc);
@@ -3071,8 +3670,10 @@ function buildProceduralItem(g,it){
   C(g,0.025,0.025,0.14,0,h*0.18,d/2+0.06,mat('',0,'steel'));
  }
  else if(K==='fan'){
-  const bg=makeCeilingFan(g,0,h,0,it.fin?(FIN[it.fin]?FIN[it.fin].hex:it.fin):'#2c251f');
-  fanBlades.push(bg);
+  buildFan3D(g,it);
+ }
+ else if(K==='light'){
+  buildLightFixture(g,it);
  }
  else if(K==='chimney'){
   B(g,w,0.4,d,0,0.2,0,mat('',0,'glass'));
@@ -4286,9 +4887,7 @@ function buildCeilingAndLights(){
  }
 
  const ROOM_SPOTS=[
-  {n:'Hall Living Center',x:5.2,y:H-0.1,z:33.0,color:0xffeed2,int:1.45,dist:24,shadow:true,pen:0.8,beam:Math.PI/3.1},
-  {n:'Hall Living Accent',x:2.5,y:H-0.1,z:36.0,color:0xffeed2,int:0.85,dist:20,shadow:false,pen:0.85,beam:Math.PI/3.2},
-  {n:'Hall Dining Main',x:5.0,y:H-0.1,z:23.5,color:0xffeed2,int:1.35,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.2},
+  // Hall lighting is driven dynamically by user's lights (COB, profile strip, spot, pendant)
   {n:'Kitchen Task 1',x:15.5,y:H-0.1,z:10.5,color:0xfff6ec,int:1.25,dist:22,shadow:true,pen:0.75,beam:Math.PI/3.0},
   {n:'Kitchen Task 2',x:18.5,y:H-0.1,z:13.5,color:0xfff6ec,int:0.85,dist:18,shadow:false,pen:0.85,beam:Math.PI/3.2},
   {n:"Brother's Room Center",x:17.0,y:H-0.1,z:33.5,color:0xffeed2,int:1.35,dist:22,shadow:true,pen:0.8,beam:Math.PI/3.0},
@@ -4333,7 +4932,7 @@ function buildCeilingAndLights(){
  }
 
  const COVE_ZONES=[
-  {x:0.6,z:18.2,w:9.2,d:20.2},
+  // Hall false ceiling is strictly plain, flat, and has NO steps or gypsum drops!
   {x:11.4,z:28.4,w:11.6,d:9.8},
   {x:0.6,z:7.4,w:10.0,d:9.0}
  ];
@@ -4372,21 +4971,10 @@ function buildCeilingAndLights(){
   C(gCeilingSlab,0.22,0.22,0.05,l.x,H-0.025,l.z,spotMat);
  }
 
- // Ceiling Fans in all 5 places: Living, Dining, Master Bed, Brother's Bed, Kitchen
- const CEILING_FANS_3D=[
-  {n:'Hall Living Fan',x:5.2,z:34.0,fin:'#2c251f'},
-  {n:'Hall Dining Fan',x:5.2,z:23.5,fin:'#2c251f'},
-  {n:'Your Room Fan',x:5.66,z:12.0,fin:'#2c251f'},
-  {n:"Brother's Room Fan",x:17.25,z:33.5,fin:'#2c251f'},
-  {n:'Kitchen Fan',x:15.9,z:12.0,fin:'#e4e4df'}
- ];
- for(const f of CEILING_FANS_3D){
-  const bg=makeCeilingFan(gCeilingSlab,gCeiling,f.x,H,f.z,f.fin);
-  fanBlades.push(bg);
- }
-
  mergeGroupMeshesByMaterial(gCeilingSlab);
  gCeiling.add(gCeilingSlab);
+
+ updateUserLights();
 
  if(renderer&&renderer.shadowMap)renderer.shadowMap.needsUpdate=true;
  syncCeilingVisibility();
@@ -4411,6 +4999,7 @@ function syncCeilingVisibility(){
 function buildItems(){
  if(typeof invalidateObstacles==='function')invalidateObstacles();
  disposeGroup(gItems);for(const it of state.items)gItems.add(buildItem(it));
+ updateUserLights();
  if(selHelper){scene.remove(selHelper);selHelper.geometry.dispose();selHelper=null;}
  const sg=gItems.children.find(c=>c.userData.id===state.sel);
  if(sg){selHelper=new T.BoxHelper(sg,getCSS('--accent')||'#0E7FAE');scene.add(selHelper);}
@@ -4426,6 +5015,7 @@ function updateItemTransform(it){
   sg.rotation.y = -it.rot * Math.PI / 180;
   if(selHelper && state.sel === it.id) selHelper.update();
   if(typeof invalidateObstacles === 'function') invalidateObstacles();
+  if(it.kind === 'light') updateUserLights();
  }
 }
 
@@ -4445,6 +5035,7 @@ function rebuildSingleItem(it){
    scene.add(selHelper);
   }
   if(typeof invalidateObstacles === 'function') invalidateObstacles();
+  if(it.kind === 'light') updateUserLights();
  } else {
   buildItems();
  }
@@ -4922,7 +5513,8 @@ function walkLoop(now){
   camera.position.set(player.x,walkEyeH,player.z);
   camera.rotation.set(player.pitch,player.yaw,0,'YXZ');
   for(let i=0;i<fanBlades.length;i++){
-   fanBlades[i].rotation.y+=0.04;
+   const spd=(fanBlades[i].userData&&typeof fanBlades[i].userData.speed==='number')?fanBlades[i].userData.speed:3;
+   fanBlades[i].rotation.y+=0.015*spd;
   }
   render3D();
  }
@@ -5792,7 +6384,7 @@ $('#btnReset').onclick=()=>{
 function exportText(){
  const L=state.items.map(it=>{
   const f=fp(it);
-  return {label:it.label,kind:it.kind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,opacity:it.opacity,walkthrough:it.walkthrough,swing:it.swing,swingStyle:it.swingStyle,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,doorState:it.doorState,glassProfile:it.glassProfile,shelfLights:it.shelfLights,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent,wpImage:it.wpImage,wpTile:it.wpTile};
+  return {label:it.label,kind:it.kind,subKind:it.subKind,room:roomOf(f.x+f.w/2,f.y+f.h/2),x_in:Math.round(it.x*12),y_in:Math.round(it.y*12),w_in:Math.round(it.w*12),d_in:Math.round(it.d*12),h_in:Math.round(it.h*12),elev_in:Math.round(it.elev*12),rot:it.rot,finish:it.fin,opacity:it.opacity,walkthrough:it.walkthrough,swing:it.swing,swingStyle:it.swingStyle,openD:it.openD,doors:it.doors,wall:it.wall,open:it.open,seats:it.seats,granite:it.granite,sinkTop:it.sinkTop,doorState:it.doorState,glassProfile:it.glassProfile,shelfLights:it.shelfLights,wpStyle:it.wpStyle,wpColor:it.wpColor,wpAccent:it.wpAccent,wpImage:it.wpImage,wpTile:it.wpTile,lightType:it.lightType,colorTemp:it.colorTemp,intensity:it.intensity,beam:it.beam,tilt:it.tilt,powered:it.powered,fanSpeed:it.fanSpeed,fanBlades:it.fanBlades,chairStyle:it.chairStyle,cushionColor:it.cushionColor,chairsDetached:it.chairsDetached,parentId:it.parentId};
  });
  const out={
   plan:'C607 planner realistic v1',
@@ -6366,7 +6958,8 @@ window.__APP__ = {
  updateItemTransform,
  rebuildSingleItem,
  buildItem,
- buildProceduralItem
+ buildProceduralItem,
+ updateUserLights
 };
 </script>
 </body>
